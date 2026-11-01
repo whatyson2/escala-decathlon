@@ -1,0 +1,930 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Escala Decathlon</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 100 100%27><text y=%27.9em%27 font-size=%2790%27>📅</text></svg>">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+    body { 
+      font-family: 'Inter', sans-serif; 
+      padding-top: env(safe-area-inset-top, 0px); 
+      padding-bottom: env(safe-area-inset-bottom, 0px); 
+    }
+    .hide-scrollbar::-webkit-scrollbar { display: none; }
+    .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen pb-16 antialiased select-none">
+
+  <!-- Header Fixo Responsivo -->
+  <header class="bg-gradient-to-r from-blue-700 via-blue-600 to-indigo-800 text-white shadow-lg sticky top-0 z-30">
+    <div class="max-w-4xl mx-auto px-3 sm:px-4 py-3 flex items-center justify-between gap-2">
+      <div class="flex items-center space-x-2.5 min-w-0">
+        <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS0_ib0U_txAi6Oxbm9RiriJBhjEt9u9HLMzDNHamm7Dur4wT-YvQSgO-Kg&s=10" alt="Decathlon Logo" class="w-[49px] h-[49px] rounded-xl shadow-md border border-white/20 object-cover flex-shrink-0" />
+        <div class="min-w-0">
+          <div class="flex items-center gap-1.5 flex-wrap">
+            <h1 class="text-sm sm:text-base font-bold tracking-tight leading-tight truncate">Escala Decathlon</h1>
+            <span id="badgeActiveMonth" class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-white/20 text-white uppercase tracking-wider">-</span>
+          </div>
+          <p id="headerSubtitle" class="text-[11px] sm:text-xs text-blue-100 flex items-center gap-1.5 font-medium mt-0.5 truncate">
+            <span id="syncPulse" class="inline-block w-2 h-2 rounded-full bg-amber-400 animate-pulse flex-shrink-0"></span>
+            <span id="syncStatusText" class="truncate">Conectando à planilha...</span>
+          </p>
+        </div>
+      </div>
+      
+      <!-- Controles de Ação do Header (Empilhados: Menu e Atualizar acima de Lista e Mês) -->
+      <div class="flex flex-col items-end gap-1.5 flex-shrink-0 ml-auto">
+        <div class="flex items-center gap-1.5">
+          <button id="btnMenu" onclick="toggleMenu()" title="Menu de links" class="w-8 h-8 rounded-xl bg-white/10 hover:bg-white/20 active:scale-95 transition flex items-center justify-center text-white text-base border border-white/15">
+            ☰
+          </button>
+          <button id="btnRefresh" onclick="handleManualRefresh()" title="Recarregar dados e voltar ao início" class="w-8 h-8 rounded-xl bg-white/10 hover:bg-white/20 active:scale-95 transition flex items-center justify-center text-white text-sm border border-white/15">
+            <span id="refreshIcon" class="inline-block">↻</span>
+          </button>
+        </div>
+
+        <div class="flex items-center bg-black/25 p-1 rounded-xl backdrop-blur-sm border border-white/15 text-xs">
+          <button id="btnViewList" onclick="switchView('list')" class="px-2.5 sm:px-3 py-1.5 rounded-lg font-medium transition flex items-center gap-1 bg-white text-blue-900 shadow-sm">
+            <span>Lista</span>
+          </button>
+          <button id="btnViewCal" onclick="switchView('calendar')" class="px-2.5 sm:px-3 py-1.5 rounded-lg font-medium transition flex items-center gap-1 text-white/80 hover:text-white">
+            <span>Mês</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Menu Flutuante -->
+  <div id="menuPanel" class="hidden fixed right-3 z-40 w-72 max-w-[calc(100vw-1.5rem)] bg-white rounded-2xl shadow-2xl border border-slate-200 p-4 text-sm" style="top: calc(env(safe-area-inset-top, 0px) + 3.8rem);">
+    <div class="flex items-center justify-between pb-2 mb-2 border-b border-slate-100">
+      <p class="text-xs font-bold uppercase tracking-wider text-slate-500">Links</p>
+      <button onclick="toggleMenu()" class="text-slate-400 hover:text-slate-600 text-sm">✕</button>
+    </div>
+    <div id="menuLinks" class="space-y-2"></div>
+    <div id="menuFooterNote" class="hidden mt-3 pt-3 border-t border-slate-100">
+      <p class="text-[11px] text-slate-400">Planilha vinculada: aba <i>Backup Atualizado</i>.</p>
+    </div>
+  </div>
+
+  <!-- Conteúdo Principal -->
+  <main class="max-w-4xl mx-auto px-3 sm:px-4 pt-4 space-y-4">
+
+    <!-- Card de Filtros e Seleção -->
+    <div class="bg-white rounded-2xl shadow-sm border border-slate-200/80 p-3 sm:p-4">
+      <div class="space-y-3">
+        <!-- Filtro por Setor -->
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-bold uppercase tracking-wider text-slate-500 flex items-center gap-1.5">
+            Setores
+          </span>
+          <span id="collabCountBadge" class="text-[11px] px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-600 font-semibold">0 colaboradores</span>
+        </div>
+
+        <div id="sectorFilterContainer" class="flex gap-1.5 overflow-x-auto hide-scrollbar pb-1 text-xs font-medium"></div>
+
+        <!-- Lista Horizontal de Colaboradores -->
+        <div id="collaboratorList" class="flex gap-2 overflow-x-auto hide-scrollbar pt-1 pb-1"></div>
+      </div>
+    </div>
+
+    <!-- Perfil do Colaborador Selecionado -->
+    <div id="userProfileCard" class="hidden bg-white rounded-2xl shadow-sm border border-slate-200/80 p-4 transition-all">
+      <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+        <div class="flex items-center space-x-3.5 min-w-0">
+          <div id="userAvatar" class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-600 text-white font-black text-xl flex items-center justify-center shadow-md shadow-blue-500/20 flex-shrink-0">
+            -
+          </div>
+          <div class="min-w-0">
+            <div class="flex items-center gap-2">
+              <h2 id="userName" class="text-base font-bold text-slate-900 leading-tight truncate">Carregando...</h2>
+            </div>
+            <p id="userRole" class="text-xs font-medium text-slate-500 mt-1 flex flex-wrap items-center gap-1.5">
+              <span id="userSectorText" class="font-semibold text-blue-700 bg-blue-50 px-2 py-0.5 rounded-md truncate max-w-[200px] sm:max-w-none">-</span>
+              <span class="text-slate-300">•</span>
+              <span id="userMatricula" class="text-slate-500 whitespace-nowrap">Mat: -</span>
+            </p>
+          </div>
+        </div>
+
+        <!-- Estatísticas do Mês (Responsivo e Flexível) -->
+        <div class="grid grid-cols-2 xs:grid-cols-3 sm:flex sm:flex-wrap lg:flex-nowrap items-stretch justify-between gap-1.5 sm:gap-2 bg-slate-50/90 border border-slate-200/80 rounded-xl p-2 text-xs w-full lg:w-auto">
+          <div class="flex-1 min-w-[70px] bg-white rounded-lg py-1.5 px-2.5 text-center border border-slate-200/60 shadow-2xs flex flex-col justify-center">
+            <span class="block text-[9px] sm:text-[10px] uppercase font-bold text-slate-500 tracking-tight truncate">Trabalho</span>
+            <span id="statWorkDays" class="text-sm sm:text-base font-extrabold text-blue-700 leading-tight mt-0.5">0</span>
+          </div>
+          <div class="flex-1 min-w-[70px] bg-white rounded-lg py-1.5 px-2.5 text-center border border-slate-200/60 shadow-2xs flex flex-col justify-center">
+            <span class="block text-[9px] sm:text-[10px] uppercase font-bold text-slate-500 tracking-tight truncate">Folgas</span>
+            <span id="statOffDays" class="text-sm sm:text-base font-extrabold text-emerald-600 leading-tight mt-0.5">0</span>
+          </div>
+          <div id="statVacBox" class="flex-1 min-w-[70px] bg-white rounded-lg py-1.5 px-2.5 text-center border border-slate-200/60 shadow-2xs flex flex-col justify-center">
+            <span class="block text-[9px] sm:text-[10px] uppercase font-bold text-slate-500 tracking-tight truncate">Férias</span>
+            <span id="statVacDays" class="text-sm sm:text-base font-extrabold text-teal-600 leading-tight mt-0.5">0</span>
+          </div>
+          <div class="flex-1 min-w-[70px] bg-white rounded-lg py-1.5 px-2.5 text-center border border-slate-200/60 shadow-2xs flex flex-col justify-center">
+            <span class="block text-[9px] sm:text-[10px] uppercase font-bold text-slate-500 tracking-tight truncate">Aberturas</span>
+            <span id="statOpen" class="text-sm sm:text-base font-extrabold text-amber-600 leading-tight mt-0.5">0</span>
+          </div>
+          <div class="flex-1 min-w-[70px] bg-white rounded-lg py-1.5 px-2.5 text-center border border-slate-200/60 shadow-2xs flex flex-col justify-center">
+            <span class="block text-[9px] sm:text-[10px] uppercase font-bold text-slate-500 tracking-tight truncate">Fecham.</span>
+            <span id="statClose" class="text-sm sm:text-base font-extrabold text-sky-600 leading-tight mt-0.5">0</span>
+          </div>
+          <div id="statPABox" class="flex-1 min-w-[70px] bg-white rounded-lg py-1.5 px-2.5 text-center border border-slate-200/60 shadow-2xs flex flex-col justify-center">
+            <span class="block text-[9px] sm:text-[10px] uppercase font-bold text-slate-500 tracking-tight truncate">Perma Ab.</span>
+            <span id="statPA" class="text-sm sm:text-base font-extrabold text-orange-600 leading-tight mt-0.5">0</span>
+          </div>
+          <div id="statPFBox" class="flex-1 min-w-[70px] bg-white rounded-lg py-1.5 px-2.5 text-center border border-slate-200/60 shadow-2xs flex flex-col justify-center">
+            <span class="block text-[9px] sm:text-[10px] uppercase font-bold text-slate-500 tracking-tight truncate">Perma Fech.</span>
+            <span id="statPF" class="text-sm sm:text-base font-extrabold text-indigo-600 leading-tight mt-0.5">0</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Legenda de Turnos (visível apenas na visão Mês) -->
+    <div id="shiftLegend" class="hidden bg-white/90 backdrop-blur rounded-xl p-3 border border-slate-200/70 text-[11px] text-slate-700 flex flex-wrap items-center justify-between gap-2 shadow-xs">
+      <span class="font-bold text-slate-800 mr-1 flex items-center gap-1">
+        Legenda:
+      </span>
+      <div class="flex flex-wrap items-center gap-2 sm:gap-3 font-medium">
+        <span class="inline-flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-amber-500"></span> Abertura (A, PA)</span>
+        <span class="inline-flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-sky-500"></span> Fechamento (F, PF)</span>
+        <span class="inline-flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-purple-500"></span> Intermediário (I)</span>
+        <span class="inline-flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span> Folga (FG, FF)</span>
+        <span class="inline-flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-teal-500"></span> Férias (FR)</span>
+        <span class="inline-flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-rose-500"></span> Atestado (AT)</span>
+      </div>
+    </div>
+
+    <!-- Vista 1: Lista Diária -->
+    <div id="viewList" class="space-y-2"></div>
+
+    <!-- Vista 2: Calendário Mensal -->
+    <div id="viewCalendar" class="hidden bg-white rounded-2xl shadow-sm border border-slate-200/80 p-3 sm:p-5">
+      <div class="flex items-center justify-between mb-4 pb-2 border-b border-slate-100">
+        <div class="flex items-center gap-2">
+          <h3 id="calMonthTitle" class="font-bold text-slate-800 text-sm sm:text-base">Mês</h3>
+        </div>
+        <div class="text-xs text-slate-500 flex items-center gap-3">
+          <span class="inline-flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-blue-600"></span> Hoje</span>
+          <span class="inline-flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-amber-400"></span> Feriado</span>
+        </div>
+      </div>
+
+      <!-- Cabeçalho da Semana (Segunda a Domingo) -->
+      <div class="grid grid-cols-7 gap-1 sm:gap-1.5 text-center font-bold text-[11px] sm:text-xs text-slate-500 mb-2">
+        <div class="py-1">SEG</div>
+        <div class="py-1">TER</div>
+        <div class="py-1">QUA</div>
+        <div class="py-1">QUI</div>
+        <div class="py-1">SEX</div>
+        <div class="py-1 text-blue-600">SÁB</div>
+        <div class="py-1 text-rose-500">DOM</div>
+      </div>
+
+      <!-- Grid dos Dias do Mês -->
+      <div id="calDaysGrid" class="grid grid-cols-7 gap-1 sm:gap-1.5"></div>
+    </div>
+
+    <!-- Seletor de Mês no Rodapé -->
+    <div id="monthSelectorContainer" class="hidden mt-6 pt-4 border-t border-slate-200/80">
+      <div class="bg-white rounded-2xl shadow-xs border border-slate-200/90 p-3 sm:p-4 text-center">
+        <p id="monthSelectorTitle" class="text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
+          Selecionar Mês da Escala
+        </p>
+        <div id="monthButtonList" class="inline-flex p-1 bg-slate-100 rounded-xl border border-slate-200 gap-1 text-xs font-semibold overflow-x-auto max-w-full"></div>
+      </div>
+    </div>
+
+  </main>
+
+  <script>
+    const SPREADSHEET_ID = '1EsxzUJ42gEu4Gz_5tX3ybAUtAy71BoiCrbOfwRdrGnM';
+    const SHEET_TAB = 'Backup Atualizado';
+    const REFRESH_MS = 60000;
+
+    const MONTH_NAMES = [
+      'JANEIRO', 'FEVEREIRO', 'MARÇO', 'ABRIL', 'MAIO', 'JUNHO',
+      'JULHO', 'AGOSTO', 'SETEMBRO', 'OUTUBRO', 'NOVEMBRO', 'DEZEMBRO'
+    ];
+
+    const MONTH_INDEXES = {
+      'JANEIRO': 0, 'FEVEREIRO': 1, 'MARÇO': 2, 'ABRIL': 3, 'MAIO': 4, 'JUNHO': 5,
+      'JULHO': 6, 'AGOSTO': 7, 'SETEMBRO': 8, 'OUTUBRO': 9, 'NOVEMBRO': 10, 'DEZEMBRO': 11
+    };
+
+    const WEEKDAYS_SHORT = ['DOM', 'SEG', 'TER', 'QUA', 'QUI', 'SEX', 'SÁB'];
+
+    function getAllowedMonths() {
+      const now = new Date();
+      const currentIdx = now.getMonth();
+      const nextIdx = (currentIdx + 1) % 12;
+      return [MONTH_NAMES[currentIdx], MONTH_NAMES[nextIdx]];
+    }
+
+    function isLastWeekOfMonth() {
+      const now = new Date();
+      const year = now.getFullYear();
+      const month = now.getMonth();
+      const todayDay = now.getDate();
+      const lastDayOfMonth = new Date(year, month + 1, 0).getDate();
+      return (lastDayOfMonth - todayDay) < 7;
+    }
+
+    let ALLOWED_TWO_MONTHS = getAllowedMonths();
+    let AVAILABLE_MONTHS = [...ALLOWED_TWO_MONTHS];
+
+    const HOLIDAYS = {
+      'SETEMBRO': { 7: { name: 'Independência do Brasil', type: 'Feriado Nacional' } },
+      'OUTUBRO': {
+        12: { name: 'Nossa Senhora Aparecida', type: 'Feriado Nacional' },
+        24: { name: 'Aniversário de Goiânia', type: 'Feriado Municipal (Goiânia)' }
+      },
+      'NOVEMBRO': {
+        2: { name: 'Finados', type: 'Feriado Nacional' },
+        15: { name: 'Proclamação da República', type: 'Feriado Nacional' },
+        20: { name: 'Dia da Consciência Negra', type: 'Feriado Nacional' }
+      },
+      'DEZEMBRO': {
+        25: { name: 'Natal', type: 'Feriado Nacional' }
+      },
+      'JANEIRO': {
+        1: { name: 'Confraternização Universal', type: 'Feriado Nacional' }
+      }
+    };
+
+    const SHIFT_EMOJI = {
+      'A': '☀️', 'A1': '☀️', 'A2': '🌤️', 'PA': '🔑', 'F': '🌙',
+      'PF': '🔒', 'I': '🕒', 'FG': '🏠', 'FF': '⭐', 'FR': '🏖️',
+      'AT': '🩺', 'VG': '✈️', '-': '➖'
+    };
+
+    const SHIFT_STYLES = {
+      'A':  { label: 'Abertura', bg: 'bg-amber-50', border: 'border-amber-300', text: 'text-amber-800', badge: 'bg-amber-500 text-white' },
+      'A1': { label: 'Abertura 1', bg: 'bg-amber-50', border: 'border-amber-300', text: 'text-amber-800', badge: 'bg-amber-500 text-white' },
+      'A2': { label: 'Abertura 2', bg: 'bg-amber-50', border: 'border-amber-300', text: 'text-amber-800', badge: 'bg-amber-600 text-white' },
+      'PA': { label: 'Perm. Abertura', bg: 'bg-orange-50', border: 'border-orange-300', text: 'text-orange-900', badge: 'bg-orange-500 text-white' },
+      'F':  { label: 'Fechamento', bg: 'bg-sky-50', border: 'border-sky-300', text: 'text-sky-800', badge: 'bg-sky-500 text-white' },
+      'PF': { label: 'Perm. Fechamento', bg: 'bg-indigo-50', border: 'border-indigo-300', text: 'text-indigo-900', badge: 'bg-indigo-600 text-white' },
+      'I':  { label: 'Intermediário', bg: 'bg-purple-50', border: 'border-purple-300', text: 'text-purple-800', badge: 'bg-purple-600 text-white' },
+      'FG': { label: 'Folga', bg: 'bg-emerald-50', border: 'border-emerald-300', text: 'text-emerald-800', badge: 'bg-emerald-500 text-white' },
+      'FF': { label: 'Folga Feriado', bg: 'bg-teal-50', border: 'border-teal-300', text: 'text-teal-800', badge: 'bg-teal-600 text-white' },
+      'FR': { label: 'Férias', bg: 'bg-teal-50', border: 'border-teal-300', text: 'text-teal-800', badge: 'bg-teal-600 text-white' },
+      'AT': { label: 'Atestado', bg: 'bg-rose-50', border: 'border-rose-300', text: 'text-rose-800', badge: 'bg-rose-600 text-white' },
+      'VG': { label: 'Viagem / Livre', bg: 'bg-cyan-50', border: 'border-cyan-300', text: 'text-cyan-800', badge: 'bg-cyan-600 text-white' },
+      '-':  { label: 'Sem Registro', bg: 'bg-slate-50', border: 'border-slate-200', text: 'text-slate-500', badge: 'bg-slate-400 text-white' }
+    };
+
+    let collaborators = [];
+    let scheduleData = {};
+    let monthDaysCount = 31;
+    let currentMonth = ALLOWED_TWO_MONTHS[0];
+    let currentCollaboratorId = null;
+    let currentView = 'list';
+    let activeSector = 'Todos';
+    let allData = null;
+
+    function generateFallbackData() {
+      const collabsList = [
+        { id: '101', name: 'Whatyson Silva', matricula: '10142', sector: 'Atendimento', role: 'Líder de Atendimento' },
+        { id: '102', name: 'Lucas Ferreira', matricula: '10255', sector: 'Montanha', role: 'Vendedor Montanha & Água' },
+        { id: '103', name: 'Mariana Costa', matricula: '10389', sector: 'Fitness', role: 'Vendedora Fitness & Corrida' },
+        { id: '104', name: 'Rodrigo Almeida', matricula: '10411', sector: 'Gerência', role: 'Gerente de Loja' },
+        { id: '105', name: 'Camila Rocha', matricula: '10523', sector: 'Montanha', role: 'Especialista Camping' },
+        { id: '106', name: 'Felipe Santos', matricula: '10640', sector: 'Fitness', role: 'Vendedor Raquetes' },
+        { id: '107', name: 'Beatriz Lima', matricula: '10762', sector: 'Atendimento', role: 'Operadora de Caixa' }
+      ];
+
+      const days = {
+        'JANEIRO': 31, 'FEVEREIRO': 28, 'MARÇO': 31, 'ABRIL': 30,
+        'MAIO': 31, 'JUNHO': 30, 'JULHO': 31, 'AGOSTO': 31,
+        'SETEMBRO': 30, 'OUTUBRO': 31, 'NOVEMBRO': 30, 'DEZEMBRO': 31
+      };
+
+      const sched = {};
+      MONTH_NAMES.forEach(m => sched[m] = {});
+
+      const samplePatterns = {
+        '101': ['A', 'A', 'PA', 'A', 'I', 'FG', 'FG', 'A', 'A', 'A', 'A', 'FF', 'FG', 'PA'],
+        '102': ['F', 'F', 'PF', 'F', 'F', 'FG', 'FG', 'F', 'F', 'F', 'F', 'FF', 'FG', 'PF'],
+        '103': ['I', 'I', 'A', 'A', 'F', 'FG', 'FG', 'I', 'I', 'A', 'A', 'FF', 'FG', 'I'],
+        '104': ['PA', 'PA', 'A', 'A', 'PF', 'FG', 'FG', 'PA', 'PA', 'A', 'A', 'FF', 'FG', 'PF'],
+        '105': ['FR', 'FR', 'FR', 'FR', 'FR', 'FR', 'FR', 'FR', 'FR', 'FR', 'FR', 'FR', 'FR', 'FR'],
+        '106': ['A', 'F', 'A', 'F', 'I', 'FG', 'FG', 'A', 'F', 'A', 'F', 'FF', 'FG', 'A'],
+        '107': ['F', 'F', 'F', 'F', 'F', 'FG', 'FG', 'F', 'F', 'F', 'F', 'FF', 'FG', 'F']
+      };
+
+      MONTH_NAMES.forEach(m => {
+        const total = days[m] || 30;
+        collabsList.forEach(c => {
+          const arr = [];
+          const pat = samplePatterns[c.id] || ['A', 'F', 'I', 'FG'];
+          for (let d = 1; d <= total; d++) {
+            if (HOLIDAYS[m] && HOLIDAYS[m][d]) {
+              arr.push('FF');
+            } else {
+              arr.push(pat[(d - 1) % pat.length]);
+            }
+          }
+          sched[m][c.id] = arr;
+        });
+      });
+
+      return {
+        months: MONTH_NAMES,
+        days: days,
+        collabs: collabsList,
+        sched: sched
+      };
+    }
+
+    function getISOWeekNumber(d) {
+      const date = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+      const dayNum = date.getUTCDay() || 7;
+      date.setUTCDate(date.getUTCDate() + 4 - dayNum);
+      const yearStart = new Date(Date.UTC(date.getUTCFullYear(), 0, 1));
+      return Math.ceil((((date - yearStart) / 86400000) + 1) / 7);
+    }
+
+    function parseCSV(text) {
+      return text.split('\n').map(line => {
+        const row = [];
+        let cur = '';
+        let insideQuotes = false;
+        for (let i = 0; i < line.length; i++) {
+          const char = line[i];
+          if (char === '"') {
+            if (insideQuotes && line[i + 1] === '"') {
+              cur += '"';
+              i++;
+            } else {
+              insideQuotes = !insideQuotes;
+            }
+          } else if (char === ',' && !insideQuotes) {
+            row.push(cur.trim());
+            cur = '';
+          } else {
+            cur += char;
+          }
+        }
+        row.push(cur.trim());
+        return row;
+      });
+    }
+
+    function normName(s) { return (s || '').replace(/\s+/g, ' ').trim(); }
+
+    function extractMonthName(cellValue) {
+      const upper = (cellValue || '').toUpperCase().trim();
+      if (!upper) return null;
+      for (const m of MONTH_NAMES) {
+        if (upper === m || upper.startsWith(m + ' ') || upper.startsWith(m + '/') || upper.startsWith(m + '-')) {
+          return m;
+        }
+      }
+      return null;
+    }
+
+    function parseBackupSheet(csvText) {
+      const rows = parseCSV(csvText);
+      let monthRow = -1, dateRow = -1, firstCol = -1;
+      for (let r = 0; r < Math.min(rows.length, 15); r++) {
+        if (monthRow === -1 && rows[r].some(v => extractMonthName(v) !== null)) {
+          monthRow = r;
+        }
+      }
+      for (let r = 0; r < Math.min(rows.length, 15); r++) {
+        for (let c = 0; c < rows[r].length - 2; c++) {
+          if (rows[r][c] === '1' && rows[r][c + 1] === '2' && rows[r][c + 2] === '3') { 
+            dateRow = r; 
+            firstCol = c; 
+            break; 
+          }
+        }
+        if (dateRow !== -1) break;
+      }
+      if (dateRow === -1 || monthRow === -1) throw new Error('Layout da planilha não reconhecido');
+
+      const colInfo = [];
+      let label = '';
+      let prevDay = 0;
+      const maxCols = Math.max(rows[dateRow].length, rows[monthRow].length);
+
+      for (let c = 0; c < maxCols; c++) {
+        let detectedMonth = extractMonthName(rows[monthRow][c]);
+        if (!detectedMonth && monthRow > 0) {
+          detectedMonth = extractMonthName(rows[monthRow - 1][c]);
+        }
+        if (!detectedMonth && monthRow + 1 < dateRow) {
+          detectedMonth = extractMonthName(rows[monthRow + 1][c]);
+        }
+
+        const rawDay = (rows[dateRow][c] || '').trim();
+        const day = parseInt(rawDay, 10);
+
+        if (detectedMonth) {
+          label = detectedMonth;
+        } else if (c >= firstCol && day === 1 && prevDay >= 28 && label) {
+          const idx = MONTH_NAMES.indexOf(label);
+          if (idx !== -1) label = MONTH_NAMES[(idx + 1) % 12];
+        }
+
+        if (c >= firstCol && label && !isNaN(day) && day >= 1 && day <= 31 && String(day) === rawDay) {
+          colInfo[c] = { month: label, day };
+          prevDay = day;
+        }
+      }
+
+      const months = [];
+      const days = {};
+      colInfo.forEach(ci => {
+        if (!ci) return;
+        if (!months.includes(ci.month)) months.push(ci.month);
+        days[ci.month] = Math.max(days[ci.month] || 0, ci.day);
+      });
+
+      const collabs = [];
+      const sched = {};
+      months.forEach(m => sched[m] = {});
+      let sectorRole = null;
+
+      for (let r = dateRow + 1; r < rows.length; r++) {
+        const row = rows[r];
+        const name = normName(row[1]);
+        if (!name) continue;
+        const upper = name.toUpperCase();
+        const shiftsByMonth = {};
+        let hasShift = false;
+        colInfo.forEach((ci, c) => {
+          if (!ci) return;
+          const v = (row[c] || '').trim().toUpperCase();
+          if (v && isNaN(Number(v))) {
+            (shiftsByMonth[ci.month] = shiftsByMonth[ci.month] || {})[ci.day] = v;
+            hasShift = true;
+          }
+        });
+
+        if (!hasShift && (upper.includes('GERENTE') || upper.includes('ATENDIMENTO') || upper.includes('FITNESS') || upper.includes('MONTANHA'))) {
+          sectorRole = name;
+          continue;
+        }
+        if (!sectorRole || !hasShift) {
+          if (!sectorRole || !(row[3] || '').trim()) continue;
+        }
+
+        const matricula = (row[3] || '').trim() || '-';
+        const id = matricula !== '-' ? matricula : 'n-' + name;
+        const secUpper = (sectorRole || '').toUpperCase();
+        let sector = 'Outros';
+        if (secUpper.includes('MONTANHA') || secUpper.includes('ÁGUA') || secUpper.includes('AGUA') || secUpper.includes('COLETIVOS')) sector = 'Montanha';
+        else if (secUpper.includes('ATENDIMENTO') || secUpper.includes('OPERAÇÃO') || secUpper.includes('SAÚDE')) sector = 'Atendimento';
+        else if (secUpper.includes('FITNESS') || secUpper.includes('CORRIDA') || secUpper.includes('RAQUETES')) sector = 'Fitness';
+        else if (secUpper.includes('GERENTE')) sector = 'Gerência';
+
+        collabs.push({ id, name, matricula, sector, role: sectorRole || 'Colaborador' });
+        months.forEach(m => {
+          const arr = [];
+          for (let d = 1; d <= days[m]; d++) {
+            arr.push((shiftsByMonth[m] && shiftsByMonth[m][d]) || '-');
+          }
+          sched[m][id] = arr;
+        });
+      }
+      return { months, days, collabs, sched };
+    }
+
+    function applyMonth() {
+      if (!allData) return;
+      if (!AVAILABLE_MONTHS.includes(currentMonth)) {
+        currentMonth = AVAILABLE_MONTHS[0] || allData.months[0];
+      }
+      collaborators = allData.collabs;
+      scheduleData = allData.sched[currentMonth] || {};
+      monthDaysCount = (allData.days && allData.days[currentMonth]) || 31;
+      
+      document.getElementById('badgeActiveMonth').textContent = currentMonth;
+
+      if (currentCollaboratorId && !collaborators.some(c => c.id === currentCollaboratorId)) {
+        currentCollaboratorId = null;
+      }
+      renderApp();
+    }
+
+    async function handleManualRefresh() {
+      ALLOWED_TWO_MONTHS = getAllowedMonths();
+      currentMonth = ALLOWED_TWO_MONTHS[0];
+      activeSector = 'Todos';
+      currentCollaboratorId = null;
+      switchView('list');
+      document.getElementById('menuPanel').classList.add('hidden');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      await fetchLiveScheduleData();
+    }
+
+    async function fetchLiveScheduleData() {
+      const refreshIcon = document.getElementById('refreshIcon');
+      const syncStatus = document.getElementById('syncStatusText');
+      const syncPulse = document.getElementById('syncPulse');
+      if (refreshIcon) refreshIcon.classList.add('animate-spin');
+
+      ALLOWED_TWO_MONTHS = getAllowedMonths();
+
+      try {
+        const url = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(SHEET_TAB)}&t=${Date.now()}`;
+        const response = await fetch(url);
+        if (!response.ok) throw new Error('Falha na resposta da planilha');
+        
+        const text = await response.text();
+        const parsed = parseBackupSheet(text);
+        allData = parsed;
+
+        const matched = allData.months.filter(m => ALLOWED_TWO_MONTHS.includes(m) || m === 'DEZEMBRO');
+        AVAILABLE_MONTHS = matched.length > 0 ? matched : allData.months;
+
+        syncPulse.className = 'inline-block w-2 h-2 rounded-full bg-emerald-400 animate-pulse';
+        const n = new Date();
+        const hh = String(n.getHours()).padStart(2, '0') + ':' + String(n.getMinutes()).padStart(2, '0');
+        syncStatus.dataset.time = hh;
+        applyMonth();
+      } catch (err) {
+        console.warn('Conexão externa indisponível ou bloqueada, carregando dados locais:', err);
+        allData = generateFallbackData();
+        AVAILABLE_MONTHS = [...ALLOWED_TWO_MONTHS];
+
+        syncPulse.className = 'inline-block w-2 h-2 rounded-full bg-blue-400';
+        syncStatus.textContent = 'Modo Local (Offline / Backup)';
+        applyMonth();
+      } finally {
+        if (refreshIcon) refreshIcon.classList.remove('animate-spin');
+      }
+    }
+
+    function renderApp() {
+      renderMonthButtons();
+      renderSectors();
+      renderCollaboratorChips();
+      displayScheduleFor(currentCollaboratorId);
+    }
+
+    function renderMonthButtons() {
+      const container = document.getElementById('monthButtonList');
+      const monthsToRender = AVAILABLE_MONTHS.filter(m => ALLOWED_TWO_MONTHS.includes(m));
+      const finalMonths = monthsToRender.length > 0 ? monthsToRender : ALLOWED_TWO_MONTHS;
+
+      container.innerHTML = finalMonths.map(m => {
+        const isSelected = m === currentMonth;
+        const displayName = m.charAt(0) + m.slice(1).toLowerCase();
+        return `
+          <button onclick="changeCurrentMonth('${m}')" class="px-4 py-1.5 rounded-lg transition whitespace-nowrap ${
+            isSelected ? 'bg-blue-600 text-white shadow-xs font-bold' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/60'
+          }">${displayName}</button>
+        `;
+      }).join('');
+    }
+
+    function renderSectors() {
+      const uniqueSectors = ['Todos', ...new Set(collaborators.map(c => c.sector))];
+      const container = document.getElementById('sectorFilterContainer');
+      container.innerHTML = uniqueSectors.map(sec => {
+        const active = sec === activeSector;
+        return `
+          <button onclick="filterSector('${sec}')" class="px-3 py-1.5 rounded-xl transition whitespace-nowrap ${
+            active ? 'bg-blue-600 text-white shadow-sm font-semibold' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+          }">${sec}</button>
+        `;
+      }).join('');
+    }
+
+    function filterSector(sec) {
+      activeSector = sec;
+      renderSectors();
+      renderCollaboratorChips();
+    }
+
+    function renderCollaboratorChips() {
+      const container = document.getElementById('collaboratorList');
+      const filtered = activeSector === 'Todos' 
+        ? collaborators 
+        : collaborators.filter(c => c.sector === activeSector);
+
+      document.getElementById('collabCountBadge').textContent = `${filtered.length} pessoa${filtered.length !== 1 ? 's' : ''}`;
+
+      if (filtered.length === 0) {
+        container.innerHTML = `<span class="text-xs text-slate-400 py-1">Nenhum colaborador neste setor.</span>`;
+        return;
+      }
+
+      container.innerHTML = filtered.map(collab => {
+        const isSelected = collab.id === currentCollaboratorId;
+        const firstName = collab.name.split(' ')[0];
+        return `
+          <button onclick="selectCollaborator('${collab.id}')" class="flex-shrink-0 px-3.5 py-2 rounded-xl border text-xs font-medium transition-all flex items-center gap-2 ${
+            isSelected 
+              ? 'bg-blue-600 border-blue-600 text-white shadow-sm ring-2 ring-blue-500/20' 
+              : 'bg-white border-slate-200 text-slate-700 hover:border-slate-300 hover:bg-slate-50'
+          }">
+            <span class="w-2 h-2 rounded-full ${isSelected ? 'bg-white' : 'bg-blue-500'}"></span>
+            <span>${firstName}</span>
+          </button>
+        `;
+      }).join('');
+    }
+
+    function selectCollaborator(id) {
+      currentCollaboratorId = id;
+      renderCollaboratorChips();
+      displayScheduleFor(id);
+    }
+
+    function displayScheduleFor(id) {
+      const profileCard = document.getElementById('userProfileCard');
+      const monthSelectorContainer = document.getElementById('monthSelectorContainer');
+      const st = document.getElementById('syncStatusText');
+      const base = st.dataset.time ? 'Atualizado às ' + st.dataset.time : (allData === null ? 'Conectando...' : 'Modo Operacional');
+
+      if (!id) {
+        if (profileCard) profileCard.classList.add('hidden');
+        if (monthSelectorContainer) monthSelectorContainer.classList.add('hidden');
+        st.textContent = base;
+        renderLinks();
+
+        document.getElementById('viewList').innerHTML = `
+          <div class="bg-white rounded-2xl border border-slate-200/80 p-8 text-center shadow-xs">
+            <div class="w-12 h-12 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center mx-auto mb-3 text-xl">👆</div>
+            <h3 class="text-sm font-bold text-slate-800">Nenhum colaborador selecionado</h3>
+            <p class="text-xs text-slate-500 mt-1">Selecione seu nome na lista acima para visualizar sua escala.</p>
+          </div>
+        `;
+        document.getElementById('calDaysGrid').innerHTML = `
+          <div class="col-span-7 py-8 text-center text-xs text-slate-400">
+            Selecione um colaborador acima para visualizar o calendário mensal.
+          </div>
+        `;
+        return;
+      }
+
+      const collab = collaborators.find(c => c.id === id);
+      if (!collab) return;
+
+      if (profileCard) profileCard.classList.remove('hidden');
+
+      document.getElementById('userName').textContent = collab.name;
+      document.getElementById('userSectorText').textContent = collab.role;
+      document.getElementById('userMatricula').textContent = `Mat: ${collab.matricula}`;
+      document.getElementById('userAvatar').textContent = collab.name.charAt(0);
+
+      const isWhatyson = collab.name.toLowerCase().includes('whatyson');
+      const showForAll = isLastWeekOfMonth();
+
+      if (isWhatyson || showForAll) {
+        monthSelectorContainer.classList.remove('hidden');
+        renderMonthButtons();
+      } else {
+        monthSelectorContainer.classList.add('hidden');
+      }
+
+      renderLinks();
+
+      st.textContent = isWhatyson ? 'Aba "Backup Atualizado" · ' + base : base;
+
+      const schedule = scheduleData[id] || Array(monthDaysCount).fill('-');
+
+      let workCount = 0;
+      let offCount = 0;
+      let vacCount = 0, openCount = 0, closeCount = 0, paCount = 0, pfCount = 0;
+
+      schedule.forEach(shift => {
+        if (shift === 'FG' || shift === 'FF') offCount++;
+        else if (shift === 'FR') vacCount++;
+        else if (shift === 'AT' || shift === 'VG' || shift === '-') { }
+        else {
+          workCount++;
+          if (shift === 'A' || shift === 'A1' || shift === 'A2') openCount++;
+          else if (shift === 'F') closeCount++;
+          else if (shift === 'PA') paCount++;
+          else if (shift === 'PF') pfCount++;
+        }
+      });
+
+      document.getElementById('statWorkDays').textContent = workCount;
+      document.getElementById('statOffDays').textContent = offCount;
+      document.getElementById('statVacDays').textContent = vacCount;
+      document.getElementById('statOpen').textContent = openCount;
+      document.getElementById('statClose').textContent = closeCount;
+      document.getElementById('statPA').textContent = paCount;
+      document.getElementById('statPF').textContent = pfCount;
+
+      document.getElementById('statVacBox').classList.toggle('hidden', vacCount === 0);
+      document.getElementById('statPABox').classList.toggle('hidden', paCount === 0);
+      document.getElementById('statPFBox').classList.toggle('hidden', pfCount === 0);
+
+      renderListView(schedule);
+      renderCalendarView(schedule);
+    }
+
+    function renderListView(schedule) {
+      const container = document.getElementById('viewList');
+      const holidaysOfMonth = HOLIDAYS[currentMonth] || {};
+      const monthIndex = MONTH_INDEXES[currentMonth] ?? 9;
+      const today = new Date();
+      const isCurrentMonthReal = (today.getMonth() === monthIndex && today.getFullYear() === 2026);
+      const currentRealDay = isCurrentMonthReal ? today.getDate() : -1;
+
+      let html = '';
+
+      for (let day = 1; day <= monthDaysCount; day++) {
+        const dateObj = new Date(2026, monthIndex, day);
+        const dayOfWeekIndex = dateObj.getDay();
+        const isMonday = dayOfWeekIndex === 1;
+        const isFirstDay = day === 1;
+
+        if (isMonday || isFirstDay) {
+          const weekNum = getISOWeekNumber(dateObj);
+          html += `
+            <div class="pt-3 pb-1 flex items-center gap-2">
+              <span class="text-[11px] font-extrabold uppercase tracking-wider text-slate-500 bg-slate-200/80 px-2 py-0.5 rounded-md flex items-center gap-1.5">
+                Semana ${weekNum}
+              </span>
+              <div class="h-px bg-slate-200 flex-1"></div>
+            </div>
+          `;
+        }
+
+        const shiftCode = schedule[day - 1] || '-';
+        const style = (SHIFT_STYLES[shiftCode] || { ...SHIFT_STYLES['-'], label: shiftCode });
+        const holiday = holidaysOfMonth[day];
+        const isToday = (day === currentRealDay);
+
+        html += `
+          <div class="bg-white rounded-xl border ${isToday ? 'border-blue-500 ring-2 ring-blue-500/20 shadow-sm' : 'border-slate-200/80'} p-3 transition-all">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-3">
+                <div class="w-11 h-11 rounded-xl ${isToday ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-700'} flex flex-col items-center justify-center font-bold leading-none shadow-2xs">
+                  <span class="text-sm font-extrabold">${day}</span>
+                  <span class="text-[9px] uppercase tracking-wider opacity-80 mt-0.5">${WEEKDAYS_SHORT[dayOfWeekIndex]}</span>
+                </div>
+                ${isToday ? '<span class="px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 text-[10px] font-bold">Hoje</span>' : ''}
+              </div>
+
+              <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl border ${style.border} ${style.bg} ${style.text}">
+                <span class="text-base leading-none">${SHIFT_EMOJI[shiftCode] || '➖'}</span>
+                <span class="font-bold text-xs tracking-wide">${style.label}</span>
+              </div>
+            </div>
+
+            ${holiday ? `
+              <div class="mt-2.5 pt-2 border-t border-amber-200/80 flex items-center gap-2 text-amber-900 bg-amber-50/70 -mx-3 -mb-3 p-2.5 rounded-b-xl">
+                <div class="text-xs">
+                  <span class="font-bold">${holiday.name}</span>
+                  <span class="text-[10px] text-amber-700 block">${holiday.type}</span>
+                </div>
+              </div>
+            ` : ''}
+          </div>
+        `;
+      }
+
+      container.innerHTML = html;
+    }
+
+    function renderCalendarView(schedule) {
+      const grid = document.getElementById('calDaysGrid');
+      const monthIndex = MONTH_INDEXES[currentMonth] ?? 9;
+      const monthDisplayName = currentMonth.charAt(0) + currentMonth.slice(1).toLowerCase();
+      document.getElementById('calMonthTitle').textContent = `${monthDisplayName} 2026`;
+
+      const holidaysOfMonth = HOLIDAYS[currentMonth] || {};
+      const today = new Date();
+      const isCurrentMonthReal = (today.getMonth() === monthIndex && today.getFullYear() === 2026);
+      const currentRealDay = isCurrentMonthReal ? today.getDate() : -1;
+
+      const firstDayDate = new Date(2026, monthIndex, 1);
+      const firstDaySundayBased = firstDayDate.getDay();
+      const offset = (firstDaySundayBased + 6) % 7;
+
+      let html = '';
+
+      for (let i = 0; i < offset; i++) {
+        html += `<div class="min-h-[58px] sm:min-h-[68px] rounded-xl bg-slate-50/50 border border-transparent"></div>`;
+      }
+
+      for (let day = 1; day <= monthDaysCount; day++) {
+        const shiftCode = schedule[day - 1] || '-';
+        const style = (SHIFT_STYLES[shiftCode] || { ...SHIFT_STYLES['-'], label: shiftCode });
+        const holiday = holidaysOfMonth[day];
+        const isToday = (day === currentRealDay);
+
+        html += `
+          <div class="min-h-[58px] sm:min-h-[68px] rounded-xl border p-1 sm:p-1.5 flex flex-col justify-between transition-all ${
+            isToday ? 'border-blue-500 ring-2 ring-blue-500/30 bg-blue-50/30 font-bold' : 'border-slate-200/80 bg-white hover:border-slate-300'
+          }">
+            <div class="flex items-center justify-between">
+              <span class="text-[11px] sm:text-xs font-bold ${isToday ? 'text-blue-600' : 'text-slate-800'}">${day}</span>
+              ${isToday ? '<span class="w-1.5 h-1.5 rounded-full bg-blue-600 animate-ping"></span>' : ''}
+            </div>
+
+            ${holiday ? `
+              <div class="my-auto py-0.5 text-center">
+                <span class="inline-flex items-center gap-0.5 px-0.5 py-0.2 rounded bg-amber-100 text-amber-800 text-[6px] sm:text-[9px] font-bold leading-tight" title="${holiday.name}">
+                  <span class="truncate max-w-[40px] sm:max-w-none">Feriado</span>
+                </span>
+              </div>
+            ` : '<div class="flex-1"></div>'}
+
+            <div class="w-full">
+              <span class="w-full inline-flex items-center justify-center px-1 py-0.5 rounded-md text-[9px] sm:text-[10px] font-extrabold uppercase ${style.badge} shadow-2xs leading-none">
+                ${shiftCode}
+              </span>
+            </div>
+          </div>
+        `;
+      }
+
+      grid.innerHTML = html;
+    }
+
+    function switchView(view) {
+      currentView = view;
+      const btnList = document.getElementById('btnViewList');
+      const btnCal = document.getElementById('btnViewCal');
+      const viewList = document.getElementById('viewList');
+      const viewCal = document.getElementById('viewCalendar');
+      const shiftLegend = document.getElementById('shiftLegend');
+
+      if (view === 'list') {
+        btnList.className = 'px-2.5 sm:px-3 py-1.5 rounded-lg font-medium transition flex items-center gap-1 bg-white text-blue-900 shadow-sm';
+        btnCal.className = 'px-2.5 sm:px-3 py-1.5 rounded-lg font-medium transition flex items-center gap-1 text-white/80 hover:text-white';
+        viewList.classList.remove('hidden');
+        viewCal.classList.add('hidden');
+        if (shiftLegend) shiftLegend.classList.add('hidden');
+      } else {
+        btnCal.className = 'px-2.5 sm:px-3 py-1.5 rounded-lg font-medium transition flex items-center gap-1 bg-white text-blue-900 shadow-sm';
+        btnList.className = 'px-2.5 sm:px-3 py-1.5 rounded-lg font-medium transition flex items-center gap-1 text-white/80 hover:text-white';
+        viewCal.classList.remove('hidden');
+        viewList.classList.add('hidden');
+        if (shiftLegend) shiftLegend.classList.remove('hidden');
+      }
+    }
+
+    function changeCurrentMonth(month) {
+      currentMonth = month;
+      applyMonth();
+    }
+
+    const DEFAULT_LINKS = [
+      { title: 'Cálculo de horas trabalhadas', url: 'https://whatyson2.github.io/Gestao-de-Ponto-e-Interjornada/' },
+      { title: 'VTEX (Venda PLUS 📱)', url: 'https://decathlonstore.myvtex.com/assisted-sales/sales-app/sale' },
+      { title: 'Chapeira Digital', url: 'https://chapeira.decathlon.com.br/go-bretas' },
+      { title: 'NOVO l PLANNING 2026', url: 'https://docs.google.com/spreadsheets/d/1PhwTN8y8sCCy7uhzPbr7ihKgUi6TeN5YSWkqk9K6lgQ/edit?usp=sharing' }
+    ];
+
+    const ADMIN_SOURCE_LINK = {
+      title: 'Planilha Fonte (Google Sheets)',
+      url: `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/edit#gid=0`
+    };
+
+    function toggleMenu() {
+      const p = document.getElementById('menuPanel');
+      p.classList.toggle('hidden');
+      if (!p.classList.contains('hidden')) renderLinks();
+    }
+
+    function renderLinks() {
+      const box = document.getElementById('menuLinks');
+      const footerNote = document.getElementById('menuFooterNote');
+      box.innerHTML = '';
+
+      const activeCollab = collaborators.find(c => c.id === currentCollaboratorId);
+      const isWhatyson = activeCollab && activeCollab.name.toLowerCase().includes('whatyson');
+
+      const linksToShow = [...DEFAULT_LINKS];
+      if (isWhatyson) {
+        linksToShow.push(ADMIN_SOURCE_LINK);
+      }
+
+      linksToShow.forEach(l => {
+        const a = document.createElement('a');
+        a.href = l.url;
+        a.target = '_blank';
+        a.rel = 'noopener noreferrer';
+        a.className = 'block truncate px-3 py-2 rounded-xl bg-slate-50 hover:bg-slate-100 text-blue-700 font-medium text-xs border border-slate-200/60 transition';
+        a.textContent = '🔗 ' + l.title;
+        box.appendChild(a);
+      });
+
+      if (footerNote) {
+        footerNote.classList.toggle('hidden', !isWhatyson);
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      fetchLiveScheduleData();
+      setInterval(fetchLiveScheduleData, REFRESH_MS);
+    });
+  </script>
+</body>
+</html>
