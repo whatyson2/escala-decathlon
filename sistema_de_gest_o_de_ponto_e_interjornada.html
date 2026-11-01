@@ -1,0 +1,1093 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gestão de Ponto e Interjornada (CLT) | 100% Offline</title>
+  <style>
+    :root {
+      --bg: #f1f5f9;
+      --card-bg: #ffffff;
+      --text: #0f172a;
+      --text-muted: #64748b;
+      --border: #e2e8f0;
+      --input-bg: #f8fafc;
+      --primary: #0284c7;
+      --primary-hover: #0369a1;
+      --primary-subtle: #e0f2fe;
+      --primary-text: #0369a1;
+      --success: #059669;
+      --success-bg: #ecfdf5;
+      --success-border: #a7f3d0;
+      --danger: #dc2626;
+      --danger-bg: #fef2f2;
+      --danger-border: #fecaca;
+      --gradient-shift: linear-gradient(135deg, #0284c7, #0369a1, #0f766e);
+      --gradient-inter: linear-gradient(135deg, #4f46e5, #4338ca, #312e81);
+      --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.08);
+      --shadow-md: 0 10px 25px -5px rgba(0, 0, 0, 0.08), 0 8px 10px -6px rgba(0, 0, 0, 0.04);
+      --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+      --font-system: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #090d16;
+        --card-bg: #111827;
+        --text: #f8fafc;
+        --text-muted: #94a3b8;
+        --border: #1e293b;
+        --input-bg: #1a2234;
+        --primary-subtle: rgba(14, 165, 233, 0.15);
+        --primary-text: #7dd3fc;
+        --success-bg: rgba(16, 185, 129, 0.15);
+        --success-border: rgba(16, 185, 129, 0.3);
+        --danger-bg: rgba(239, 68, 68, 0.15);
+        --danger-border: rgba(239, 68, 68, 0.3);
+        --shadow-md: 0 10px 25px -5px rgba(0, 0, 0, 0.4);
+      }
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: var(--font-system);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 1.5rem 1rem 3rem 1rem;
+    }
+
+    .app-wrapper {
+      width: 100%;
+      max-width: 520px;
+    }
+
+    /* Top Navigation & Status */
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1rem;
+    }
+
+    .brand-title {
+      font-size: 1.1rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .offline-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      background: var(--success-bg);
+      color: var(--success);
+      border: 1px solid var(--success-border);
+      font-size: 0.68rem;
+      font-weight: 700;
+      padding: 0.2rem 0.55rem;
+      border-radius: 9999px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .pulse-dot {
+      width: 6px;
+      height: 6px;
+      background-color: var(--success);
+      border-radius: 50%;
+    }
+
+    .live-clock {
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      padding: 0.35rem 0.65rem;
+      border-radius: 0.5rem;
+    }
+
+    /* Main Section Tabs */
+    .nav-tabs {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      background: var(--card-bg);
+      padding: 0.35rem;
+      border-radius: 1rem;
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow-sm);
+      margin-bottom: 1.25rem;
+      gap: 0.35rem;
+    }
+
+    .nav-tab-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.45rem;
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      font-family: inherit;
+      font-size: 0.85rem;
+      font-weight: 700;
+      padding: 0.75rem 0.6rem;
+      border-radius: 0.75rem;
+      cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .nav-tab-btn.active {
+      background: var(--primary);
+      color: #ffffff;
+      box-shadow: 0 4px 12px rgba(2, 132, 199, 0.3);
+    }
+
+    .nav-tab-btn[data-section="inter"].active {
+      background: var(--gradient-inter);
+      box-shadow: 0 4px 12px rgba(79, 70, 229, 0.35);
+    }
+
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 1.25rem;
+      padding: 1.5rem;
+      box-shadow: var(--shadow-md);
+      transition: all 0.2s ease;
+    }
+
+    /* Secondary Switcher (Inside shift calculator) */
+    .sub-tabs {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      background: var(--input-bg);
+      padding: 0.25rem;
+      border-radius: 0.75rem;
+      margin-bottom: 1.25rem;
+      gap: 0.25rem;
+    }
+
+    .sub-tab-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      font-family: inherit;
+      font-size: 0.8rem;
+      font-weight: 700;
+      padding: 0.5rem;
+      border-radius: 0.55rem;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .sub-tab-btn.active {
+      background: var(--card-bg);
+      color: var(--primary);
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+    }
+
+    /* Forms */
+    .form-group {
+      margin-bottom: 1.15rem;
+    }
+
+    label {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      margin-bottom: 0.4rem;
+    }
+
+    .badge-sub {
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      color: var(--primary-text);
+      background: var(--primary-subtle);
+      padding: 0.15rem 0.45rem;
+      border-radius: 0.35rem;
+      font-weight: 700;
+    }
+
+    input[type="time"],
+    input[type="number"] {
+      width: 100%;
+      background: var(--input-bg);
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-family: var(--font-mono);
+      font-size: 1.15rem;
+      font-weight: 700;
+      padding: 0.7rem 0.85rem;
+      border-radius: 0.75rem;
+      outline: none;
+      transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    input[type="time"]:focus,
+    input[type="number"]:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.18);
+    }
+
+    .preset-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 0.4rem;
+      margin-top: 0.45rem;
+      margin-bottom: 0.55rem;
+    }
+
+    .preset-btn {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 0.5rem 0.2rem;
+      border-radius: 0.5rem;
+      font-size: 0.78rem;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: inherit;
+      transition: all 0.15s ease;
+    }
+
+    .preset-btn:hover {
+      border-color: var(--primary);
+    }
+
+    .preset-btn.active {
+      background: var(--primary-subtle);
+      color: var(--primary-text);
+      border-color: var(--primary);
+    }
+
+    .two-cols {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.75rem;
+    }
+
+    .info-summary-box {
+      font-size: 0.78rem;
+      padding: 0.65rem 0.8rem;
+      background: var(--input-bg);
+      border: 1px solid var(--border);
+      border-radius: 0.65rem;
+      color: var(--text-muted);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 0.4rem;
+    }
+
+    .info-summary-box strong {
+      color: var(--primary-text);
+      font-family: var(--font-mono);
+    }
+
+    /* Result Banner */
+    .result-banner {
+      background: var(--gradient-shift);
+      color: #ffffff;
+      border-radius: 1rem;
+      padding: 1.5rem 1rem;
+      text-align: center;
+      margin-top: 1.35rem;
+      box-shadow: 0 10px 20px -5px rgba(2, 132, 199, 0.35);
+    }
+
+    .result-banner.inter-theme {
+      background: var(--gradient-inter);
+      box-shadow: 0 10px 20px -5px rgba(79, 70, 229, 0.35);
+    }
+
+    .result-pill {
+      display: inline-block;
+      font-size: 0.7rem;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      background: rgba(255, 255, 255, 0.2);
+      padding: 0.25rem 0.7rem;
+      border-radius: 9999px;
+      margin-bottom: 0.35rem;
+    }
+
+    .result-number {
+      font-family: var(--font-mono);
+      font-size: 3.5rem;
+      font-weight: 800;
+      line-height: 1;
+      letter-spacing: -0.03em;
+      margin: 0.3rem 0;
+    }
+
+    .result-desc {
+      font-size: 0.82rem;
+      opacity: 0.92;
+    }
+
+    .copy-btn {
+      margin-top: 1rem;
+      background: rgba(255, 255, 255, 0.22);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      color: #ffffff;
+      font-weight: 700;
+      font-size: 0.8rem;
+      padding: 0.55rem 1.1rem;
+      border-radius: 0.6rem;
+      cursor: pointer;
+      font-family: inherit;
+      transition: background 0.15s ease;
+    }
+
+    .copy-btn:hover {
+      background: rgba(255, 255, 255, 0.35);
+    }
+
+    /* Grid indicators */
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0.5rem;
+      margin-top: 1rem;
+      text-align: center;
+    }
+
+    .metrics-cell {
+      background: var(--input-bg);
+      border-radius: 0.75rem;
+      padding: 0.65rem 0.35rem;
+      border: 1px solid var(--border);
+    }
+
+    .metrics-cell .title {
+      display: block;
+      font-size: 0.65rem;
+      color: var(--text-muted);
+      font-weight: 700;
+      margin-bottom: 0.15rem;
+    }
+
+    .metrics-cell .val {
+      font-family: var(--font-mono);
+      font-size: 0.95rem;
+      font-weight: 800;
+      color: var(--text);
+    }
+
+    /* Shift progress */
+    .progress-box {
+      background: var(--input-bg);
+      border: 1px solid var(--border);
+      border-radius: 0.85rem;
+      padding: 0.85rem;
+      margin-top: 1rem;
+    }
+
+    .progress-top {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.75rem;
+      font-weight: 700;
+      margin-bottom: 0.4rem;
+    }
+
+    .progress-track {
+      width: 100%;
+      height: 8px;
+      background: var(--border);
+      border-radius: 9999px;
+      overflow: hidden;
+    }
+
+    .progress-bar-inner {
+      width: 0%;
+      height: 100%;
+      background: var(--primary);
+      border-radius: 9999px;
+      transition: width 0.3s ease;
+    }
+
+    .progress-bottom {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      margin-top: 0.45rem;
+    }
+
+    /* --- Dedicated Interjornada Styles --- */
+    .inter-hero-card {
+      background: linear-gradient(to right, #4338ca, #3730a3);
+      color: #ffffff;
+      border-radius: 1rem;
+      padding: 1.25rem 1rem;
+      text-align: center;
+      margin-bottom: 1.25rem;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .inter-hero-card .tag {
+      font-size: 0.68rem;
+      text-transform: uppercase;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      background: rgba(255, 255, 255, 0.18);
+      padding: 0.2rem 0.6rem;
+      border-radius: 9999px;
+      display: inline-block;
+      margin-bottom: 0.35rem;
+    }
+
+    .inter-hero-card .time-target {
+      font-family: var(--font-mono);
+      font-size: 3rem;
+      font-weight: 800;
+      line-height: 1.1;
+    }
+
+    .inter-hero-card .subtext {
+      font-size: 0.8rem;
+      opacity: 0.9;
+      margin-top: 0.25rem;
+    }
+
+    .compliance-alert {
+      padding: 1rem;
+      border-radius: 0.85rem;
+      margin-top: 1.15rem;
+      display: flex;
+      gap: 0.75rem;
+      align-items: flex-start;
+      border: 1px solid transparent;
+      transition: all 0.2s ease;
+    }
+
+    .compliance-alert.valid {
+      background: var(--success-bg);
+      border-color: var(--success-border);
+      color: #065f46;
+    }
+
+    .compliance-alert.invalid {
+      background: var(--danger-bg);
+      border-color: var(--danger-border);
+      color: #991b1b;
+    }
+
+    .compliance-icon {
+      font-size: 1.3rem;
+      line-height: 1;
+    }
+
+    .compliance-title {
+      font-size: 0.85rem;
+      font-weight: 800;
+      margin-bottom: 0.25rem;
+    }
+
+    .compliance-desc {
+      font-size: 0.78rem;
+      line-height: 1.4;
+    }
+
+    .compliance-desc strong {
+      font-family: var(--font-mono);
+      text-decoration: underline;
+    }
+
+    .btn-sync-time {
+      width: 100%;
+      margin-top: 0.85rem;
+      background: var(--input-bg);
+      border: 1px dashed var(--primary);
+      color: var(--primary);
+      font-family: inherit;
+      font-size: 0.78rem;
+      font-weight: 700;
+      padding: 0.65rem;
+      border-radius: 0.65rem;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .btn-sync-time:hover {
+      background: var(--primary-subtle);
+    }
+
+    .law-accordion {
+      margin-top: 1.25rem;
+      background: var(--input-bg);
+      border: 1px solid var(--border);
+      border-radius: 0.75rem;
+      padding: 0.85rem;
+      font-size: 0.76rem;
+      color: var(--text-muted);
+      line-height: 1.45;
+    }
+
+    .law-accordion strong {
+      color: var(--text);
+      display: block;
+      margin-bottom: 0.35rem;
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 1.5rem;
+      background: #1e293b;
+      color: #ffffff;
+      font-size: 0.8rem;
+      padding: 0.6rem 1.2rem;
+      border-radius: 9999px;
+      font-weight: 700;
+      display: none;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      z-index: 50;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    footer {
+      margin-top: 1.5rem;
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <div class="app-wrapper">
+    <!-- Header -->
+    <header>
+      <div class="brand-title">
+        Controle de Ponto
+        <span class="offline-chip">
+          <span class="pulse-dot"></span> 100% Offline
+        </span>
+      </div>
+      <div class="live-clock" id="live-clock">--:--:--</div>
+    </header>
+
+    <!-- Main Section Tabs -->
+    <nav class="nav-tabs">
+      <button type="button" class="nav-tab-btn active" data-section="shift" id="nav-btn-shift">
+        <span>⏱️</span> Calculadora (8h48)
+      </button>
+      <button type="button" class="nav-tab-btn" data-section="inter" id="nav-btn-inter">
+        <span>🛡️</span> Módulo Interjornada
+      </button>
+    </nav>
+
+    <!-- ============================================== -->
+    <!-- SEÇÃO 1: CALCULADORA DE SAÍDA (JORNADA 8h48)   -->
+    <!-- ============================================== -->
+    <main class="card" id="section-shift">
+      <!-- Sub-tabs do cálculo de jornada -->
+      <div class="sub-tabs">
+        <button type="button" class="sub-tab-btn active" id="subtab-simple">Entrada + Intervalo</button>
+        <button type="button" class="sub-tab-btn" id="subtab-punches">4 Batidas (Ponto)</button>
+      </div>
+
+      <!-- Modo Simples -->
+      <div id="mode-simple-container">
+        <div class="form-group">
+          <label for="shift-entry-time">
+            Horário de Entrada
+            <span class="badge-sub">1ª Batida</span>
+          </label>
+          <input type="time" id="shift-entry-time" value="08:00">
+        </div>
+
+        <div class="form-group">
+          <label>
+            Tempo de Intervalo / Almoço
+            <span class="badge-sub" id="shift-interval-badge">60 min (1h00)</span>
+          </label>
+
+          <div class="preset-grid">
+            <button type="button" class="preset-btn active" data-lunch="60">1h00</button>
+            <button type="button" class="preset-btn" data-lunch="75">1h15</button>
+            <button type="button" class="preset-btn" data-lunch="90">1h30</button>
+            <button type="button" class="preset-btn" data-lunch="120">2h00</button>
+          </div>
+
+          <input type="number" id="shift-lunch-minutes" min="0" max="360" value="60">
+        </div>
+      </div>
+
+      <!-- Modo 4 Batidas -->
+      <div id="mode-punches-container" class="hidden">
+        <div class="form-group">
+          <label for="punch-in-morning">1ª Batida: Entrada Manhã</label>
+          <input type="time" id="punch-in-morning" value="08:00">
+        </div>
+
+        <div class="two-cols">
+          <div class="form-group">
+            <label for="punch-out-lunch">2ª: Saída Almoço</label>
+            <input type="time" id="punch-out-lunch" value="12:00">
+          </div>
+          <div class="form-group">
+            <label for="punch-in-afternoon">3ª: Retorno Almoço</label>
+            <input type="time" id="punch-in-afternoon" value="13:00">
+          </div>
+        </div>
+
+        <div class="info-summary-box">
+          <span>Tempo de almoço apurado:</span>
+          <strong id="lunch-calculated-label">1h 00m (60 min)</strong>
+        </div>
+      </div>
+
+      <!-- Card Resultado da Saída -->
+      <div class="result-banner">
+        <span class="result-pill">Horário Previsto de Saída</span>
+        <div class="result-number" id="final-exit-time">17:48</div>
+        <div class="result-desc" id="final-exit-desc">8h48 trabalhadas + 1h00 de intervalo</div>
+        <button type="button" class="copy-btn" id="btn-copy-exit">Copiar Horário de Saída</button>
+      </div>
+
+      <!-- Métricas Resumo -->
+      <div class="metrics-grid">
+        <div class="metrics-cell">
+          <span class="title">Jornada Líquida</span>
+          <span class="val">08:48</span>
+        </div>
+        <div class="metrics-cell">
+          <span class="title">Intervalo</span>
+          <span class="val" id="metric-interval">01:00</span>
+        </div>
+        <div class="metrics-cell">
+          <span class="title">Permanência</span>
+          <span class="val" id="metric-presence">09:48</span>
+        </div>
+      </div>
+
+      <!-- Barra de Acompanhamento em Tempo Real -->
+      <div class="progress-box">
+        <div class="progress-top">
+          <span>Progresso do Turno de Hoje</span>
+          <span id="shift-progress-pct" style="color: var(--primary);">0%</span>
+        </div>
+        <div class="progress-track">
+          <div class="progress-bar-inner" id="shift-progress-bar"></div>
+        </div>
+        <div class="progress-bottom">
+          <span id="shift-time-elapsed">Decorrido: --</span>
+          <span id="shift-time-remaining">Falta: --</span>
+        </div>
+      </div>
+    </main>
+
+    <!-- ======================================================= -->
+    <!-- SEÇÃO 2: MÓDULO EXCLUSIVO DE INTERJORNADA (ART. 66 CLT) -->
+    <!-- ======================================================= -->
+    <main class="card hidden" id="section-inter">
+      <!-- Destaque do Horário Mínimo Exigido -->
+      <div class="inter-hero-card">
+        <span class="tag">Descanso Mínimo Legal (11 Horas)</span>
+        <div class="time-target" id="inter-minimum-return">05:00</div>
+        <div class="subtext">Horário mais cedo permitido para bater a 1ª batida hoje</div>
+      </div>
+
+      <!-- Campos de Configuração e Simulação -->
+      <div class="form-group">
+        <label for="inter-prev-exit">
+          Horário de Saída do Dia Anterior
+          <span class="badge-sub">Última Batida</span>
+        </label>
+        <input type="time" id="inter-prev-exit" value="18:00">
+      </div>
+
+      <div class="form-group">
+        <label for="inter-current-entry">
+          Horário Pretendido / Previsto de Entrada Hoje
+          <span class="badge-sub">Simulação</span>
+        </label>
+        <input type="time" id="inter-current-entry" value="08:00">
+      </div>
+
+      <!-- Alerta Dinâmico de Conformidade -->
+      <div class="compliance-alert valid" id="compliance-alert-box">
+        <div class="compliance-icon" id="compliance-icon">✓</div>
+        <div>
+          <div class="compliance-title" id="compliance-title">Interjornada em Conformidade</div>
+          <div class="compliance-desc" id="compliance-description">
+            O colaborador descansará <strong>14h00</strong>. Atende plenamente o mínimo legal de 11h.
+          </div>
+        </div>
+      </div>
+
+      <button type="button" class="btn-sync-time" id="btn-sync-to-shift">
+        Transferir este horário de entrada para a Calculadora de Jornada
+      </button>
+
+      <!-- Guia Informativo CLT -->
+      <div class="law-accordion">
+        <strong>Base Legal: Art. 66 da CLT</strong>
+        Entre duas jornadas de trabalho haverá um período mínimo de 11 (onze) horas consecutivas para descanso. A não concessão total ou parcial desse intervalo acarreta o pagamento do período suprimido com acréscimo de no mínimo 50% sobre o valor da remuneração da hora normal (Súmula 110 do TST / Art. 71 § 4º da CLT).
+      </div>
+    </main>
+
+    <footer>
+      Sistema Autônomo • 100% Offline • Sem envio de dados externos
+    </footer>
+  </div>
+
+  <div class="toast" id="toast-message">Horário copiado para a área de transferência!</div>
+  <script>
+    /* ===================================================
+       ESTADO E CONSTANTES
+       =================================================== */
+    // 8 horas e 48 minutos líquidos = 528 minutos
+    const SHIFT_WORK_MINUTES = 528;
+    // 11 horas de descanso interjornada = 660 minutos
+    const INTERJORNADA_MINUTES = 660;
+
+    let activeSection = 'shift';
+    let shiftCalculationMode = 'simple';
+
+    /* Elementos de Navegação Principal */
+    const navBtnShift = document.getElementById('nav-btn-shift');
+    const navBtnInter = document.getElementById('nav-btn-inter');
+    const sectionShift = document.getElementById('section-shift');
+    const sectionInter = document.getElementById('section-inter');
+
+    /* Elementos da Seção 1 (Jornada 8h48) */
+    const subtabSimple = document.getElementById('subtab-simple');
+    const subtabPunches = document.getElementById('subtab-punches');
+    const modeSimpleContainer = document.getElementById('mode-simple-container');
+    const modePunchesContainer = document.getElementById('mode-punches-container');
+
+    const shiftEntryTime = document.getElementById('shift-entry-time');
+    const shiftLunchMinutes = document.getElementById('shift-lunch-minutes');
+    const shiftIntervalBadge = document.getElementById('shift-interval-badge');
+    const presetButtons = document.querySelectorAll('.preset-btn');
+
+    const punchInMorning = document.getElementById('punch-in-morning');
+    const punchOutLunch = document.getElementById('punch-out-lunch');
+    const punchInAfternoon = document.getElementById('punch-in-afternoon');
+    const lunchCalculatedLabel = document.getElementById('lunch-calculated-label');
+
+    const finalExitTime = document.getElementById('final-exit-time');
+    const finalExitDesc = document.getElementById('final-exit-desc');
+    const metricInterval = document.getElementById('metric-interval');
+    const metricPresence = document.getElementById('metric-presence');
+    const btnCopyExit = document.getElementById('btn-copy-exit');
+
+    const shiftProgressBar = document.getElementById('shift-progress-bar');
+    const shiftProgressPct = document.getElementById('shift-progress-pct');
+    const shiftTimeElapsed = document.getElementById('shift-time-elapsed');
+    const shiftTimeRemaining = document.getElementById('shift-time-remaining');
+
+    /* Elementos da Seção 2 (Interjornada) */
+    const interMinimumReturn = document.getElementById('inter-minimum-return');
+    const interPrevExit = document.getElementById('inter-prev-exit');
+    const interCurrentEntry = document.getElementById('inter-current-entry');
+    const complianceAlertBox = document.getElementById('compliance-alert-box');
+    const complianceIcon = document.getElementById('compliance-icon');
+    const complianceTitle = document.getElementById('compliance-title');
+    const complianceDescription = document.getElementById('compliance-description');
+    const btnSyncToShift = document.getElementById('btn-sync-to-shift');
+
+    /* UI Complementar */
+    const liveClock = document.getElementById('live-clock');
+    const toastMessage = document.getElementById('toast-message');
+
+    let globalCalculatedExitMinutes = 0;
+    let globalCalculatedEntryMinutes = 0;
+
+    /* ===================================================
+       UTILITÁRIOS DE HORA / MINUTOS
+       =================================================== */
+    function parseTimeToMinutes(timeStr) {
+      if (!timeStr) return 0;
+      const [h, m] = timeStr.split(':').map(Number);
+      return (h * 60) + m;
+    }
+
+    function formatMinutesToTime(totalMin) {
+      const normalized = ((totalMin % 1440) + 1440) % 1440;
+      const h = String(Math.floor(normalized / 60)).padStart(2, '0');
+      const m = String(normalized % 60).padStart(2, '0');
+      return `${h}:${m}`;
+    }
+
+    function formatDuration(minutes) {
+      const h = Math.floor(minutes / 60);
+      const m = minutes % 60;
+      return `${h}h${String(m).padStart(2, '0')}`;
+    }
+
+    /* ===================================================
+       LÓGICA SEÇÃO 1: JORNADA 8h48
+       =================================================== */
+    function recalculateShift() {
+      let intervalMinutes = 0;
+
+      if (shiftCalculationMode === 'simple') {
+        const entryStr = shiftEntryTime.value || '08:00';
+        globalCalculatedEntryMinutes = parseTimeToMinutes(entryStr);
+        intervalMinutes = Math.max(0, parseInt(shiftLunchMinutes.value, 10) || 0);
+
+        shiftIntervalBadge.textContent = `${intervalMinutes} min (${formatDuration(intervalMinutes)})`;
+        finalExitDesc.textContent = `Entrada às ${entryStr} + 8h48 de trabalho + ${intervalMinutes}m de intervalo`;
+      } else {
+        const p1Str = punchInMorning.value || '08:00';
+        const p2Str = punchOutLunch.value || '12:00';
+        const p3Str = punchInAfternoon.value || '13:00';
+
+        globalCalculatedEntryMinutes = parseTimeToMinutes(p1Str);
+        const p2Minutes = parseTimeToMinutes(p2Str);
+        const p3Minutes = parseTimeToMinutes(p3Str);
+
+        let lunchDuration = p3Minutes - p2Minutes;
+        if (lunchDuration < 0) lunchDuration += 1440; // Cruzamento de meia-noite
+        intervalMinutes = Math.max(0, lunchDuration);
+
+        lunchCalculatedLabel.textContent = `${formatDuration(intervalMinutes)} (${intervalMinutes} min)`;
+        finalExitDesc.textContent = `Entrada às ${p1Str} + 8h48 de trabalho + ${intervalMinutes}m de almoço apurado`;
+      }
+
+      globalCalculatedExitMinutes = globalCalculatedEntryMinutes + intervalMinutes + SHIFT_WORK_MINUTES;
+      finalExitTime.textContent = formatMinutesToTime(globalCalculatedExitMinutes);
+
+      // Atualiza blocos de resumo
+      metricInterval.textContent = formatMinutesToTime(intervalMinutes);
+      const totalPresence = intervalMinutes + SHIFT_WORK_MINUTES;
+      metricPresence.textContent = formatMinutesToTime(totalPresence);
+
+      updateShiftProgress();
+    }
+
+    function updateShiftProgress() {
+      const now = new Date();
+      const currentMinutes = (now.getHours() * 60) + now.getMinutes() + (now.getSeconds() / 60);
+
+      const totalPresencePeriod = globalCalculatedExitMinutes - globalCalculatedEntryMinutes;
+      if (totalPresencePeriod <= 0) return;
+
+      const elapsed = currentMinutes - globalCalculatedEntryMinutes;
+      const remaining = globalCalculatedExitMinutes - currentMinutes;
+
+      if (currentMinutes < globalCalculatedEntryMinutes) {
+        shiftProgressBar.style.width = '0%';
+        shiftProgressPct.textContent = '0%';
+        shiftTimeElapsed.textContent = 'Turno não iniciado';
+        shiftTimeRemaining.textContent = `Início previsto: ${formatMinutesToTime(globalCalculatedEntryMinutes)}`;
+      } else if (currentMinutes >= globalCalculatedExitMinutes) {
+        shiftProgressBar.style.width = '100%';
+        shiftProgressPct.textContent = '100%';
+        shiftTimeElapsed.textContent = 'Jornada cumprida!';
+        shiftTimeRemaining.textContent = '0 min restantes';
+      } else {
+        const pct = Math.min(100, Math.max(0, (elapsed / totalPresencePeriod) * 100));
+        shiftProgressBar.style.width = `${pct.toFixed(1)}%`;
+        shiftProgressPct.textContent = `${Math.floor(pct)}%`;
+
+        const elapH = Math.floor(elapsed / 60);
+        const elapM = Math.floor(elapsed % 60);
+        const remH = Math.floor(remaining / 60);
+        const remM = Math.floor(remaining % 60);
+
+        shiftTimeElapsed.textContent = `Decorrido: ${elapH}h ${String(elapM).padStart(2, '0')}m`;
+        shiftTimeRemaining.textContent = `Faltam: ${remH}h ${String(remM).padStart(2, '0')}m`;
+      }
+    }
+
+    /* ===================================================
+       LÓGICA SEÇÃO 2: INTERJORNADA (11 HORAS CLT)
+       =================================================== */
+    function recalculateInterjornada() {
+      const prevExitVal = interPrevExit.value || '18:00';
+      const plannedEntryVal = interCurrentEntry.value || '08:00';
+
+      const prevExitMinutes = parseTimeToMinutes(prevExitVal);
+      const plannedEntryMinutes = parseTimeToMinutes(plannedEntryVal);
+
+      // Horário mais cedo permitido = Saída anterior + 11 horas (660 min)
+      const minAllowedMinutes = (prevExitMinutes + INTERJORNADA_MINUTES) % 1440;
+      const minAllowedFormatted = formatMinutesToTime(minAllowedMinutes);
+      interMinimumReturn.textContent = minAllowedFormatted;
+
+      // Calcular descanso realizado entre a saída de ontem e a entrada simulada
+      let restMinutes = plannedEntryMinutes - prevExitMinutes;
+      if (restMinutes <= 0) {
+        restMinutes += 1440; // Cruzamento de dia / meia-noite
+      }
+
+      const restH = Math.floor(restMinutes / 60);
+      const restM = restMinutes % 60;
+      const restFormatted = `${restH}h${String(restM).padStart(2, '0')}`;
+
+      if (restMinutes >= INTERJORNADA_MINUTES) {
+        complianceAlertBox.className = 'compliance-alert valid';
+        complianceIcon.textContent = '✓';
+        complianceTitle.textContent = 'Interjornada em Plena Conformidade';
+        complianceDescription.innerHTML = `O colaborador terá <strong>${restFormatted}</strong> ininterruptas de descanso. Atende com folga as 11 horas exigidas pelo Art. 66 da CLT.`;
+      } else {
+        const missingMinutes = INTERJORNADA_MINUTES - restMinutes;
+        const missH = Math.floor(missingMinutes / 60);
+        const missM = missingMinutes % 60;
+        const missFormatted = missH > 0 ? `${missH}h ${missM}min` : `${missM} minutos`;
+
+        complianceAlertBox.className = 'compliance-alert invalid';
+        complianceIcon.textContent = '⚠️';
+        complianceTitle.textContent = 'Violação do Intervalo Interjornada (Art. 66 CLT)';
+        complianceDescription.innerHTML = `Descanso de apenas <strong>${restFormatted}</strong>. Faltam <strong>${missFormatted}</strong> para completar as 11 horas legais. Bater ponto antes de ${minAllowedFormatted} gera passivo trabalhista.`;
+      }
+    }
+
+    /* ===================================================
+       EVENT LISTENERS E NAVEGAÇÃO
+       =================================================== */
+    // Alternar Seções Principais
+    navBtnShift.addEventListener('click', () => {
+      activeSection = 'shift';
+      navBtnShift.classList.add('active');
+      navBtnInter.classList.remove('active');
+      sectionShift.classList.remove('hidden');
+      sectionInter.classList.add('hidden');
+    });
+
+    navBtnInter.addEventListener('click', () => {
+      activeSection = 'inter';
+      navBtnInter.classList.add('active');
+      navBtnShift.classList.remove('active');
+      sectionInter.classList.remove('hidden');
+      sectionShift.classList.add('hidden');
+      recalculateInterjornada();
+    });
+
+    // Alternar submodo de jornada
+    subtabSimple.addEventListener('click', () => {
+      shiftCalculationMode = 'simple';
+      subtabSimple.classList.add('active');
+      subtabPunches.classList.remove('active');
+      modeSimpleContainer.classList.remove('hidden');
+      modePunchesContainer.classList.add('hidden');
+      recalculateShift();
+    });
+
+    subtabPunches.addEventListener('click', () => {
+      shiftCalculationMode = 'punches';
+      subtabPunches.classList.add('active');
+      subtabSimple.classList.remove('active');
+      modePunchesContainer.classList.remove('hidden');
+      modeSimpleContainer.classList.add('hidden');
+      recalculateShift();
+    });
+
+    // Atalhos de tempo de intervalo
+    presetButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        presetButtons.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        shiftLunchMinutes.value = btn.dataset.lunch;
+        recalculateShift();
+      });
+    });
+
+    // Inputs de jornada
+    [shiftEntryTime, shiftLunchMinutes, punchInMorning, punchOutLunch, punchInAfternoon].forEach(el => {
+      el.addEventListener('input', () => {
+        if (el === shiftLunchMinutes) {
+          presetButtons.forEach(b => {
+            b.classList.toggle('active', b.dataset.lunch === el.value);
+          });
+        }
+        recalculateShift();
+      });
+    });
+
+    // Inputs de interjornada
+    [interPrevExit, interCurrentEntry].forEach(el => {
+      el.addEventListener('input', recalculateInterjornada);
+    });
+
+    // Sincronizar entrada da simulação para a calculadora de jornada
+    btnSyncToShift.addEventListener('click', () => {
+      const entryVal = interCurrentEntry.value;
+      shiftEntryTime.value = entryVal;
+      punchInMorning.value = entryVal;
+      recalculateShift();
+
+      // Navegar para a aba de jornada
+      navBtnShift.click();
+
+      showToast(`Entrada definida para ${entryVal} na Calculadora de Jornada!`);
+    });
+
+    // Copiar horário de saída
+    btnCopyExit.addEventListener('click', () => {
+      const textToCopy = finalExitTime.textContent;
+      const copyWithFallback = (text) => {
+        const textarea = document.createElement('textarea');
+        textarea.value = text;
+        textarea.style.position = 'fixed';
+        textarea.style.opacity = '0';
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textarea);
+      };
+
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(textToCopy).catch(() => copyWithFallback(textToCopy));
+      } else {
+        copyWithFallback(textToCopy);
+      }
+
+      showToast(`Horário de saída (${textToCopy}) copiado!`);
+    });
+
+    function showToast(msg) {
+      toastMessage.textContent = msg;
+      toastMessage.style.display = 'block';
+      setTimeout(() => {
+        toastMessage.style.display = 'none';
+      }, 2400);
+    }
+
+    // Relógio em tempo real
+    function updateLiveClock() {
+      const now = new Date();
+      const h = String(now.getHours()).padStart(2, '0');
+      const m = String(now.getMinutes()).padStart(2, '0');
+      const s = String(now.getSeconds()).padStart(2, '0');
+      liveClock.textContent = `${h}:${m}:${s}`;
+      updateShiftProgress();
+    }
+
+    /* Inicialização */
+    recalculateShift();
+    recalculateInterjornada();
+    updateLiveClock();
+    setInterval(updateLiveClock, 1000);
+  </script>
+</body>
+</html>
