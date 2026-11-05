@@ -67,16 +67,22 @@
   <!-- Menu Flutuante -->
   <div id="menuPanel" class="hidden fixed right-3 z-40 w-72 max-w-[calc(100vw-1.5rem)] bg-white rounded-2xl shadow-2xl border border-slate-200 p-4 text-sm" style="top: calc(env(safe-area-inset-top, 0px) + 3.8rem);">
     <div class="flex items-center justify-between pb-2 mb-2 border-b border-slate-100">
-      <p class="text-xs font-bold uppercase tracking-wider text-slate-500">Links</p>
+      <p class="text-xs font-bold uppercase tracking-wider text-slate-500">Links Úteis</p>
       <button onclick="toggleMenu()" class="text-slate-400 hover:text-slate-600 text-sm">✕</button>
     </div>
-    <div id="menuLinks" class="space-y-2"></div>
+    
+    <!-- Bloco 1 de Links -->
+    <div id="menuLinksGroup1" class="space-y-2"></div>
+
+    <div class="my-2 border-t border-slate-100 pt-2">
+      <p class="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1.5">Outros Links</p>
+      <!-- Bloco 2 de Links -->
+      <div id="menuLinksGroup2" class="space-y-2"></div>
+    </div>
+
     <div class="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between">
-      <button onclick="openAuditModal()" class="flex-1 py-2 px-3 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold text-xs border border-indigo-200 transition flex items-center justify-center gap-2 mr-1">
-        <i class="fa-solid fa-shield-halved"></i> <span>Auditoria</span>
-      </button>
-      <button id="authActionButton" onclick="openAuthModal()" class="py-2 px-3 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-700 font-bold text-xs border border-blue-200 transition flex items-center justify-center gap-1">
-        <i class="fa-solid fa-user-shield"></i> <span id="authButtonLabel">Entrar</span>
+      <button id="authActionButton" onclick="openAuthModal()" class="w-full py-2 px-3 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-700 font-bold text-xs border border-blue-200 transition flex items-center justify-center gap-1">
+        <i class="fa-solid fa-user-shield"></i> <span id="authButtonLabel">Entrar como Administrador</span>
       </button>
     </div>
     <div class="mt-2 text-center">
@@ -94,13 +100,25 @@
     <div id="viewAvisos" class="hidden space-y-6">
         <!-- Formulário de Cadastro de Avisos (Visível apenas se logado como Admin) -->
         <section id="publishSection" class="bg-white rounded-3xl shadow-sm border border-slate-200/80 p-5 sm:p-7 transition-all hover:shadow-md hidden">
-            <div class="flex items-center gap-3 mb-5 pb-3 border-b border-slate-100">
-                <div class="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shadow-inner">
-                    <i class="fa-solid fa-bullhorn text-sm"></i>
+            <div class="flex items-center justify-between mb-5 pb-3 border-b border-slate-100">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shadow-inner">
+                        <i class="fa-solid fa-bullhorn text-sm"></i>
+                    </div>
+                    <div>
+                        <h2 class="font-bold text-slate-900 text-base">Publicar Novo Aviso</h2>
+                        <p class="text-xs text-slate-500">Publicando como: <span id="activeAuthorName" class="font-bold text-blue-600">-</span></p>
+                    </div>
                 </div>
-                <div>
-                    <h2 class="font-bold text-slate-900 text-base">Publicar Novo Aviso</h2>
-                    <p class="text-xs text-slate-500">Publicando como: <span id="activeAuthorName" class="font-bold text-blue-600">-</span></p>
+
+                <!-- Botões de Ação Admin dentro do bloco -->
+                <div class="flex items-center gap-2">
+                    <button id="adminAuditBtn" onclick="openAuditModal()" class="hidden px-3 py-2 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold text-xs border border-indigo-200 transition flex items-center gap-1.5" title="Painel de Auditoria">
+                        <i class="fa-solid fa-shield-halved"></i> <span class="hidden sm:inline">Auditoria</span>
+                    </button>
+                    <button onclick="openAuthModal()" class="px-3 py-2 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold text-xs border border-rose-200 transition flex items-center gap-1.5" title="Sair da Conta">
+                        <i class="fa-solid fa-right-from-bracket"></i> <span class="hidden sm:inline">Sair</span>
+                    </button>
                 </div>
             </div>
 
@@ -369,7 +387,7 @@
                   </div>
                   <div>
                       <h3 class="font-bold text-slate-900 text-base">Painel de Auditoria & Manutenção</h3>
-                      <p class="text-xs text-slate-500">Área protegida por senha</p>
+                      <p class="text-xs text-slate-500">Área protegida por superadmin</p>
                   </div>
               </div>
               <button onclick="closeAuditModal()" class="w-9 h-9 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 flex items-center justify-center transition active:scale-95">
@@ -377,23 +395,7 @@
               </button>
           </div>
 
-          <div id="passwordSection" class="space-y-4">
-              <p class="text-xs text-slate-600 leading-relaxed font-medium">
-                  Digite a senha de acesso para visualizar os registros de auditoria e métricas do sistema:
-              </p>
-              <div class="flex gap-2.5">
-                  <input type="password" id="auditPasswordInput" placeholder="Senha..." 
-                         class="flex-1 px-4 py-3 rounded-2xl border border-slate-200 text-sm focus:outline-none focus:ring-4 focus:ring-indigo-500/15 focus:border-indigo-600 bg-slate-50/50 font-medium">
-                  <button onclick="verifyAuditPassword()" class="px-5 py-3 bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white font-bold rounded-2xl text-sm transition shadow-md shadow-indigo-500/20">
-                      Entrar
-                  </button>
-              </div>
-              <p id="passwordError" class="text-xs text-rose-500 font-bold hidden flex items-center gap-1.5">
-                  <i class="fa-solid fa-circle-exclamation"></i> Senha incorreta. Tente novamente.
-              </p>
-          </div>
-
-          <div id="auditContent" class="space-y-5 hidden">
+          <div id="auditContent" class="space-y-5">
               <div class="bg-gradient-to-br from-slate-50 to-blue-50/40 rounded-2xl p-4 border border-slate-200/80 flex items-center justify-between shadow-2xs">
                   <div>
                       <span class="text-[11px] font-bold uppercase tracking-wider text-slate-500 block">Sessões Totais Registradas</span>
@@ -451,6 +453,7 @@
     const db = getFirestore(app);
 
     let currentAdminUser = null;
+    let isSuperAdmin = false;
 
     window.showModal = function(title, message, isError = false, confirmCallback = null) {
         document.getElementById('modalTitle').textContent = title;
@@ -498,6 +501,7 @@
         if (currentAdminUser) {
             showModal("Encerrar Sessão", "Deseja sair da sua conta administrativa?", false, () => {
                 currentAdminUser = null;
+                isSuperAdmin = false;
                 updateAuthUI();
                 showModal("Sessão Encerrada", "Você saiu da conta administrativa com sucesso.");
             });
@@ -522,6 +526,7 @@
         try {
             const collabsSnap = await getDocs(collection(db, "colaboradores"));
             let foundAdminName = null;
+            let foundSuperAdmin = false;
 
             collabsSnap.forEach(docSnap => {
                 const data = docSnap.data();
@@ -531,11 +536,13 @@
 
                 if (dbUser === usernameInput && String(dbPass) === String(passwordInput) && isAdmin) {
                     foundAdminName = data.nomeCompleto || data.name || data.username || usernameInput;
+                    foundSuperAdmin = data.superadmin === true || data.superAdmin === true;
                 }
             });
 
             if (foundAdminName) {
                 currentAdminUser = foundAdminName;
+                isSuperAdmin = foundSuperAdmin;
                 closeAuthModal();
                 updateAuthUI();
                 
@@ -558,6 +565,7 @@
         const currentUserDisplay = document.getElementById('currentUserDisplay');
         const activeAuthorName = document.getElementById('activeAuthorName');
         const authButtonLabel = document.getElementById('authButtonLabel');
+        const adminAuditBtn = document.getElementById('adminAuditBtn');
 
         if (currentAdminUser) {
             if (publishSec) publishSec.classList.remove('hidden');
@@ -568,14 +576,25 @@
             const shortName = nameParts.slice(0, 2).join(' ');
             if (activeAuthorName) activeAuthorName.textContent = shortName;
 
-            if (authButtonLabel) authButtonLabel.textContent = 'Sair';
+            if (authButtonLabel) authButtonLabel.textContent = 'Sair da Conta';
+
+            // Controla a visibilidade do botão de auditoria para superadmin
+            if (adminAuditBtn) {
+                if (isSuperAdmin) {
+                    adminAuditBtn.classList.remove('hidden');
+                } else {
+                    adminAuditBtn.classList.add('hidden');
+                }
+            }
         } else {
             if (publishSec) publishSec.classList.add('hidden');
             if (loginPrompt) loginPrompt.classList.remove('hidden');
             if (currentUserDisplay) currentUserDisplay.textContent = 'Modo Visitante';
-            if (authButtonLabel) authButtonLabel.textContent = 'Entrar';
+            if (authButtonLabel) authButtonLabel.textContent = 'Entrar como Administrador';
+            if (adminAuditBtn) adminAuditBtn.classList.add('hidden');
         }
         initRealtimeNotices();
+        if (typeof renderLinks === 'function') renderLinks();
     }
 
     function formatDriveUrl(url) {
@@ -813,11 +832,12 @@
     }
 
     window.openAuditModal = function() {
+        if (!isSuperAdmin) {
+            showModal("Acesso Negado", "Apenas superadministradores podem acessar a auditoria.", true);
+            return;
+        }
         document.getElementById('auditModal').classList.remove('hidden');
-        document.getElementById('passwordSection').classList.remove('hidden');
-        document.getElementById('auditContent').classList.add('hidden');
-        document.getElementById('auditPasswordInput').value = '';
-        document.getElementById('passwordError').classList.add('hidden');
+        loadAuditData();
     };
 
     window.closeAuditModal = function() {
@@ -841,23 +861,6 @@
             document.body.appendChild(modal);
         }
         document.getElementById('modalZoomImg').src = url;
-    };
-
-    window.verifyAuditPassword = async function() {
-        const pass = document.getElementById('auditPasswordInput').value;
-        let correctPassword = "galinhas";
-        try {
-            const remotePassword = await window.fetchAdminPasswordFromFirebase();
-            if (remotePassword) correctPassword = remotePassword;
-        } catch(e) {}
-
-        if (pass === correctPassword) {
-            document.getElementById('passwordSection').classList.add('hidden');
-            document.getElementById('auditContent').classList.remove('hidden');
-            loadAuditData();
-        } else {
-            document.getElementById('passwordError').classList.add('hidden');
-        }
     };
 
     async function loadAuditData() {
@@ -1546,13 +1549,16 @@
       applyMonth();
     }
 
-    const DEFAULT_LINKS = [
-      { title: 'Cálculo de horas trabalhadas', url: 'https://whatyson2.github.io/Gestao-de-Ponto-e-Interjornada/' },
+    const GROUP1_LINKS = [
       { title: 'Decanet', url: 'https://sites.google.com/decathlon.com/decanet/home?pli=1&authuser=0' },
       { title: 'Links úteis', url: 'https://docs.google.com/spreadsheets/d/1bTOMrvGp9gTFyvWWz6YBMOwkB38sum1_7sZkHKuDywc/edit?usp=drivesdk' },
-      { title: 'VTEX (Venda PLUS 📱)', url: 'https://decathlonstore.myvtex.com/assisted-sales/sales-app/sale' },
-      { title: 'Chapeira Digital', url: 'https://chapeira.decathlon.com.br/go-bretas' },
       { title: 'NOVO l PLANNING 2026', url: 'https://docs.google.com/spreadsheets/d/1PhwTN8y8sCCy7uhzPbr7ihKgUi6TeN5YSWkqk9K6lgQ/edit?usp=sharing' }
+    ];
+
+    const GROUP2_LINKS = [
+      { title: 'Cálculo de horas trabalhadas', url: 'https://whatyson2.github.io/Gestao-de-Ponto-e-Interjornada/' },
+      { title: 'VTEX (Venda PLUS 📱)', url: 'https://decathlonstore.myvtex.com/assisted-sales/sales-app/sale' },
+      { title: 'Chapeira Digital', url: 'https://chapeira.decathlon.com.br/go-bretas' }
     ];
 
     const ADMIN_SOURCE_LINK = {
@@ -1567,27 +1573,42 @@
     }
 
     function renderLinks() {
-      const box = document.getElementById('menuLinks');
+      const box1 = document.getElementById('menuLinksGroup1');
+      const box2 = document.getElementById('menuLinksGroup2');
       const footerNote = document.getElementById('menuFooterNote');
-      if (!box) return;
-      box.innerHTML = '';
+      if (!box1 || !box2) return;
+      
+      box1.innerHTML = '';
+      box2.innerHTML = '';
 
       const activeCollab = collaborators.find(c => c.id === currentCollaboratorId);
       const isWhatyson = activeCollab && activeCollab.name.toLowerCase().includes('whatyson');
 
-      const linksToShow = [...DEFAULT_LINKS];
-      if (isWhatyson) {
-        linksToShow.push(ADMIN_SOURCE_LINK);
-      }
-
-      linksToShow.forEach(l => {
+      // Renderiza Grupo 1: Decanet, Links úteis, Novo Planning
+      GROUP1_LINKS.forEach(l => {
         const a = document.createElement('a');
         a.href = l.url;
         a.target = '_blank';
         a.rel = 'noopener noreferrer';
         a.className = 'block truncate px-3 py-2 rounded-xl bg-slate-50 hover:bg-slate-100 text-blue-700 font-medium text-xs border border-slate-200/60 transition';
         a.textContent = '🔗 ' + l.title;
-        box.appendChild(a);
+        box1.appendChild(a);
+      });
+
+      // Renderiza Grupo 2: O restante
+      const group2Links = [...GROUP2_LINKS];
+      if (isWhatyson) {
+        group2Links.push(ADMIN_SOURCE_LINK);
+      }
+
+      group2Links.forEach(l => {
+        const a = document.createElement('a');
+        a.href = l.url;
+        a.target = '_blank';
+        a.rel = 'noopener noreferrer';
+        a.className = 'block truncate px-3 py-2 rounded-xl bg-slate-50 hover:bg-slate-100 text-blue-700 font-medium text-xs border border-slate-200/60 transition';
+        a.textContent = '🔗 ' + l.title;
+        box2.appendChild(a);
       });
 
       if (footerNote) {
