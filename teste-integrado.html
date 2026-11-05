@@ -332,6 +332,27 @@
 
   </main>
 
+  <!-- Modal de Avisos Diários -->
+  <div id="avisoModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm transition-opacity">
+    <div class="bg-white rounded-2xl shadow-xl w-full max-w-sm overflow-hidden transform scale-100 transition-all border border-slate-200">
+      <div class="bg-amber-500 px-4 py-3 flex items-center justify-between">
+        <h3 class="text-white font-bold flex items-center gap-2 text-sm sm:text-base">
+          <span class="text-xl">⚠️</span> Aviso Importante
+        </h3>
+        <button onclick="closeAvisoModal()" class="text-white/80 hover:text-white transition-colors">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+      </div>
+      <div class="p-5 max-h-[60vh] overflow-y-auto flex flex-col gap-3">
+        <img id="avisoModalImage" src="" alt="Imagem do Aviso" class="hidden w-full h-auto rounded-lg object-contain shadow-sm border border-slate-200">
+        <p id="avisoModalContent" class="text-slate-700 text-sm whitespace-pre-wrap leading-relaxed font-medium"></p>
+      </div>
+      <div class="p-4 bg-slate-50 border-t border-slate-100 text-right">
+        <button onclick="closeAvisoModal()" class="px-4 py-2 bg-slate-200 text-slate-800 rounded-lg text-sm font-semibold hover:bg-slate-300 transition-colors">Ciente</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Modal de Login -->
   <div id="authModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
       <div class="bg-white rounded-3xl max-w-sm w-full p-6 sm:p-7 shadow-2xl border border-slate-100 space-y-5 animate-in fade-in zoom-in duration-200">
@@ -550,7 +571,6 @@
             collabsSnap.forEach(docSnap => {
                 const data = docSnap.data();
                 
-                // Mapeia todas as formas que o login/matrícula pode estar no documento do Firestore
                 const possibleLogins = [
                     data.username,
                     data.usuario,
@@ -566,7 +586,6 @@
                 const dbPass = (data.password !== undefined ? data.password : data.senha) || '';
                 const isAdmin = data.admin === true;
 
-                // Verifica se o texto digitado bate com o usuário ou matrícula cadastrada
                 const loginMatches = possibleLogins.includes(usernameInput);
 
                 if (loginMatches && String(dbPass).trim() === passwordInput && isAdmin) {
@@ -772,9 +791,45 @@
 
         onSnapshot(collection(db, "painel_avisos"), (snapshot) => {
             const notices = [];
+            const parsedAvisosFirebase = {};
+
             snapshot.forEach(docSnap => {
-                notices.push({ id: docSnap.id, ...docSnap.data() });
+                const itemData = { id: docSnap.id, ...docSnap.data() };
+                notices.push(itemData);
+
+                // Mapeia os avisos do Firestore para o calendário da Escala (por Mês e Dia)
+                if (itemData.date) {
+                    const parts = itemData.date.split('-');
+                    if (parts.length === 3) {
+                        const mIndex = parseInt(parts[1], 10) - 1;
+                        const dNum = parseInt(parts[2], 10);
+                        if (!isNaN(mIndex) && !isNaN(dNum) && mIndex >= 0 && mIndex < 12) {
+                            const monthKey = window.MONTH_NAMES ? window.MONTH_NAMES[mIndex] : null;
+                            if (monthKey) {
+                                if (!parsedAvisosFirebase[monthKey]) parsedAvisosFirebase[monthKey] = {};
+                                if (parsedAvisosFirebase[monthKey][dNum]) {
+                                    if (itemData.message) parsedAvisosFirebase[monthKey][dNum].text += '\n\n' + itemData.message;
+                                    if (itemData.mediaUrl && !parsedAvisosFirebase[monthKey][dNum].image) {
+                                        parsedAvisosFirebase[monthKey][dNum].image = itemData.mediaUrl;
+                                    }
+                                } else {
+                                    parsedAvisosFirebase[monthKey][dNum] = {
+                                        text: itemData.message || '',
+                                        image: itemData.mediaUrl || ''
+                                    };
+                                }
+                            }
+                        }
+                    }
+                }
             });
+
+            window.avisosData = parsedAvisosFirebase;
+
+            // Re-renderiza a lista da escala para atualizar os ícones ⚠️ instantaneamente
+            if (typeof window.refreshCurrentScheduleDisplay === 'function') {
+                window.refreshCurrentScheduleDisplay();
+            }
 
             notices.sort((a, b) => {
                 const createdA = new Date(a.createdAt || '1970-01-01');
@@ -962,10 +1017,11 @@
     const SHEET_TAB = 'Backup Atualizado';
     const REFRESH_MS = 60000;
 
-    const MONTH_NAMES = [
+    window.MONTH_NAMES = [
       'JANEIRO', 'FEVEREIRO', 'MARÇO', 'ABRIL', 'MAIO', 'JUNHO',
       'JULHO', 'AGOSTO', 'SETEMBRO', 'OUTUBRO', 'NOVEMBRO', 'DEZEMBRO'
     ];
+    const MONTH_NAMES = window.MONTH_NAMES;
 
     const MONTH_INDEXES = {
       'JANEIRO': 0, 'FEVEREIRO': 1, 'MARÇO': 2, 'ABRIL': 3, 'MAIO': 4, 'JUNHO': 5,
@@ -1042,6 +1098,7 @@
     let currentView = 'list';
     let activeSector = 'Todos';
     let allData = null;
+    window.avisosData = {};
 
     function generateFallbackData() {
       const collabsList = [
@@ -1256,6 +1313,12 @@
       renderCollaboratorChips();
       displayScheduleFor(currentCollaboratorId);
     }
+
+    window.refreshCurrentScheduleDisplay = function() {
+        if (currentCollaboratorId && scheduleData[currentCollaboratorId]) {
+            renderListView(scheduleData[currentCollaboratorId]);
+        }
+    };
 
     function renderMonthButtons() {
       const container = document.getElementById('monthButtonList');
@@ -1480,6 +1543,7 @@
         const shiftCode = schedule[day - 1] || '-';
         const style = (SHIFT_STYLES[shiftCode] || { ...SHIFT_STYLES['-'], label: shiftCode });
         const holiday = holidaysOfMonth[day];
+        const avisoObj = (window.avisosData && window.avisosData[currentMonth]) ? window.avisosData[currentMonth][day] : null;
 
         html += `
           <div class="bg-white rounded-xl border border-slate-200/80 p-3 transition-all">
@@ -1489,6 +1553,7 @@
                   <span class="text-sm font-extrabold">${day}</span>
                   <span class="text-[9px] uppercase tracking-wider opacity-80 mt-0.5">${WEEKDAYS_SHORT[dayOfWeekIndex]}</span>
                 </div>
+                ${avisoObj ? `<button onclick="showAvisoModal('${currentMonth}', ${day})" class="w-8 h-8 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center animate-bounce shadow-sm hover:bg-amber-200 transition-colors border border-amber-200 shrink-0" title="Ver Aviso">⚠️</button>` : ''}
               </div>
               <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl border ${style.border} ${style.bg} ${style.text}">
                 <span class="text-base leading-none">${SHIFT_EMOJI[shiftCode] || '➖'}</span>
@@ -1526,6 +1591,31 @@
         `;
       }
       grid.innerHTML = html;
+    }
+
+    function showAvisoModal(month, day) {
+      const aviso = (window.avisosData && window.avisosData[month]) ? window.avisosData[month][day] : null;
+      if (aviso) {
+        document.getElementById('avisoModalContent').textContent = aviso.text || '';
+        
+        const imgEl = document.getElementById('avisoModalImage');
+        if (aviso.image) {
+          imgEl.src = aviso.image;
+          imgEl.classList.remove('hidden');
+        } else {
+          imgEl.src = '';
+          imgEl.classList.add('hidden');
+        }
+        
+        document.getElementById('avisoModal').classList.remove('hidden');
+      }
+    }
+
+    function closeAvisoModal() {
+      document.getElementById('avisoModal').classList.add('hidden');
+      setTimeout(() => {
+        document.getElementById('avisoModalImage').src = '';
+      }, 300);
     }
 
     window.updateHeaderSubtitle = function() {
