@@ -32,7 +32,7 @@
           </div>
           <p id="headerSubtitle" class="text-[11px] sm:text-xs text-blue-100 flex items-center gap-1.5 font-medium mt-0.5 truncate">
             <span id="syncPulse" class="inline-block w-2 h-2 rounded-full bg-amber-400 animate-pulse flex-shrink-0"></span>
-            <span id="syncStatusText" class="truncate">Conectando à planilha...</span>
+            <span id="syncStatusText" class="truncate">Modo Visitante</span>
           </p>
         </div>
       </div>
@@ -446,8 +446,9 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    let currentAdminUser = null;
-    let isSuperAdmin = false;
+    // Exposto no escopo global para acesso seguro por outras funções
+    window.currentAdminUser = null;
+    window.isSuperAdmin = false;
 
     window.showModal = function(title, message, isError = false, confirmCallback = null) {
         document.getElementById('modalTitle').textContent = title;
@@ -492,10 +493,10 @@
     };
 
     window.openAuthModal = function() {
-        if (currentAdminUser) {
+        if (window.currentAdminUser) {
             showModal("Encerrar Sessão", "Deseja sair da sua conta administrativa?", false, () => {
-                currentAdminUser = null;
-                isSuperAdmin = false;
+                window.currentAdminUser = null;
+                window.isSuperAdmin = false;
                 updateAuthUI();
                 showModal("Sessão Encerrada", "Você saiu da conta administrativa com sucesso.");
             });
@@ -535,12 +536,12 @@
             });
 
             if (foundAdminName) {
-                currentAdminUser = foundAdminName;
-                isSuperAdmin = foundSuperAdmin;
+                window.currentAdminUser = foundAdminName;
+                window.isSuperAdmin = foundSuperAdmin;
                 closeAuthModal();
                 updateAuthUI();
                 
-                const nameParts = currentAdminUser.trim().split(/\s+/);
+                const nameParts = window.currentAdminUser.trim().split(/\s+/);
                 const shortName = nameParts.slice(0, 2).join(' ');
 
                 showModal("Bem-vindo", `Logado com sucesso como Administrador: ${shortName}!`);
@@ -559,16 +560,16 @@
         const activeAuthorName = document.getElementById('activeAuthorName');
         const adminAuditBtn = document.getElementById('adminAuditBtn');
 
-        if (currentAdminUser) {
+        if (window.currentAdminUser) {
             if (publishSec) publishSec.classList.remove('hidden');
             if (loginPrompt) loginPrompt.classList.add('hidden');
             
-            const nameParts = currentAdminUser.trim().split(/\s+/);
+            const nameParts = window.currentAdminUser.trim().split(/\s+/);
             const shortName = nameParts.slice(0, 2).join(' ');
             if (activeAuthorName) activeAuthorName.textContent = shortName;
 
             if (adminAuditBtn) {
-                if (isSuperAdmin) {
+                if (window.isSuperAdmin) {
                     adminAuditBtn.classList.remove('hidden');
                 } else {
                     adminAuditBtn.classList.add('hidden');
@@ -580,7 +581,7 @@
             if (adminAuditBtn) adminAuditBtn.classList.add('hidden');
         }
         initRealtimeNotices();
-        if (typeof updateHeaderSubtitle === 'function') updateHeaderSubtitle();
+        if (typeof window.updateHeaderSubtitle === 'function') window.updateHeaderSubtitle();
         if (typeof renderLinks === 'function') renderLinks();
     }
 
@@ -617,7 +618,7 @@
 
     window.submitNotice = async function(e) {
         e.preventDefault();
-        if (!currentAdminUser) {
+        if (!window.currentAdminUser) {
             showModal("Acesso Negado", "Você precisa fazer login como administrador para publicar avisos.", true);
             return;
         }
@@ -687,7 +688,7 @@
                 date: date,
                 message: message,
                 mediaUrl: mediaUrl,
-                author: currentAdminUser,
+                author: window.currentAdminUser,
                 createdAt: new Date().toISOString()
             });
 
@@ -706,7 +707,7 @@
     };
 
     window.deleteNotice = async function(docId) {
-        if (!currentAdminUser) {
+        if (!window.currentAdminUser) {
             showModal("Acesso Negado", "Apenas administradores logados podem excluir avisos.", true);
             return;
         }
@@ -787,7 +788,7 @@
                     }
                 }
 
-                const deleteBtnHtml = currentAdminUser ? `
+                const deleteBtnHtml = window.currentAdminUser ? `
                     <button onclick="deleteNotice('${item.id}')" title="Excluir aviso do banco" class="w-9 h-9 rounded-xl bg-slate-100 hover:bg-rose-50 text-slate-400 hover:text-rose-600 transition flex items-center justify-center active:scale-95 shadow-2xs">
                         <i class="fa-solid fa-trash-can text-xs"></i>
                     </button>
@@ -819,7 +820,7 @@
     }
 
     window.openAuditModal = function() {
-        if (!isSuperAdmin) {
+        if (!window.isSuperAdmin) {
             showModal("Acesso Negado", "Apenas superadministradores podem acessar a auditoria.", true);
             return;
         }
@@ -1487,27 +1488,27 @@
       grid.innerHTML = html;
     }
 
-    function updateHeaderSubtitle() {
+    window.updateHeaderSubtitle = function() {
       const mainTitle = document.getElementById('headerMainTitle');
       const monthBadge = document.getElementById('badgeActiveMonth');
       const subtitleText = document.getElementById('syncStatusText');
       const syncPulse = document.getElementById('syncPulse');
       
+      const adminUser = window.currentAdminUser;
+
       if (currentView === 'avisos') {
-        // Modo Avisos: Título "Painel de Avisos", sem badge de mês e com identificador de admin/visitante
         if (mainTitle) mainTitle.textContent = 'Painel de Avisos';
         if (monthBadge) monthBadge.classList.add('hidden');
         if (syncPulse) syncPulse.classList.add('hidden');
         
         if (subtitleText) {
-          if (currentAdminUser) {
-            subtitleText.textContent = `Administrador: ${currentAdminUser}`;
+          if (adminUser) {
+            subtitleText.textContent = `Administrador: ${adminUser}`;
           } else {
             subtitleText.textContent = 'Modo Visitante';
           }
         }
       } else {
-        // Modo Escala (Lista ou Calendário): Volta para "Escala Decathlon", mostra o mês e a sincronização
         if (mainTitle) mainTitle.textContent = 'Escala Decathlon';
         if (monthBadge) monthBadge.classList.remove('hidden');
         if (syncPulse) syncPulse.classList.remove('hidden');
@@ -1522,7 +1523,7 @@
           }
         }
       }
-    }
+    };
 
     function switchView(view) {
       currentView = view;
@@ -1565,7 +1566,7 @@
         if (userProfileCard) userProfileCard.classList.add('hidden');
         if (shiftLegend) shiftLegend.classList.add('hidden');
       }
-      updateHeaderSubtitle();
+      window.updateHeaderSubtitle();
     }
 
     function changeCurrentMonth(month) {
@@ -1643,7 +1644,7 @@
     document.addEventListener('DOMContentLoaded', () => {
       fetchLiveScheduleData();
       setInterval(fetchLiveScheduleData, REFRESH_MS);
-      updateHeaderSubtitle();
+      window.updateHeaderSubtitle();
     });
   </script>
 </body>
