@@ -374,7 +374,12 @@
                     currentAdminUser = foundAdminName;
                     closeAuthModal();
                     updateAuthUI();
-                    showModal("Bem-vindo", `Logado com sucesso como Administrador: ${currentAdminUser}!`);
+                    
+                    // Pegar apenas os dois primeiros nomes para a mensagem de boas-vindas
+                    const nameParts = currentAdminUser.trim().split(/\s+/);
+                    const shortName = nameParts.slice(0, 2).join(' ');
+
+                    showModal("Bem-vindo", `Logado com sucesso como Administrador: ${shortName}!`);
                 } else {
                     errorMsg.classList.remove('hidden');
                 }
@@ -396,7 +401,12 @@
                 publishSec.classList.remove('hidden');
                 loginPrompt.classList.add('hidden');
                 currentUserDisplay.textContent = `Administrador: ${currentAdminUser}`;
-                activeAuthorName.textContent = currentAdminUser;
+                
+                // Pegar apenas os dois primeiros nomes
+                const nameParts = currentAdminUser.trim().split(/\s+/);
+                const shortName = nameParts.slice(0, 2).join(' ');
+                activeAuthorName.textContent = shortName;
+
                 authButtonLabel.textContent = 'Sair';
                 authActionButton.classList.remove('hidden');
             } else {
@@ -573,15 +583,16 @@
                     notices.push({ id: docSnap.id, ...docSnap.data() });
                 });
 
+                // Ordenar em formato de fila: o último enviado (mais recentemente criado) aparece primeiro
                 notices.sort((a, b) => {
-                    const dateA = new Date(a.date || '1970-01-01');
-                    const dateB = new Date(b.date || '1970-01-01');
-                    if (dateA.getTime() !== dateB.getTime()) {
-                        return dateB - dateA;
-                    }
                     const createdA = new Date(a.createdAt || '1970-01-01');
                     const createdB = new Date(b.createdAt || '1970-01-01');
-                    return createdB - createdA;
+                    if (createdA.getTime() !== createdB.getTime()) {
+                        return createdB - createdA;
+                    }
+                    const dateA = new Date(a.date || '1970-01-01');
+                    const dateB = new Date(b.date || '1970-01-01');
+                    return dateB - dateA;
                 });
 
                 badge.textContent = `${notices.length} aviso${notices.length !== 1 ? 's' : ''}`;
@@ -597,7 +608,11 @@
 
                 container.innerHTML = notices.map(item => {
                     const formattedDate = item.date ? item.date.split('-').reverse().join('/') : 'Data não informada';
-                    const authorName = item.author || 'Administrador';
+                    
+                    // Pegar apenas os dois primeiros nomes do autor
+                    const rawAuthor = item.author || 'Administrador';
+                    const authorParts = rawAuthor.trim().split(/\s+/);
+                    const authorName = authorParts.slice(0, 2).join(' ');
                     
                     let mediaHtml = '';
                     if (item.mediaUrl) {
@@ -614,8 +629,8 @@
                                         <i class="fa-solid fa-file-lines text-blue-600 text-base"></i> Documento ou Anexo anexado
                                     </span>
                                     <div class="w-full sm:w-auto flex justify-center">
-                                        <a href="${item.mediaUrl}" target="_blank" class="px-5 py-2.5 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 transition shadow-xs flex items-center justify-center gap-2">
-                                            <i class="fa-solid fa-external-link-alt text-xs"></i> Abrir link
+                                        <a href="${item.mediaUrl}" target="_blank" rel="noopener noreferrer" class="px-5 py-2.5 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 transition shadow-xs flex items-center justify-center gap-2">
+                                            <i class="fa-solid fa-external-link-alt text-xs"></i> Abrir documento
                                         </a>
                                     </div>
                                 </div>
