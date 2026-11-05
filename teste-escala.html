@@ -1407,7 +1407,7 @@
           });
         }
       } catch (e) {
-        // Silencioso
+        // Silen
       }
     });
 
@@ -1430,14 +1430,18 @@
         const dataHora = new Date().toLocaleString('pt-BR');
         const registroClique = `${primeiroNome} - ${dataHora}`;
 
+        // Variável contendo o identificador amigável do dispositivo
+        const dispositivoAtual = deviceId;
+
         const logRef = doc(db, "logs_acesso", deviceId);
         await setDoc(logRef, {
+          dispositivo: dispositivoAtual, // <--- Variável salva explicitamente nos dados do documento
           cliques: arrayUnion(registroClique),
           ultimoAcessoLocal: new Date().toLocaleString('pt-BR'),
           timestampServidor: serverTimestamp()
         }, { merge: true });
       } catch (e) {
-        // Silencioso
+        // Silen
       }
     };
 
