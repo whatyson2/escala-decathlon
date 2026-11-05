@@ -1180,4 +1180,323 @@
     }
 
     async function fetchLiveScheduleData() {
-      const refreshIcon = document
+      const refreshIcon = document.getElementById('refreshIcon');
+      const syncStatus = document.getElementById('syncStatusText');
+      const syncPulse = document.getElementById('syncPulse');
+      if (refreshIcon) refreshIcon.classList.add('animate-spin');
+
+      ALLOWED_TWO_MONTHS = getAllowedMonths();
+
+      try {
+        const url = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(SHEET_TAB)}&t=${Date.now()}`;
+        const response = await fetch(url);
+        if (!response.ok) throw new Error('Falha na resposta da planilha');
+        
+        const text = await response.text();
+        allData = parseBackupSheet(text);
+
+        const matched = allData.months.filter(m => ALLOWED_TWO_MONTHS.includes(m) || m === 'DEZEMBRO');
+        AVAILABLE_MONTHS = matched.length > 0 ? matched : allData.months;
+
+        if (syncPulse) syncPulse.className = 'inline-block w-2 h-2 rounded-full bg-emerald-400 animate-pulse';
+        const n = new Date();
+        const hh = String(n.getHours()).padStart(2, '0') + ':' + String(n.getMinutes()).padStart(2, '0');
+        if (syncStatus) {
+            syncStatus.dataset.time = hh;
+            syncStatus.textContent = 'Atualizado às ' + hh;
+        }
+        applyMonth();
+      } catch (err) {
+        allData = generateFallbackData();
+        AVAILABLE_MONTHS = [...ALLOWED_TWO_MONTHS];
+        if (syncPulse) syncPulse.className = 'inline-block w-2 h-2 rounded-full bg-blue-400';
+        if (syncStatus) syncStatus.textContent = 'Modo Local (Offline / Backup)';
+        applyMonth();
+      } finally {
+        if (refreshIcon) refreshIcon.classList.remove('animate-spin');
+      }
+    }
+
+    function renderApp() {
+      renderMonthButtons();
+      renderSectors();
+      renderCollaboratorChips();
+      displayScheduleFor(currentCollaboratorId);
+    }
+
+    function renderMonthButtons() {
+      const container = document.getElementById('monthButtonList');
+      if (!container) return;
+      const monthsToRender = AVAILABLE_MONTHS.filter(m => ALLOWED_TWO_MONTHS.includes(m));
+      const finalMonths = monthsToRender.length > 0 ? monthsToRender : ALLOWED_TWO_MONTHS;
+
+      container.innerHTML = finalMonths.map(m => {
+        const isSelected = m === currentMonth;
+        const displayName = m.charAt(0) + m.slice(1).toLowerCase();
+        return `
+          <button onclick="changeCurrentMonth('${m}')" class="px-4 py-1.5 rounded-lg transition whitespace-nowrap ${
+            isSelected ? 'bg-blue-600 text-white shadow-xs font-bold' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/60'
+          }">${displayName}</button>
+        `;
+      }).join('');
+    }
+
+    function renderSectors() {
+      const uniqueSectors = ['Todos', ...new Set(collaborators.map(c => c.sector))];
+      const container = document.getElementById('sectorFilterContainer');
+      if (!container) return;
+      container.innerHTML = uniqueSectors.map(sec => {
+        const active = sec === activeSector;
+        return `
+          <button onclick="filterSector('${sec}')" class="px-3 py-1.5 rounded-xl transition whitespace-nowrap ${
+            active ? 'bg-blue-600 text-white shadow-sm font-semibold' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+          }">${sec}</button>
+        `;
+      }).join('');
+    }
+
+    function filterSector(sec) {
+      activeSector = sec;
+      renderSectors();
+      renderCollaboratorChips();
+    }
+
+    function renderCollaboratorChips() {
+      const container = document.getElementById('collaboratorList');
+      if (!container) return;
+      const filtered = activeSector === 'Todos' ? collaborators : collaborators.filter(c => c.sector === activeSector);
+
+      const badge = document.getElementById('collabCountBadge');
+      if (badge) badge.textContent = `${filtered.length} pessoa${filtered.length !== 1 ? 's' : ''}`;
+
+      if (filtered.length === 0) {
+        container.innerHTML = `<span class="text-xs text-slate-400 py-1">Nenhum colaborador neste setor.</span>`;
+        return;
+      }
+
+      container.innerHTML = filtered.map(collab => {
+        const isSelected = collab.id === currentCollaboratorId;
+        const firstName = collab.name.split(' ')[0];
+        return `
+          <button onclick="selectCollaborator('${collab.id}')" class="flex-shrink-0 px-3.5 py-2 rounded-xl border text-xs font-medium transition-all flex items-center gap-2 ${
+            isSelected 
+              ? 'bg-blue-600 border-blue-600 text-white shadow-sm ring-2 ring-blue-500/20' 
+              : 'bg-white border-slate-200 text-slate-700 hover:border-slate-300 hover:bg-slate-50'
+          }">
+            <span class="w-2 h-2 rounded-full ${isSelected ? 'bg-white' : 'bg-blue-500'}"></span>
+            <span>${firstName}</span>
+          </button>
+        `;
+      }).join('');
+    }
+
+    function selectCollaborator(id) {
+      currentCollaboratorId = id;
+      renderCollaboratorChips();
+      displayScheduleFor(id);
+    }
+
+    function displayScheduleFor(id) {
+      const profileCard = document.getElementById('userProfileCard');
+      const monthSelectorContainer = document.getElementById('monthSelectorContainer');
+
+      if (!id) {
+        if (profileCard) profileCard.classList.add('hidden');
+        if (monthSelectorContainer) monthSelectorContainer.classList.add('hidden');
+        renderLinks();
+
+        const monthIndex = MONTH_INDEXES[currentMonth] ?? 9;
+        const today = new Date();
+        const targetDay = (today.getMonth() === monthIndex) ? today.getDate() : 1;
+
+        const groups = { 'Abertura (A, PA)': [], 'Intermediário (I)': [], 'Fechamento (F, PF)': [], 'Folga (FG, FF)': [] };
+
+        collaborators.forEach(collab => {
+          const sched = scheduleData[collab.id];
+          if (!sched) return;
+          const shift = sched[targetDay - 1];
+          if (!shift) return;
+          let firstName = collab.name.split(' ')[0];
+          if (['A', 'A1', 'A2', 'PA'].includes(shift)) groups['Abertura (A, PA)'].push(firstName);
+          else if (shift === 'I') groups['Intermediário (I)'].push(firstName);
+          else if (['F', 'PF'].includes(shift)) groups['Fechamento (F, PF)'].push(firstName);
+          else if (['FG', 'FF'].includes(shift)) groups['Folga (FG, FF)'].push(firstName);
+        });
+
+        document.getElementById('viewList').innerHTML = `
+          <div class="bg-white rounded-2xl border border-slate-200/80 p-8 text-center shadow-xs">
+            <h3 class="text-sm font-bold text-slate-800">Nenhum colaborador selecionado</h3>
+            <p class="text-xs text-slate-500 mt-1">Selecione seu nome na lista acima para visualizar sua escala ou clique em "Avisos" no menu superior.</p>
+          </div>
+        `;
+        return;
+      }
+
+      const collab = collaborators.find(c => c.id === id);
+      if (!collab) return;
+
+      if (profileCard) profileCard.classList.remove('hidden');
+      document.getElementById('userName').textContent = collab.name;
+      document.getElementById('userSectorText').textContent = collab.role;
+      document.getElementById('userMatricula').textContent = `Mat: ${collab.matricula}`;
+      document.getElementById('userAvatar').textContent = collab.name.charAt(0);
+
+      const schedule = scheduleData[id] || Array(monthDaysCount).fill('-');
+      let workCount = 0, offCount = 0, vacCount = 0, openCount = 0, closeCount = 0, intCount = 0, paCount = 0, pfCount = 0;
+
+      schedule.forEach(shift => {
+        if (shift === 'FG' || shift === 'FF') offCount++;
+        else if (shift === 'FR') vacCount++;
+        else if (shift !== 'AT' && shift !== '-') {
+          workCount++;
+          if (['A', 'A1', 'A2'].includes(shift)) openCount++;
+          else if (shift === 'F') closeCount++;
+          else if (shift === 'I') intCount++;
+          else if (shift === 'PA') paCount++;
+          else if (shift === 'PF') pfCount++;
+        }
+      });
+
+      document.getElementById('statWorkDays').textContent = workCount;
+      document.getElementById('statOffDays').textContent = offCount;
+      document.getElementById('statVacDays').textContent = vacCount;
+      document.getElementById('statOpen').textContent = openCount;
+      document.getElementById('statClose').textContent = closeCount;
+      document.getElementById('statInt').textContent = intCount;
+      document.getElementById('statPA').textContent = paCount;
+      document.getElementById('statPF').textContent = pfCount;
+
+      renderListView(schedule);
+      renderCalendarView(schedule);
+    }
+
+    function renderListView(schedule) {
+      const container = document.getElementById('viewList');
+      const holidaysOfMonth = HOLIDAYS[currentMonth] || {};
+      const monthIndex = MONTH_INDEXES[currentMonth] ?? 9;
+      let html = '';
+
+      for (let day = 1; day <= monthDaysCount; day++) {
+        const dateObj = new Date(2026, monthIndex, day);
+        const dayOfWeekIndex = dateObj.getDay();
+        const shiftCode = schedule[day - 1] || '-';
+        const style = (SHIFT_STYLES[shiftCode] || { ...SHIFT_STYLES['-'], label: shiftCode });
+        const holiday = holidaysOfMonth[day];
+
+        html += `
+          <div class="bg-white rounded-xl border border-slate-200/80 p-3 transition-all">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-3">
+                <div class="w-11 h-11 rounded-xl bg-slate-100 text-slate-700 flex flex-col items-center justify-center font-bold leading-none shadow-2xs">
+                  <span class="text-sm font-extrabold">${day}</span>
+                  <span class="text-[9px] uppercase tracking-wider opacity-80 mt-0.5">${WEEKDAYS_SHORT[dayOfWeekIndex]}</span>
+                </div>
+              </div>
+              <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl border ${style.border} ${style.bg} ${style.text}">
+                <span class="text-base leading-none">${SHIFT_EMOJI[shiftCode] || '➖'}</span>
+                <span class="font-bold text-xs tracking-wide">${style.label}</span>
+              </div>
+            </div>
+            ${holiday ? `<div class="mt-2.5 pt-2 border-t border-amber-200/80 text-amber-900 bg-amber-50/70 p-2 rounded-b-xl text-xs"><strong>${holiday.name}</strong></div>` : ''}
+          </div>
+        `;
+      }
+      container.innerHTML = html;
+    }
+
+    function renderCalendarView(schedule) {
+      const grid = document.getElementById('calDaysGrid');
+      const monthIndex = MONTH_INDEXES[currentMonth] ?? 9;
+      document.getElementById('calMonthTitle').textContent = `${currentMonth} 2026`;
+
+      const holidaysOfMonth = HOLIDAYS[currentMonth] || {};
+      const firstDayDate = new Date(2026, monthIndex, 1);
+      const offset = (firstDayDate.getDay() + 6) % 7;
+
+      let html = '';
+      for (let i = 0; i < offset; i++) html += `<div class="min-h-[58px] rounded-xl bg-slate-50/50"></div>`;
+
+      for (let day = 1; day <= monthDaysCount; day++) {
+        const shiftCode = schedule[day - 1] || '-';
+        const style = (SHIFT_STYLES[shiftCode] || { ...SHIFT_STYLES['-'], label: shiftCode });
+        
+        html += `
+          <div class="min-h-[58px] rounded-xl border border-slate-200/80 bg-white p-1 flex flex-col justify-between">
+            <span class="text-[11px] font-bold text-slate-800">${day}</span>
+            <span class="w-full inline-flex items-center justify-center px-1 py-0.5 rounded-md text-[9px] font-extrabold uppercase ${style.badge}">${shiftCode}</span>
+          </div>
+        `;
+      }
+      grid.innerHTML = html;
+    }
+
+    function switchView(view) {
+      currentView = view;
+      const btnList = document.getElementById('btnViewList');
+      const btnCal = document.getElementById('btnViewCal');
+      const btnAvisos = document.getElementById('btnViewAvisos');
+      const viewList = document.getElementById('viewList');
+      const viewCal = document.getElementById('viewCalendar');
+      const viewAvisos = document.getElementById('viewAvisos');
+      const escalaFiltersCard = document.getElementById('escalaFiltersCard');
+      const userProfileCard = document.getElementById('userProfileCard');
+      const shiftLegend = document.getElementById('shiftLegend');
+
+      btnList.className = 'px-2.5 sm:px-3 py-1.5 rounded-lg font-medium transition flex items-center gap-1 text-white/80 hover:text-white';
+      btnCal.className = 'px-2.5 sm:px-3 py-1.5 rounded-lg font-medium transition flex items-center gap-1 text-white/80 hover:text-white';
+      btnAvisos.className = 'px-2.5 sm:px-3 py-1.5 rounded-lg font-medium transition flex items-center gap-1 text-white/80 hover:text-white';
+
+      if (view === 'list') {
+        btnList.className = 'px-2.5 sm:px-3 py-1.5 rounded-lg font-medium transition flex items-center gap-1 bg-white text-blue-900 shadow-sm';
+        viewList.classList.remove('hidden');
+        viewCal.classList.add('hidden');
+        viewAvisos.classList.add('hidden');
+        if (escalaFiltersCard) escalaFiltersCard.classList.remove('hidden');
+        if (currentCollaboratorId && userProfileCard) userProfileCard.classList.remove('hidden');
+        if (shiftLegend) shiftLegend.classList.add('hidden');
+      } else if (view === 'calendar') {
+        btnCal.className = 'px-2.5 sm:px-3 py-1.5 rounded-lg font-medium transition flex items-center gap-1 bg-white text-blue-900 shadow-sm';
+        viewCal.classList.remove('hidden');
+        viewList.classList.add('hidden');
+        viewAvisos.classList.add('hidden');
+        if (escalaFiltersCard) escalaFiltersCard.classList.remove('hidden');
+        if (currentCollaboratorId && userProfileCard) userProfileCard.classList.remove('hidden');
+        if (shiftLegend) shiftLegend.classList.remove('hidden');
+      } else if (view === 'avisos') {
+        btnAvisos.className = 'px-2.5 sm:px-3 py-1.5 rounded-lg font-medium transition flex items-center gap-1 bg-white text-blue-900 shadow-sm';
+        viewAvisos.classList.remove('hidden');
+        viewList.classList.add('hidden');
+        viewCal.classList.add('hidden');
+        if (escalaFiltersCard) escalaFiltersCard.classList.add('hidden');
+        if (userProfileCard) userProfileCard.classList.add('hidden');
+        if (shiftLegend) shiftLegend.classList.add('hidden');
+      }
+    }
+
+    function changeCurrentMonth(month) {
+      currentMonth = month;
+      applyMonth();
+    }
+
+    function toggleMenu() {
+      const p = document.getElementById('menuPanel');
+      p.classList.toggle('hidden');
+      if (!p.classList.contains('hidden')) renderLinks();
+    }
+
+    function renderLinks() {
+      const box = document.getElementById('menuLinks');
+      if (!box) return;
+      box.innerHTML = `
+        <a href="https://whatyson2.github.io/Gestao-de-Ponto-e-Interjornada/" target="_blank" class="block truncate px-3 py-2 rounded-xl bg-slate-50 hover:bg-slate-100 text-blue-700 font-medium text-xs border border-slate-200/60 transition">🔗 Cálculo de horas trabalhadas</a>
+        <a href="https://sites.google.com/decathlon.com/decanet/home" target="_blank" class="block truncate px-3 py-2 rounded-xl bg-slate-50 hover:bg-slate-100 text-blue-700 font-medium text-xs border border-slate-200/60 transition">🔗 Decanet</a>
+      `;
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      fetchLiveScheduleData();
+      setInterval(fetchLiveScheduleData, REFRESH_MS);
+    });
+  </script>
+</body>
+</html>
