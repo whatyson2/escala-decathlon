@@ -216,8 +216,6 @@
           <div class="min-w-0">
             <div class="flex items-center gap-2">
               <h2 id="userName" class="text-base font-bold text-slate-900 leading-tight truncate">Carregando...</h2>
-              
-              <!-- Botão de Engrenagem para Trocar Senha -->
               <button onclick="openChangePasswordModal()" title="Alterar senha deste colaborador" class="w-7 h-7 rounded-lg bg-slate-100 hover:bg-blue-50 hover:text-blue-600 text-slate-400 transition flex items-center justify-center active:scale-95 border border-slate-200/60">
                 <i class="fa-solid fa-gear text-xs"></i>
               </button>
@@ -230,7 +228,7 @@
           </div>
         </div>
 
-        <!-- Estatísticas do Mês (Com Intermediário entre Abertura e Fechamento) -->
+        <!-- Estatísticas do Mês -->
         <div class="grid grid-cols-2 xs:grid-cols-3 sm:flex sm:flex-wrap lg:flex-nowrap items-stretch justify-between gap-1.5 sm:gap-2 bg-slate-50/90 border border-slate-200/80 rounded-xl p-2 text-xs w-full lg:w-auto">
           <div class="flex-1 min-w-[70px] bg-white rounded-lg py-1.5 px-2.5 text-center border border-slate-200/60 shadow-2xs flex flex-col justify-center">
             <span class="block text-[9px] sm:text-[10px] uppercase font-bold text-slate-500 tracking-tight truncate">Trabalho</span>
@@ -249,7 +247,8 @@
             <span id="statOpen" class="text-sm sm:text-base font-extrabold text-amber-600 leading-tight mt-0.5">0</span>
           </div>
 
-          <div id="statIntBox" class="flex-1 min-w-[70px] bg-white rounded-lg py-1.5 px-2.5 text-center border border-slate-200/60 shadow-2xs flex flex-col justify-center">
+          <!-- Intermediário configurado com classe 'hidden' inicial -->
+          <div id="statIntBox" class="hidden flex-1 min-w-[70px] bg-white rounded-lg py-1.5 px-2.5 text-center border border-slate-200/60 shadow-2xs flex flex-col justify-center">
             <span class="block text-[9px] sm:text-[10px] uppercase font-bold text-slate-500 tracking-tight truncate">Intermed.</span>
             <span id="statInt" class="text-sm sm:text-base font-extrabold text-purple-600 leading-tight mt-0.5">0</span>
           </div>
@@ -1708,6 +1707,19 @@
       document.getElementById('statInt').textContent = intCount;
       document.getElementById('statPA').textContent = paCount;
       document.getElementById('statPF').textContent = pfCount;
+
+      // Oculta o bloco de intermediário caso a contagem seja zero
+      const intBox = document.getElementById('statIntBox');
+      if (intBox) intBox.classList.toggle('hidden', intCount === 0);
+
+      const vacBox = document.getElementById('statVacBox');
+      if (vacBox) vacBox.classList.toggle('hidden', vacCount === 0);
+      const paBox = document.getElementById('statPABox');
+      if (paBox) paBox.classList.toggle('hidden', paCount === 0);
+      const pfBox = document.getElementById('statPFBox');
+      if (pfBox) pfBox.classList.toggle('hidden', pfCount === 0);
+      const vgBox = document.getElementById('statVGBox');
+      if (vgBox) vgBox.classList.toggle('hidden', vgCount === 0);
 
       renderListView(schedule);
       renderCalendarView(schedule);
