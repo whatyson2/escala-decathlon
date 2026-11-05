@@ -82,6 +82,9 @@
     <div class="mt-2 text-center">
       <span id="currentUserDisplay" class="text-[10px] font-semibold text-slate-400">Modo Visitante</span>
     </div>
+    <div id="menuFooterNote" class="hidden mt-3 pt-3 border-t border-slate-100">
+      <p class="text-[11px] text-slate-400">Planilha vinculada: aba <i>Backup Atualizado</i>.</p>
+    </div>
   </div>
 
   <!-- Conteúdo Principal -->
@@ -853,7 +856,7 @@
             document.getElementById('auditContent').classList.remove('hidden');
             loadAuditData();
         } else {
-            document.getElementById('passwordError').classList.remove('hidden');
+            document.getElementById('passwordError').classList.add('hidden');
         }
     };
 
@@ -1309,25 +1312,79 @@
         const today = new Date();
         const targetDay = (today.getMonth() === monthIndex) ? today.getDate() : 1;
 
-        const groups = { 'Abertura (A, PA)': [], 'Intermediário (I)': [], 'Fechamento (F, PF)': [], 'Folga (FG, FF)': [] };
+        const groups = {
+          'Abertura (A, PA)': [],
+          'Intermediário (I)': [],
+          'Fechamento (F, PF)': [],
+          'Folga (FG, FF)': [],
+          'Férias (FR)': [],
+          'Atestado (AT)': []
+        };
 
         collaborators.forEach(collab => {
           const sched = scheduleData[collab.id];
           if (!sched) return;
           const shift = sched[targetDay - 1];
           if (!shift) return;
+          
           let firstName = collab.name.split(' ')[0];
-          if (['A', 'A1', 'A2', 'PA'].includes(shift)) groups['Abertura (A, PA)'].push(firstName);
-          else if (shift === 'I') groups['Intermediário (I)'].push(firstName);
-          else if (['F', 'PF'].includes(shift)) groups['Fechamento (F, PF)'].push(firstName);
-          else if (['FG', 'FF'].includes(shift)) groups['Folga (FG, FF)'].push(firstName);
+
+          if (shift === 'PA') {
+            firstName = `<span class="text-orange-600 font-black" title="Permanência Abertura">${firstName}</span>`;
+            groups['Abertura (A, PA)'].unshift(firstName);
+          } else if (shift === 'PF') {
+            firstName = `<span class="text-indigo-600 font-black" title="Permanência Fechamento">${firstName}</span>`;
+            groups['Fechamento (F, PF)'].unshift(firstName);
+          } else if (['A', 'A1', 'A2'].includes(shift)) {
+            groups['Abertura (A, PA)'].push(firstName);
+          } else if (shift === 'I') {
+            groups['Intermediário (I)'].push(firstName);
+          } else if (shift === 'F') {
+            groups['Fechamento (F, PF)'].push(firstName);
+          } else if (['FG', 'FF'].includes(shift)) {
+            groups['Folga (FG, FF)'].push(firstName);
+          } else if (shift === 'FR') {
+            groups['Férias (FR)'].push(firstName);
+          } else if (shift === 'AT') {
+            groups['Atestado (AT)'].push(firstName);
+          }
         });
+
+        const renderGroup = (title, names, textClass, hideIfEmpty = false) => {
+          if (hideIfEmpty && names.length === 0) return '';
+          const namesStr = names.length > 0 ? names.join(', ') : '<span class="text-slate-400 italic font-normal">Nenhum</span>';
+          return `
+            <div class="bg-slate-50/70 rounded-xl p-2.5 border border-slate-100">
+              <h4 class="text-[10px] font-extrabold uppercase tracking-wider ${textClass} mb-1">${title}</h4>
+              <p class="text-xs font-semibold text-slate-700 leading-snug">${namesStr}</p>
+            </div>
+          `;
+        };
+
+        let summaryHtml = `
+          <div class="mt-4 bg-white rounded-2xl border border-slate-200/80 p-4 shadow-sm animate-fade-in">
+            <div class="flex items-center gap-2 mb-3 border-b border-slate-100 pb-2">
+              <span class="text-base">👥</span>
+              <h3 class="text-sm font-bold text-slate-800">Equipe no dia ${targetDay} de ${currentMonth.charAt(0) + currentMonth.slice(1).toLowerCase()}</h3>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              ${renderGroup('Abertura (A, PA)', groups['Abertura (A, PA)'], 'text-amber-600')}
+              ${renderGroup('Intermediário (I)', groups['Intermediário (I)'], 'text-purple-600')}
+              ${renderGroup('Fechamento (F, PF)', groups['Fechamento (F, PF)'], 'text-sky-600')}
+              ${renderGroup('Folga (FG, FF)', groups['Folga (FG, FF)'], 'text-emerald-600')}
+              ${renderGroup('Férias (FR)', groups['Férias (FR)'], 'text-teal-600', true)}
+              ${renderGroup('Atestado (AT)', groups['Atestado (AT)'], 'text-rose-600', true)}
+            </div>
+          </div>
+        `;
 
         document.getElementById('viewList').innerHTML = `
           <div class="bg-white rounded-2xl border border-slate-200/80 p-8 text-center shadow-xs">
+            <div class="w-12 h-12 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center mx-auto mb-3 text-xl">👆</div>
             <h3 class="text-sm font-bold text-slate-800">Nenhum colaborador selecionado</h3>
-            <p class="text-xs text-slate-500 mt-1">Selecione seu nome na lista acima para visualizar sua escala ou clique em "Avisos" no menu superior.</p>
+            <p class="text-xs text-slate-500 mt-1">Selecione seu nome na lista acima para visualizar sua escala.</p>
           </div>
+          ${summaryHtml}
         `;
         return;
       }
@@ -1341,12 +1398,23 @@
       document.getElementById('userMatricula').textContent = `Mat: ${collab.matricula}`;
       document.getElementById('userAvatar').textContent = collab.name.charAt(0);
 
+      const isWhatyson = collab.name.toLowerCase().includes('whatyson');
+      const showForAll = isLastWeekOfMonth();
+
+      if (isWhatyson || showForAll) {
+        if (monthSelectorContainer) monthSelectorContainer.classList.remove('hidden');
+        renderMonthButtons();
+      } else {
+        if (monthSelectorContainer) monthSelectorContainer.classList.add('hidden');
+      }
+
       const schedule = scheduleData[id] || Array(monthDaysCount).fill('-');
-      let workCount = 0, offCount = 0, vacCount = 0, openCount = 0, closeCount = 0, intCount = 0, paCount = 0, pfCount = 0;
+      let workCount = 0, offCount = 0, vacCount = 0, openCount = 0, closeCount = 0, intCount = 0, paCount = 0, pfCount = 0, vgCount = 0;
 
       schedule.forEach(shift => {
         if (shift === 'FG' || shift === 'FF') offCount++;
         else if (shift === 'FR') vacCount++;
+        else if (shift === 'VG') vgCount++;
         else if (shift !== 'AT' && shift !== '-') {
           workCount++;
           if (['A', 'A1', 'A2'].includes(shift)) openCount++;
@@ -1478,6 +1546,20 @@
       applyMonth();
     }
 
+    const DEFAULT_LINKS = [
+      { title: 'Cálculo de horas trabalhadas', url: 'https://whatyson2.github.io/Gestao-de-Ponto-e-Interjornada/' },
+      { title: 'Decanet', url: 'https://sites.google.com/decathlon.com/decanet/home?pli=1&authuser=0' },
+      { title: 'Links úteis', url: 'https://docs.google.com/spreadsheets/d/1bTOMrvGp9gTFyvWWz6YBMOwkB38sum1_7sZkHKuDywc/edit?usp=drivesdk' },
+      { title: 'VTEX (Venda PLUS 📱)', url: 'https://decathlonstore.myvtex.com/assisted-sales/sales-app/sale' },
+      { title: 'Chapeira Digital', url: 'https://chapeira.decathlon.com.br/go-bretas' },
+      { title: 'NOVO l PLANNING 2026', url: 'https://docs.google.com/spreadsheets/d/1PhwTN8y8sCCy7uhzPbr7ihKgUi6TeN5YSWkqk9K6lgQ/edit?usp=sharing' }
+    ];
+
+    const ADMIN_SOURCE_LINK = {
+      title: 'Planilha Fonte (Google Sheets)',
+      url: `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/edit#gid=0`
+    };
+
     function toggleMenu() {
       const p = document.getElementById('menuPanel');
       p.classList.toggle('hidden');
@@ -1486,11 +1568,31 @@
 
     function renderLinks() {
       const box = document.getElementById('menuLinks');
+      const footerNote = document.getElementById('menuFooterNote');
       if (!box) return;
-      box.innerHTML = `
-        <a href="https://whatyson2.github.io/Gestao-de-Ponto-e-Interjornada/" target="_blank" class="block truncate px-3 py-2 rounded-xl bg-slate-50 hover:bg-slate-100 text-blue-700 font-medium text-xs border border-slate-200/60 transition">🔗 Cálculo de horas trabalhadas</a>
-        <a href="https://sites.google.com/decathlon.com/decanet/home" target="_blank" class="block truncate px-3 py-2 rounded-xl bg-slate-50 hover:bg-slate-100 text-blue-700 font-medium text-xs border border-slate-200/60 transition">🔗 Decanet</a>
-      `;
+      box.innerHTML = '';
+
+      const activeCollab = collaborators.find(c => c.id === currentCollaboratorId);
+      const isWhatyson = activeCollab && activeCollab.name.toLowerCase().includes('whatyson');
+
+      const linksToShow = [...DEFAULT_LINKS];
+      if (isWhatyson) {
+        linksToShow.push(ADMIN_SOURCE_LINK);
+      }
+
+      linksToShow.forEach(l => {
+        const a = document.createElement('a');
+        a.href = l.url;
+        a.target = '_blank';
+        a.rel = 'noopener noreferrer';
+        a.className = 'block truncate px-3 py-2 rounded-xl bg-slate-50 hover:bg-slate-100 text-blue-700 font-medium text-xs border border-slate-200/60 transition';
+        a.textContent = '🔗 ' + l.title;
+        box.appendChild(a);
+      });
+
+      if (footerNote) {
+        footerNote.classList.toggle('hidden', !isWhatyson);
+      }
     }
 
     document.addEventListener('DOMContentLoaded', () => {
