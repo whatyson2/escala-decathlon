@@ -353,13 +353,18 @@
           <form onsubmit="handleAdminLogin(event)" class="space-y-4">
               <div>
                   <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">Usuário (Matrícula ou Primeiro Nome)</label>
-                  <input type="text" id="loginUsername" required placeholder="Ex: 50777"
+                  <input type="text" id="loginUsername" required placeholder="Ex: 50777 ou Lucas"
                          class="w-full px-4 py-3 rounded-2xl border border-slate-200 text-sm focus:outline-none focus:ring-4 focus:ring-blue-500/15 focus:border-blue-600 bg-slate-50/50 font-medium">
               </div>
               <div>
                   <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">Senha</label>
-                  <input type="password" id="loginPassword" required placeholder="Senha..."
-                         class="w-full px-4 py-3 rounded-2xl border border-slate-200 text-sm focus:outline-none focus:ring-4 focus:ring-blue-500/15 focus:border-blue-600 bg-slate-50/50 font-medium">
+                  <div class="relative">
+                      <input type="password" id="loginPassword" required placeholder="Senha..."
+                             class="w-full pl-4 pr-11 py-3 rounded-2xl border border-slate-200 text-sm focus:outline-none focus:ring-4 focus:ring-blue-500/15 focus:border-blue-600 bg-slate-50/50 font-medium">
+                      <button type="button" onclick="togglePasswordVisibility()" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-blue-600 transition p-1">
+                          <i id="passwordToggleIcon" class="fa-regular fa-eye"></i>
+                      </button>
+                  </div>
               </div>
               <p id="loginErrorMsg" class="text-xs text-rose-500 font-bold hidden flex items-center gap-1.5">
                   <i class="fa-solid fa-circle-exclamation"></i> Usuário incorreto, senha inválida ou sem permissão de admin.
@@ -446,7 +451,6 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    // Exposto no escopo global para acesso seguro por outras funções
     window.currentAdminUser = null;
     window.isSuperAdmin = false;
 
@@ -492,6 +496,20 @@
         document.getElementById('customModal').classList.add('hidden');
     };
 
+    window.togglePasswordVisibility = function() {
+        const input = document.getElementById('loginPassword');
+        const icon = document.getElementById('passwordToggleIcon');
+        if (!input || !icon) return;
+
+        if (input.type === 'password') {
+            input.type = 'text';
+            icon.className = 'fa-regular fa-eye-slash text-blue-600';
+        } else {
+            input.type = 'password';
+            icon.className = 'fa-regular fa-eye text-slate-400';
+        }
+    };
+
     window.openAuthModal = function() {
         if (window.currentAdminUser) {
             showModal("Encerrar Sessão", "Deseja sair da sua conta administrativa?", false, () => {
@@ -504,7 +522,13 @@
         }
         document.getElementById('authModal').classList.remove('hidden');
         document.getElementById('loginUsername').value = '';
-        document.getElementById('loginPassword').value = '';
+        
+        const passInput = document.getElementById('loginPassword');
+        passInput.value = '';
+        passInput.type = 'password';
+        const icon = document.getElementById('passwordToggleIcon');
+        if (icon) icon.className = 'fa-regular fa-eye text-slate-400';
+
         document.getElementById('loginErrorMsg').classList.add('hidden');
     };
 
@@ -525,11 +549,27 @@
 
             collabsSnap.forEach(docSnap => {
                 const data = docSnap.data();
-                const dbUser = (data.username || data.usuario || data.user || '').trim().toLowerCase();
+                
+                // Mapeia todas as formas que o login/matrícula pode estar no documento do Firestore
+                const possibleLogins = [
+                    data.username,
+                    data.usuario,
+                    data.user,
+                    data.matricula,
+                    data.mat,
+                    data.id,
+                    docSnap.id,
+                    data.nomeCompleto ? data.nomeCompleto.split(' ')[0] : '',
+                    data.name ? data.name.split(' ')[0] : ''
+                ].filter(Boolean).map(v => String(v).trim().toLowerCase());
+
                 const dbPass = (data.password !== undefined ? data.password : data.senha) || '';
                 const isAdmin = data.admin === true;
 
-                if (dbUser === usernameInput && String(dbPass) === String(passwordInput) && isAdmin) {
+                // Verifica se o texto digitado bate com o usuário ou matrícula cadastrada
+                const loginMatches = possibleLogins.includes(usernameInput);
+
+                if (loginMatches && String(dbPass).trim() === passwordInput && isAdmin) {
                     foundAdminName = data.nomeCompleto || data.name || data.username || usernameInput;
                     foundSuperAdmin = data.superadmin === true || data.superAdmin === true;
                 }
@@ -1206,7 +1246,7 @@
         applyMonth();
       } finally {
         if (refreshIcon) refreshIcon.classList.remove('animate-spin');
-        updateHeaderSubtitle();
+        window.updateHeaderSubtitle();
       }
     }
 
