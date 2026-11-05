@@ -27,7 +27,7 @@
         <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS0_ib0U_txAi6Oxbm9RiriJBhjEt9u9HLMzDNHamm7Dur4wT-YvQSgO-Kg&s=10" alt="Decathlon Logo" class="w-[49px] h-[49px] rounded-xl shadow-md border border-white/20 object-cover flex-shrink-0" />
         <div class="min-w-0">
           <div class="flex items-center gap-1.5 flex-wrap">
-            <h1 class="text-sm sm:text-base font-bold tracking-tight leading-tight truncate">Escala Decathlon</h1>
+            <h1 id="headerMainTitle" class="text-sm sm:text-base font-bold tracking-tight leading-tight truncate">Escala Decathlon</h1>
             <span id="badgeActiveMonth" class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-white/20 text-white uppercase tracking-wider">-</span>
           </div>
           <p id="headerSubtitle" class="text-[11px] sm:text-xs text-blue-100 flex items-center gap-1.5 font-medium mt-0.5 truncate">
@@ -555,7 +555,7 @@
             }
         } catch (err) {
             console.error("Erro ao validar login de administrador:", err);
-            errorMsg.classList.remove('hidden');
+            errorMsg.classList.add('hidden');
         }
     };
 
@@ -576,9 +576,8 @@
             const shortName = nameParts.slice(0, 2).join(' ');
             if (activeAuthorName) activeAuthorName.textContent = shortName;
 
-            if (authButtonLabel) authButtonLabel.textContent = 'Sair da Conta';
+            if (authButtonLabel) authButtonLabel.textContent = 'Entrar como Administrador';
 
-            // Controla a visibilidade do botão de auditoria para superadmin
             if (adminAuditBtn) {
                 if (isSuperAdmin) {
                     adminAuditBtn.classList.remove('hidden');
@@ -594,6 +593,7 @@
             if (adminAuditBtn) adminAuditBtn.classList.add('hidden');
         }
         initRealtimeNotices();
+        if (typeof updateHeaderSubtitle === 'function') updateHeaderSubtitle();
         if (typeof renderLinks === 'function') renderLinks();
     }
 
@@ -1168,7 +1168,7 @@
       monthDaysCount = (allData.days && allData.days[currentMonth]) || 31;
       
       const badge = document.getElementById('badgeActiveMonth');
-      if (badge) badge.textContent = currentMonth;
+      if (badge && currentView !== 'avisos') badge.textContent = currentMonth;
 
       if (currentCollaboratorId && !collaborators.some(c => c.id === currentCollaboratorId)) currentCollaboratorId = null;
       renderApp();
@@ -1501,6 +1501,30 @@
       grid.innerHTML = html;
     }
 
+    function updateHeaderSubtitle() {
+      const mainTitle = document.getElementById('headerMainTitle');
+      const monthBadge = document.getElementById('badgeActiveMonth');
+      const subtitleText = document.getElementById('syncStatusText');
+      
+      if (currentView === 'avisos') {
+        if (mainTitle) mainTitle.textContent = 'Painel de Avisos';
+        if (monthBadge) monthBadge.classList.add('hidden');
+        if (subtitleText) {
+          if (currentAdminUser) {
+            subtitleText.textContent = `Administrador: ${currentAdminUser}`;
+          } else {
+            subtitleText.textContent = 'Modo Visitante';
+          }
+        }
+      } else {
+        if (mainTitle) mainTitle.textContent = 'Escala Decathlon';
+        if (monthBadge) monthBadge.classList.remove('hidden');
+        if (subtitleText && subtitleText.dataset.time) {
+          subtitleText.textContent = 'Atualizado às ' + subtitleText.dataset.time;
+        }
+      }
+    }
+
     function switchView(view) {
       currentView = view;
       const btnList = document.getElementById('btnViewList');
@@ -1542,6 +1566,7 @@
         if (userProfileCard) userProfileCard.classList.add('hidden');
         if (shiftLegend) shiftLegend.classList.add('hidden');
       }
+      updateHeaderSubtitle();
     }
 
     function changeCurrentMonth(month) {
@@ -1584,7 +1609,6 @@
       const activeCollab = collaborators.find(c => c.id === currentCollaboratorId);
       const isWhatyson = activeCollab && activeCollab.name.toLowerCase().includes('whatyson');
 
-      // Renderiza Grupo 1: Decanet, Links úteis, Novo Planning
       GROUP1_LINKS.forEach(l => {
         const a = document.createElement('a');
         a.href = l.url;
@@ -1595,7 +1619,6 @@
         box1.appendChild(a);
       });
 
-      // Renderiza Grupo 2: O restante
       const group2Links = [...GROUP2_LINKS];
       if (isWhatyson) {
         group2Links.push(ADMIN_SOURCE_LINK);
