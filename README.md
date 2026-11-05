@@ -64,5 +64,7 @@ Menu lateral retrátil (`☰`) contendo ferramentas integradas:
 3. Nas configurações do repositório (**Settings > Pages**), selecione a branch `main` e a pasta `/ (root)`.
 4. Salve para gerar o link público de acesso da equipe.
 
-https://whatyson2.github.io/escala-decathlon/
+Página principal: https://whatyson2.github.io/escala-decathlon/
+Avisos: https://whatyson2.github.io/escala-decathlon/avisos.html
+
 
