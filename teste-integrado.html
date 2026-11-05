@@ -20,7 +20,7 @@
 </head>
 <body class="bg-slate-50 text-slate-800 min-h-screen pb-16 antialiased select-none">
 
-  <!-- Header Fixo Responsivo (ID dinâmico para estilização de Superadmin) -->
+  <!-- Header Fixo Responsivo -->
   <header id="mainHeader" class="bg-gradient-to-r from-blue-700 via-blue-600 to-indigo-800 text-white shadow-lg sticky top-0 z-30 transition-colors duration-300">
     <div class="max-w-4xl mx-auto px-3 sm:px-4 py-3 flex items-center justify-between gap-2">
       <div class="flex items-center space-x-2.5 min-w-0">
@@ -40,7 +40,7 @@
       <!-- Controles de Ação do Header -->
       <div class="flex flex-col items-end gap-1.5 flex-shrink-0 ml-auto">
         <div class="flex items-center gap-1.5">
-          <button id="btnMenu" onclick="toggleMenu()" title="Menu de links" class="w-8 h-8 rounded-xl bg-white/10 hover:bg-white/20 active:scale-95 transition flex items-center justify-center text-white text-base border border-white/15">
+          <button id="btnMenu" onclick="toggleMenu(event)" title="Menu de links" class="w-8 h-8 rounded-xl bg-white/10 hover:bg-white/20 active:scale-95 transition flex items-center justify-center text-white text-base border border-white/15">
             ☰
           </button>
           <button id="btnRefresh" onclick="handleManualRefresh()" title="Recarregar dados e voltar ao início" class="w-8 h-8 rounded-xl bg-white/10 hover:bg-white/20 active:scale-95 transition flex items-center justify-center text-white text-sm border border-white/15">
@@ -48,7 +48,7 @@
           </button>
         </div>
 
-        <!-- Grupo com Lista, Mês e o botão Avisos -->
+        <!-- Grupo com Lista, Mês e Avisos -->
         <div class="flex items-center bg-black/25 p-1 rounded-xl backdrop-blur-sm border border-white/15 text-xs">
           <button id="btnViewList" onclick="switchView('list')" class="px-2.5 sm:px-3 py-1.5 rounded-lg font-medium transition flex items-center gap-1 bg-white text-slate-900 shadow-sm">
             <span>Lista</span>
@@ -68,7 +68,7 @@
   <div id="menuPanel" class="hidden fixed right-3 z-40 w-72 max-w-[calc(100vw-1.5rem)] bg-white rounded-2xl shadow-2xl border border-slate-200 p-4 text-sm" style="top: calc(env(safe-area-inset-top, 0px) + 3.8rem);">
     <div class="flex items-center justify-between pb-2 mb-2 border-b border-slate-100">
       <p class="text-xs font-bold uppercase tracking-wider text-slate-500">Links Úteis</p>
-      <button onclick="toggleMenu()" class="text-slate-400 hover:text-slate-600 text-sm">✕</button>
+      <button onclick="closeMenu()" class="text-slate-400 hover:text-slate-600 text-sm">✕</button>
     </div>
     
     <!-- Bloco 1: Outros Links (Topo) -->
@@ -105,7 +105,6 @@
                     </div>
                 </div>
 
-                <!-- Botões de Ação Admin dentro do bloco -->
                 <div class="flex items-center gap-2">
                     <button id="adminAuditBtn" onclick="openAuditModal()" class="hidden px-3 py-2 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold text-xs border border-indigo-200 transition flex items-center gap-1.5" title="Painel de Auditoria">
                         <i class="fa-solid fa-shield-halved"></i> <span class="hidden sm:inline">Auditoria</span>
@@ -118,7 +117,6 @@
 
             <form id="noticeForm" onsubmit="submitNotice(event)" class="space-y-4">
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <!-- Data do Aviso -->
                     <div>
                         <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">
                             <i class="fa-regular fa-calendar text-blue-600 mr-1"></i> Data do Aviso
@@ -127,7 +125,6 @@
                                class="w-full px-4 py-3 rounded-2xl border border-slate-200 focus:outline-none focus:ring-4 focus:ring-blue-500/15 focus:border-blue-600 text-sm bg-slate-50/50 font-medium transition">
                     </div>
 
-                    <!-- Tipo de Mídia -->
                     <div>
                         <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">
                             <i class="fa-solid fa-photo-film text-blue-600 mr-1"></i> Tipo de Mídia / Anexo
@@ -140,7 +137,6 @@
                     </div>
                 </div>
 
-                <!-- Mensagem -->
                 <div>
                     <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">
                         <i class="fa-regular fa-message text-blue-600 mr-1"></i> Mensagem / Comunicado
@@ -149,7 +145,6 @@
                               class="w-full px-4 py-3 rounded-2xl border border-slate-200 focus:outline-none focus:ring-4 focus:ring-blue-500/15 focus:border-blue-600 text-sm bg-slate-50/50 font-medium resize-none transition"></textarea>
                 </div>
 
-                <!-- Campo de Input Dinâmico -->
                 <div id="mediaInputContainer">
                     <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">
                         <i class="fa-solid fa-link text-blue-600 mr-1"></i> URL da Imagem ou Link do Google Drive
@@ -158,7 +153,6 @@
                            class="w-full px-4 py-3 rounded-2xl border border-slate-200 focus:outline-none focus:ring-4 focus:ring-blue-500/15 focus:border-blue-600 text-sm bg-slate-50/50 font-medium transition">
                 </div>
 
-                <!-- Botão de Publicar -->
                 <div class="flex justify-end pt-3">
                     <button type="submit" id="btnPublish" class="px-7 py-3 rounded-2xl bg-blue-600 hover:bg-blue-700 active:scale-95 text-white font-bold text-sm shadow-lg shadow-blue-500/25 transition flex items-center gap-2">
                         <i class="fa-solid fa-paper-plane"></i>
@@ -168,7 +162,7 @@
             </form>
         </section>
 
-        <!-- Aviso para visitantes logarem -->
+        <!-- Card de Login Prompt -->
         <div id="loginPromptCard" class="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-3xl border border-blue-100 p-6 text-center shadow-xs">
             <div class="w-12 h-12 rounded-2xl bg-blue-600 text-white flex items-center justify-center mx-auto text-xl shadow-md mb-3">
                 <i class="fa-solid fa-lock"></i>
@@ -203,7 +197,6 @@
     <!-- Card de Filtros e Seleção (Escala) -->
     <div id="escalaFiltersCard" class="bg-white rounded-2xl shadow-sm border border-slate-200/80 p-3 sm:p-4">
       <div class="space-y-3">
-        <!-- Filtro por Setor -->
         <div class="flex items-center justify-between">
           <span class="text-xs font-bold uppercase tracking-wider text-slate-500 flex items-center gap-1.5">
             Setores
@@ -212,8 +205,6 @@
         </div>
 
         <div id="sectorFilterContainer" class="flex gap-1.5 overflow-x-auto hide-scrollbar pb-1 text-xs font-medium"></div>
-
-        <!-- Lista Horizontal de Colaboradores -->
         <div id="collaboratorList" class="flex gap-2 overflow-x-auto hide-scrollbar pt-1 pb-1"></div>
       </div>
     </div>
@@ -332,23 +323,53 @@
 
   </main>
 
-  <!-- Modal de Avisos Diários -->
+  <!-- Modal de Carrossel de Avisos Diários -->
   <div id="avisoModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm transition-opacity">
-    <div class="bg-white rounded-2xl shadow-xl w-full max-w-sm overflow-hidden transform scale-100 transition-all border border-slate-200">
-      <div class="bg-amber-500 px-4 py-3 flex items-center justify-between">
-        <h3 class="text-white font-bold flex items-center gap-2 text-sm sm:text-base">
-          <span class="text-xl">⚠️</span> Aviso Importante
-        </h3>
-        <button onclick="closeAvisoModal()" class="text-white/80 hover:text-white transition-colors">
-          <i class="fa-solid fa-xmark text-lg"></i>
-        </button>
+    <div class="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden transform scale-100 transition-all border border-slate-200">
+      
+      <!-- Cabeçalho do Modal com Navegação do Carrossel -->
+      <div class="bg-amber-500 px-4 py-3 flex items-center justify-between text-white">
+        <div class="flex items-center gap-2">
+          <span class="text-xl">⚠️</span>
+          <h3 class="font-bold text-sm sm:text-base leading-none">Avisos do Dia</h3>
+          <span id="avisoCarouselCounter" class="text-[11px] px-2 py-0.5 rounded-full bg-white/20 font-bold ml-1 hidden">1/1</span>
+        </div>
+        <div class="flex items-center gap-1">
+          <!-- Controles de Navegação -->
+          <button id="avisoBtnPrev" onclick="navigateAvisoCarousel(-1)" class="w-7 h-7 rounded-lg bg-white/20 hover:bg-white/30 active:scale-95 transition flex items-center justify-center text-xs">
+            <i class="fa-solid fa-chevron-left"></i>
+          </button>
+          <button id="avisoBtnNext" onclick="navigateAvisoCarousel(1)" class="w-7 h-7 rounded-lg bg-white/20 hover:bg-white/30 active:scale-95 transition flex items-center justify-center text-xs">
+            <i class="fa-solid fa-chevron-right"></i>
+          </button>
+          <button onclick="closeAvisoModal()" class="w-7 h-7 rounded-lg bg-white/20 hover:bg-white/30 active:scale-95 transition flex items-center justify-center text-xs ml-1">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
       </div>
-      <div class="p-5 max-h-[60vh] overflow-y-auto flex flex-col gap-3">
-        <img id="avisoModalImage" src="" alt="Imagem do Aviso" class="hidden w-full h-auto rounded-lg object-contain shadow-sm border border-slate-200">
+
+      <!-- Conteúdo do Slide de Aviso -->
+      <div class="p-5 max-h-[65vh] overflow-y-auto flex flex-col gap-3">
+        <div id="avisoModalImageWrapper" class="hidden rounded-xl overflow-hidden border border-slate-200 bg-slate-50 max-h-72 flex justify-center shadow-inner">
+          <img id="avisoModalImage" src="" alt="Imagem do Aviso" class="object-contain max-h-72 rounded-xl">
+        </div>
+        <div id="avisoModalDocWrapper" class="hidden p-3 rounded-xl bg-blue-50 border border-blue-100 text-xs flex items-center justify-between gap-2">
+          <span class="font-bold text-slate-700 flex items-center gap-1.5 truncate">
+            <i class="fa-solid fa-file-lines text-blue-600"></i> Documento anexado
+          </span>
+          <a id="avisoModalDocLink" href="#" target="_blank" class="px-3 py-1.5 bg-blue-600 text-white rounded-lg font-bold hover:bg-blue-700 transition shrink-0">
+            Abrir
+          </a>
+        </div>
         <p id="avisoModalContent" class="text-slate-700 text-sm whitespace-pre-wrap leading-relaxed font-medium"></p>
       </div>
-      <div class="p-4 bg-slate-50 border-t border-slate-100 text-right">
-        <button onclick="closeAvisoModal()" class="px-4 py-2 bg-slate-200 text-slate-800 rounded-lg text-sm font-semibold hover:bg-slate-300 transition-colors">Ciente</button>
+
+      <!-- Rodapé do Modal -->
+      <div class="p-3.5 bg-slate-50 border-t border-slate-100 flex items-center justify-between">
+        <span id="avisoModalAuthor" class="text-[11px] font-semibold text-slate-500"></span>
+        <button onclick="closeAvisoModal()" class="px-4 py-2 bg-slate-200 text-slate-800 rounded-xl text-xs font-bold hover:bg-slate-300 transition-colors">
+          Ciente
+        </button>
       </div>
     </div>
   </div>
@@ -797,6 +818,7 @@
                 const itemData = { id: docSnap.id, ...docSnap.data() };
                 notices.push(itemData);
 
+                // Armazena como array de avisos para suportar múltiplos avisos no mesmo dia
                 if (itemData.date) {
                     const parts = itemData.date.split('-');
                     if (parts.length === 3) {
@@ -806,17 +828,15 @@
                             const monthKey = window.MONTH_NAMES ? window.MONTH_NAMES[mIndex] : null;
                             if (monthKey) {
                                 if (!parsedAvisosFirebase[monthKey]) parsedAvisosFirebase[monthKey] = {};
-                                if (parsedAvisosFirebase[monthKey][dNum]) {
-                                    if (itemData.message) parsedAvisosFirebase[monthKey][dNum].text += '\n\n' + itemData.message;
-                                    if (itemData.mediaUrl && !parsedAvisosFirebase[monthKey][dNum].image) {
-                                        parsedAvisosFirebase[monthKey][dNum].image = itemData.mediaUrl;
-                                    }
-                                } else {
-                                    parsedAvisosFirebase[monthKey][dNum] = {
-                                        text: itemData.message || '',
-                                        image: itemData.mediaUrl || ''
-                                    };
-                                }
+                                if (!parsedAvisosFirebase[monthKey][dNum]) parsedAvisosFirebase[monthKey][dNum] = [];
+                                
+                                parsedAvisosFirebase[monthKey][dNum].push({
+                                    id: itemData.id,
+                                    text: itemData.message || '',
+                                    image: itemData.mediaUrl || '',
+                                    author: itemData.author || 'Administrador',
+                                    date: itemData.date
+                                });
                             }
                         }
                     }
@@ -1263,7 +1283,7 @@
       activeSector = 'Todos';
       currentCollaboratorId = null;
       switchView('list');
-      document.getElementById('menuPanel').classList.add('hidden');
+      closeMenu();
       window.scrollTo({ top: 0, behavior: 'smooth' });
       await fetchLiveScheduleData();
     }
@@ -1541,7 +1561,7 @@
         const shiftCode = schedule[day - 1] || '-';
         const style = (SHIFT_STYLES[shiftCode] || { ...SHIFT_STYLES['-'], label: shiftCode });
         const holiday = holidaysOfMonth[day];
-        const avisoObj = (window.avisosData && window.avisosData[currentMonth]) ? window.avisosData[currentMonth][day] : null;
+        const avisosArray = (window.avisosData && window.avisosData[currentMonth]) ? window.avisosData[currentMonth][day] : null;
 
         html += `
           <div class="bg-white rounded-xl border border-slate-200/80 p-3 transition-all">
@@ -1551,7 +1571,12 @@
                   <span class="text-sm font-extrabold">${day}</span>
                   <span class="text-[9px] uppercase tracking-wider opacity-80 mt-0.5">${WEEKDAYS_SHORT[dayOfWeekIndex]}</span>
                 </div>
-                ${avisoObj ? `<button onclick="showAvisoModal('${currentMonth}', ${day})" class="w-8 h-8 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center animate-bounce shadow-sm hover:bg-amber-200 transition-colors border border-amber-200 shrink-0" title="Ver Aviso">⚠️</button>` : ''}
+                ${avisosArray && avisosArray.length > 0 ? `
+                  <button onclick="showAvisoModal('${currentMonth}', ${day})" class="h-8 px-2.5 rounded-full bg-amber-100 text-amber-700 flex items-center gap-1.5 animate-bounce shadow-sm hover:bg-amber-200 transition-colors border border-amber-200 shrink-0 font-bold text-xs" title="Ver Avisos (${avisosArray.length})">
+                    <span>⚠️</span>
+                    ${avisosArray.length > 1 ? `<span class="bg-amber-500 text-white rounded-full px-1.5 py-0.2 text-[10px] leading-tight">${avisosArray.length}</span>` : ''}
+                  </button>
+                ` : ''}
               </div>
               <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl border ${style.border} ${style.bg} ${style.text}">
                 <span class="text-base leading-none">${SHIFT_EMOJI[shiftCode] || '➖'}</span>
@@ -1591,6 +1616,85 @@
       grid.innerHTML = html;
     }
 
+    // Variáveis e Lógica do Carrossel de Avisos
+    let currentAvisosModalList = [];
+    let currentAvisoIndex = 0;
+
+    window.showAvisoModal = function(month, day) {
+      const avisos = (window.avisosData && window.avisosData[month]) ? window.avisosData[month][day] : null;
+      if (!avisos || avisos.length === 0) return;
+
+      currentAvisosModalList = avisos;
+      currentAvisoIndex = 0;
+      renderCurrentModalAvisoSlide();
+      document.getElementById('avisoModal').classList.remove('hidden');
+    };
+
+    function renderCurrentModalAvisoSlide() {
+      const aviso = currentAvisosModalList[currentAvisoIndex];
+      if (!aviso) return;
+
+      const total = currentAvisosModalList.length;
+      const counterEl = document.getElementById('avisoCarouselCounter');
+      const btnPrev = document.getElementById('avisoBtnPrev');
+      const btnNext = document.getElementById('avisoBtnNext');
+
+      if (total > 1) {
+        counterEl.textContent = `${currentAvisoIndex + 1} de ${total}`;
+        counterEl.classList.remove('hidden');
+        btnPrev.classList.remove('hidden');
+        btnNext.classList.remove('hidden');
+      } else {
+        counterEl.classList.add('hidden');
+        btnPrev.classList.add('hidden');
+        btnNext.classList.add('hidden');
+      }
+
+      document.getElementById('avisoModalContent').textContent = aviso.text || '';
+      
+      const imgWrapper = document.getElementById('avisoModalImageWrapper');
+      const imgEl = document.getElementById('avisoModalImage');
+      const docWrapper = document.getElementById('avisoModalDocWrapper');
+      const docLink = document.getElementById('avisoModalDocLink');
+
+      imgWrapper.classList.add('hidden');
+      docWrapper.classList.add('hidden');
+      imgEl.src = '';
+
+      if (aviso.image) {
+        const isImg = aviso.image.startsWith('data:image') || aviso.image.match(/\.(jpeg|jpg|gif|png)$/i) || aviso.image.includes('googleusercontent.com');
+        if (isImg) {
+          imgEl.src = aviso.image;
+          imgWrapper.classList.remove('hidden');
+        } else {
+          docLink.href = aviso.image;
+          docWrapper.classList.remove('hidden');
+        }
+      }
+
+      const authorEl = document.getElementById('avisoModalAuthor');
+      if (authorEl) {
+        authorEl.textContent = `Publicado por: ${aviso.author || 'Administrador'}`;
+      }
+    }
+
+    window.navigateAvisoCarousel = function(direction) {
+      if (!currentAvisosModalList || currentAvisosModalList.length <= 1) return;
+      currentAvisoIndex += direction;
+      if (currentAvisoIndex >= currentAvisosModalList.length) {
+        currentAvisoIndex = 0; // Volta para o primeiro
+      } else if (currentAvisoIndex < 0) {
+        currentAvisoIndex = currentAvisosModalList.length - 1; // Vai para o último
+      }
+      renderCurrentModalAvisoSlide();
+    };
+
+    window.closeAvisoModal = function() {
+      document.getElementById('avisoModal').classList.add('hidden');
+      currentAvisosModalList = [];
+      currentAvisoIndex = 0;
+    };
+
     window.updateHeaderSubtitle = function() {
       const header = document.getElementById('mainHeader');
       const mainTitle = document.getElementById('headerMainTitle');
@@ -1601,7 +1705,6 @@
       const adminUser = window.currentAdminUser;
       const isSuper = window.isSuperAdmin === true;
 
-      // Altera o cabeçalho para preto quando for superadmin, ou azul nos outros casos
       if (header) {
         if (isSuper) {
           header.className = "bg-gradient-to-r from-neutral-900 via-zinc-900 to-black text-white shadow-lg sticky top-0 z-30 transition-colors duration-300 border-b border-zinc-800";
@@ -1705,11 +1808,29 @@
       url: `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/edit#gid=0`
     };
 
-    function toggleMenu() {
+    // Controle de abertura e fechamento seguro do Menu Flutuante
+    window.toggleMenu = function(e) {
+      if (e) e.stopPropagation();
       const p = document.getElementById('menuPanel');
       p.classList.toggle('hidden');
       if (!p.classList.contains('hidden')) renderLinks();
-    }
+    };
+
+    window.closeMenu = function() {
+      const p = document.getElementById('menuPanel');
+      if (p) p.classList.add('hidden');
+    };
+
+    // Listener global para fechar o menu ao clicar fora dele
+    document.addEventListener('click', (event) => {
+      const menuPanel = document.getElementById('menuPanel');
+      const btnMenu = document.getElementById('btnMenu');
+      if (menuPanel && !menuPanel.classList.contains('hidden')) {
+        if (!menuPanel.contains(event.target) && !btnMenu.contains(event.target)) {
+          menuPanel.classList.add('hidden');
+        }
+      }
+    });
 
     function renderLinks() {
       const box1 = document.getElementById('menuLinksGroup1');
