@@ -32,7 +32,7 @@
           </div>
           <p id="headerSubtitle" class="text-[11px] sm:text-xs text-blue-100 flex items-center gap-1.5 font-medium mt-0.5 truncate">
             <span id="syncPulse" class="inline-block w-2 h-2 rounded-full bg-amber-400 animate-pulse flex-shrink-0"></span>
-            <span id="syncStatusText" class="truncate">Conectando à planilha...</span>
+            <span id="syncStatusText" class="truncate">Modo Visitante</span>
           </p>
         </div>
       </div>
@@ -1209,14 +1209,18 @@
         const hh = String(n.getHours()).padStart(2, '0') + ':' + String(n.getMinutes()).padStart(2, '0');
         if (syncStatus) {
             syncStatus.dataset.time = hh;
-            syncStatus.textContent = 'Atualizado às ' + hh;
+            if (currentView !== 'avisos') {
+              syncStatus.textContent = 'Atualizado às ' + hh;
+            }
         }
         applyMonth();
       } catch (err) {
         allData = generateFallbackData();
         AVAILABLE_MONTHS = [...ALLOWED_TWO_MONTHS];
         if (syncPulse) syncPulse.className = 'inline-block w-2 h-2 rounded-full bg-blue-400';
-        if (syncStatus) syncStatus.textContent = 'Modo Local (Offline / Backup)';
+        if (syncStatus && currentView !== 'avisos') {
+          syncStatus.textContent = 'Modo Local (Offline / Backup)';
+        }
         applyMonth();
       } finally {
         if (refreshIcon) refreshIcon.classList.remove('animate-spin');
@@ -1519,8 +1523,12 @@
       } else {
         if (mainTitle) mainTitle.textContent = 'Escala Decathlon';
         if (monthBadge) monthBadge.classList.remove('hidden');
-        if (subtitleText && subtitleText.dataset.time) {
-          subtitleText.textContent = 'Atualizado às ' + subtitleText.dataset.time;
+        if (subtitleText) {
+          if (currentAdminUser) {
+            subtitleText.textContent = `Administrador: ${currentAdminUser}`;
+          } else {
+            subtitleText.textContent = 'Modo Visitante';
+          }
         }
       }
     }
@@ -1642,6 +1650,7 @@
     document.addEventListener('DOMContentLoaded', () => {
       fetchLiveScheduleData();
       setInterval(fetchLiveScheduleData, REFRESH_MS);
+      updateHeaderSubtitle();
     });
   </script>
 </body>
