@@ -747,6 +747,29 @@
             updateAuthUI();
         });
     </script>
+    <!-- ... existing code ... -->
+        window.deleteNotice = async function(docId) {
+            if (!currentSuperadmin) {
+                showModal("Acesso Negado", "Apenas administradores logados podem excluir avisos.", true);
+                return;
+            }
+            showModal("Confirmar Exclusão", "Tem certeza que deseja excluir permanentemente este aviso do banco de dados?", true, async () => {
+                try {
+                    const element = document.getElementById(`notice-card-${docId}`);
+                    if (element) element.remove();
+
+                    await deleteDoc(doc(db, "painel_avisos", docId));
+                    showModal("Removido", "O aviso foi excluído do banco de dados com sucesso.");
+                } catch (err) {
+                    console.error("Erro ao excluir:", err);
+                    showModal("Erro", "Não foi possível excluir o registro.", true);
+                }
+            });
+        };
+
+        function initRealtimeNotices() {
+<!-- ... existing code ... -->
+```eof
 </body>
 </html>
 ```eof
