@@ -206,7 +206,7 @@
       </div>
     </div>
 
-    <!-- Perfil do Colaborador Selecionado com Engrenagem de Troca de Senha -->
+    <!-- Perfil do Colaborador Selecionado com Engrenagem Condicional (Apenas Admin) -->
     <div id="userProfileCard" class="hidden bg-white rounded-2xl shadow-sm border border-slate-200/80 p-4 transition-all">
       <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
         <div class="flex items-center space-x-3.5 min-w-0">
@@ -216,7 +216,7 @@
           <div class="min-w-0">
             <div class="flex items-center gap-2">
               <h2 id="userName" class="text-base font-bold text-slate-900 leading-tight truncate">Carregando...</h2>
-              <button onclick="openChangePasswordModal()" title="Alterar senha deste colaborador" class="w-7 h-7 rounded-lg bg-slate-100 hover:bg-blue-50 hover:text-blue-600 text-slate-400 transition flex items-center justify-center active:scale-95 border border-slate-200/60">
+              <button id="btnCollabSettings" onclick="openChangePasswordModal()" title="Alterar senha deste administrador" class="hidden w-7 h-7 rounded-lg bg-slate-100 hover:bg-blue-50 hover:text-blue-600 text-slate-400 transition flex items-center justify-center active:scale-95 border border-slate-200/60">
                 <i class="fa-solid fa-gear text-xs"></i>
               </button>
             </div>
@@ -247,7 +247,6 @@
             <span id="statOpen" class="text-sm sm:text-base font-extrabold text-amber-600 leading-tight mt-0.5">0</span>
           </div>
 
-          <!-- Intermediário configurado com classe 'hidden' inicial -->
           <div id="statIntBox" class="hidden flex-1 min-w-[70px] bg-white rounded-lg py-1.5 px-2.5 text-center border border-slate-200/60 shadow-2xs flex flex-col justify-center">
             <span class="block text-[9px] sm:text-[10px] uppercase font-bold text-slate-500 tracking-tight truncate">Intermed.</span>
             <span id="statInt" class="text-sm sm:text-base font-extrabold text-purple-600 leading-tight mt-0.5">0</span>
@@ -548,6 +547,24 @@
 
     window.currentAdminUser = null;
     window.isSuperAdmin = false;
+    window.cachedColaboradores = [];
+
+    // Carrega e monitora a lista de colaboradores com status admin no Firestore
+    async function loadColaboradoresData() {
+        try {
+            const collabsSnap = await getDocs(collection(db, "colaboradores"));
+            const list = [];
+            collabsSnap.forEach(docSnap => {
+                list.push({ id: docSnap.id, ...docSnap.data() });
+            });
+            window.cachedColaboradores = list;
+            if (typeof window.updateCollabSettingsGear === 'function') {
+                window.updateCollabSettingsGear();
+            }
+        } catch (e) {
+            console.error("Erro ao carregar colaboradores do Firestore:", e);
+        }
+    }
 
     window.showModal = function(title, message, isError = false, confirmCallback = null) {
         document.getElementById('modalTitle').textContent = title;
@@ -730,6 +747,7 @@
         initRealtimeNotices();
         if (typeof window.updateHeaderSubtitle === 'function') window.updateHeaderSubtitle();
         if (typeof renderLinks === 'function') renderLinks();
+        if (typeof window.updateCollabSettingsGear === 'function') window.updateCollabSettingsGear();
     }
 
     // Modal de Troca de Senha
@@ -1028,6 +1046,8 @@
 
             container.innerHTML = notices.map(item => {
                 const formattedDate = item.date ? item.date.split('-').reverse().join('/') : 'Data não informada';
+                
+                // Formatação estrita para exibir apenas o primeiro e o segundo nome do autor
                 const rawAuthor = item.author || 'Administrador';
                 const authorParts = rawAuthor.trim().split(/\s+/);
                 const authorName = authorParts.slice(0, 2).join(' ');
@@ -1179,6 +1199,7 @@
 
     document.addEventListener('DOMContentLoaded', () => {
         initTodayDate();
+        loadColaboradoresData();
         initRealtimeNotices();
         updateAuthUI();
     });
@@ -1573,6 +1594,44 @@
       displayScheduleFor(id);
     }
 
+    // Exibe ou oculta a engrenagem com base na permissão de administrador no Firestore
+    window.updateCollabSettingsGear = function() {
+        const gearBtn = document.getElementById('btnCollabSettings');
+        if (!gearBtn) return;
+
+        const collab = (window.collaborators || []).find(c => c.id === window.currentCollaboratorId);
+        if (!collab) {
+            gearBtn.classList.add('hidden');
+            return;
+        }
+
+        const firstName = collab.name.split(' ')[0].toLowerCase();
+        const mat = String(collab.matricula || '').trim().toLowerCase();
+        const cid = String(collab.id || '').trim().toLowerCase();
+
+        const dbCollabs = window.cachedColaboradores || [];
+        const found = dbCollabs.find(d => {
+            const possibleMatches = [
+                d.matricula,
+                d.mat,
+                d.id,
+                d.username,
+                d.usuario,
+                d.user,
+                d.nomeCompleto ? d.nomeCompleto.split(' ')[0] : '',
+                d.name ? d.name.split(' ')[0] : ''
+            ].filter(Boolean).map(v => String(v).trim().toLowerCase());
+
+            return possibleMatches.includes(mat) || possibleMatches.includes(cid) || possibleMatches.includes(firstName);
+        });
+
+        if (found && found.admin === true) {
+            gearBtn.classList.remove('hidden');
+        } else {
+            gearBtn.classList.add('hidden');
+        }
+    };
+
     function displayScheduleFor(id) {
       const profileCard = document.getElementById('userProfileCard');
       const monthSelectorContainer = document.getElementById('monthSelectorContainer');
@@ -1672,6 +1731,9 @@
       document.getElementById('userMatricula').textContent = `Mat: ${collab.matricula}`;
       document.getElementById('userAvatar').textContent = collab.name.charAt(0);
 
+      // Atualiza a visibilidade da engrenagem com base na collection colaboradores
+      window.updateCollabSettingsGear();
+
       const isWhatyson = collab.name.toLowerCase().includes('whatyson');
       const showForAll = isLastWeekOfMonth();
 
@@ -1708,7 +1770,6 @@
       document.getElementById('statPA').textContent = paCount;
       document.getElementById('statPF').textContent = pfCount;
 
-      // Oculta o bloco de intermediário caso a contagem seja zero
       const intBox = document.getElementById('statIntBox');
       if (intBox) intBox.classList.toggle('hidden', intCount === 0);
 
@@ -1849,7 +1910,9 @@
 
       const authorEl = document.getElementById('avisoModalAuthor');
       if (authorEl) {
-        authorEl.textContent = `Publicado por: ${aviso.author || 'Administrador'}`;
+        const authorParts = (aviso.author || 'Administrador').trim().split(/\s+/);
+        const shortAuthor = authorParts.slice(0, 2).join(' ');
+        authorEl.textContent = `Publicado por: ${shortAuthor}`;
       }
     }
 
