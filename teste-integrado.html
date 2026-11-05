@@ -20,8 +20,8 @@
 </head>
 <body class="bg-slate-50 text-slate-800 min-h-screen pb-16 antialiased select-none">
 
-  <!-- Header Fixo Responsivo -->
-  <header class="bg-gradient-to-r from-blue-700 via-blue-600 to-indigo-800 text-white shadow-lg sticky top-0 z-30">
+  <!-- Header Fixo Responsivo (ID dinâmico para estilização de Superadmin) -->
+  <header id="mainHeader" class="bg-gradient-to-r from-blue-700 via-blue-600 to-indigo-800 text-white shadow-lg sticky top-0 z-30 transition-colors duration-300">
     <div class="max-w-4xl mx-auto px-3 sm:px-4 py-3 flex items-center justify-between gap-2">
       <div class="flex items-center space-x-2.5 min-w-0">
         <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS0_ib0U_txAi6Oxbm9RiriJBhjEt9u9HLMzDNHamm7Dur4wT-YvQSgO-Kg&s=10" alt="Decathlon Logo" class="w-[49px] h-[49px] rounded-xl shadow-md border border-white/20 object-cover flex-shrink-0" />
@@ -50,7 +50,7 @@
 
         <!-- Grupo com Lista, Mês e o botão Avisos -->
         <div class="flex items-center bg-black/25 p-1 rounded-xl backdrop-blur-sm border border-white/15 text-xs">
-          <button id="btnViewList" onclick="switchView('list')" class="px-2.5 sm:px-3 py-1.5 rounded-lg font-medium transition flex items-center gap-1 bg-white text-blue-900 shadow-sm">
+          <button id="btnViewList" onclick="switchView('list')" class="px-2.5 sm:px-3 py-1.5 rounded-lg font-medium transition flex items-center gap-1 bg-white text-slate-900 shadow-sm">
             <span>Lista</span>
           </button>
           <button id="btnViewCal" onclick="switchView('calendar')" class="px-2.5 sm:px-3 py-1.5 rounded-lg font-medium transition flex items-center gap-1 text-white/80 hover:text-white">
@@ -797,7 +797,6 @@
                 const itemData = { id: docSnap.id, ...docSnap.data() };
                 notices.push(itemData);
 
-                // Mapeia os avisos do Firestore para o calendário da Escala (por Mês e Dia)
                 if (itemData.date) {
                     const parts = itemData.date.split('-');
                     if (parts.length === 3) {
@@ -826,7 +825,6 @@
 
             window.avisosData = parsedAvisosFirebase;
 
-            // Re-renderiza a lista da escala para atualizar os ícones ⚠️ instantaneamente
             if (typeof window.refreshCurrentScheduleDisplay === 'function') {
                 window.refreshCurrentScheduleDisplay();
             }
@@ -1593,38 +1591,24 @@
       grid.innerHTML = html;
     }
 
-    function showAvisoModal(month, day) {
-      const aviso = (window.avisosData && window.avisosData[month]) ? window.avisosData[month][day] : null;
-      if (aviso) {
-        document.getElementById('avisoModalContent').textContent = aviso.text || '';
-        
-        const imgEl = document.getElementById('avisoModalImage');
-        if (aviso.image) {
-          imgEl.src = aviso.image;
-          imgEl.classList.remove('hidden');
-        } else {
-          imgEl.src = '';
-          imgEl.classList.add('hidden');
-        }
-        
-        document.getElementById('avisoModal').classList.remove('hidden');
-      }
-    }
-
-    function closeAvisoModal() {
-      document.getElementById('avisoModal').classList.add('hidden');
-      setTimeout(() => {
-        document.getElementById('avisoModalImage').src = '';
-      }, 300);
-    }
-
     window.updateHeaderSubtitle = function() {
+      const header = document.getElementById('mainHeader');
       const mainTitle = document.getElementById('headerMainTitle');
       const monthBadge = document.getElementById('badgeActiveMonth');
       const subtitleText = document.getElementById('syncStatusText');
       const syncPulse = document.getElementById('syncPulse');
       
       const adminUser = window.currentAdminUser;
+      const isSuper = window.isSuperAdmin === true;
+
+      // Altera o cabeçalho para preto quando for superadmin, ou azul nos outros casos
+      if (header) {
+        if (isSuper) {
+          header.className = "bg-gradient-to-r from-neutral-900 via-zinc-900 to-black text-white shadow-lg sticky top-0 z-30 transition-colors duration-300 border-b border-zinc-800";
+        } else {
+          header.className = "bg-gradient-to-r from-blue-700 via-blue-600 to-indigo-800 text-white shadow-lg sticky top-0 z-30 transition-colors duration-300";
+        }
+      }
 
       if (currentView === 'avisos') {
         if (mainTitle) mainTitle.textContent = 'Painel de Avisos';
@@ -1672,7 +1656,7 @@
       btnAvisos.className = 'px-2.5 sm:px-3 py-1.5 rounded-lg font-medium transition flex items-center gap-1 text-white/80 hover:text-white';
 
       if (view === 'list') {
-        btnList.className = 'px-2.5 sm:px-3 py-1.5 rounded-lg font-medium transition flex items-center gap-1 bg-white text-blue-900 shadow-sm';
+        btnList.className = 'px-2.5 sm:px-3 py-1.5 rounded-lg font-medium transition flex items-center gap-1 bg-white text-slate-900 shadow-sm';
         viewList.classList.remove('hidden');
         viewCal.classList.add('hidden');
         viewAvisos.classList.add('hidden');
@@ -1680,7 +1664,7 @@
         if (currentCollaboratorId && userProfileCard) userProfileCard.classList.remove('hidden');
         if (shiftLegend) shiftLegend.classList.add('hidden');
       } else if (view === 'calendar') {
-        btnCal.className = 'px-2.5 sm:px-3 py-1.5 rounded-lg font-medium transition flex items-center gap-1 bg-white text-blue-900 shadow-sm';
+        btnCal.className = 'px-2.5 sm:px-3 py-1.5 rounded-lg font-medium transition flex items-center gap-1 bg-white text-slate-900 shadow-sm';
         viewCal.classList.remove('hidden');
         viewList.classList.add('hidden');
         viewAvisos.classList.add('hidden');
@@ -1688,7 +1672,7 @@
         if (currentCollaboratorId && userProfileCard) userProfileCard.classList.remove('hidden');
         if (shiftLegend) shiftLegend.classList.remove('hidden');
       } else if (view === 'avisos') {
-        btnAvisos.className = 'px-2.5 sm:px-3 py-1.5 rounded-lg font-medium transition flex items-center gap-1 bg-white text-blue-900 shadow-sm';
+        btnAvisos.className = 'px-2.5 sm:px-3 py-1.5 rounded-lg font-medium transition flex items-center gap-1 bg-white text-slate-900 shadow-sm';
         viewAvisos.classList.remove('hidden');
         viewList.classList.add('hidden');
         viewCal.classList.add('hidden');
@@ -1739,7 +1723,6 @@
       const activeCollab = collaborators.find(c => c.id === currentCollaboratorId);
       const isWhatyson = activeCollab && activeCollab.name.toLowerCase().includes('whatyson');
 
-      // Bloco 1: Outros links no topo
       const group2Links = [...GROUP2_LINKS];
       if (isWhatyson) {
         group2Links.push(ADMIN_SOURCE_LINK);
@@ -1755,7 +1738,6 @@
         box2.appendChild(a);
       });
 
-      // Bloco 2: Acesso com Hub (Decanet, Links úteis, Novo Planning)
       GROUP1_LINKS.forEach(l => {
         const a = document.createElement('a');
         a.href = l.url;
