@@ -90,9 +90,8 @@
   <!-- Conteúdo Principal -->
   <main class="max-w-4xl mx-auto px-3 sm:px-4 pt-4 space-y-4">
 
-    <!-- Seção de Avisos Integrada (Visível ao clicar na aba Avisos) -->
+    <!-- Seção de Avisos Integrada -->
     <div id="viewAvisos" class="hidden space-y-6">
-        <!-- Formulário de Cadastro de Avisos (Visível apenas se logado como Admin) -->
         <section id="publishSection" class="bg-white rounded-3xl shadow-sm border border-slate-200/80 p-5 sm:p-7 transition-all hover:shadow-md hidden">
             <div class="flex items-center justify-between mb-5 pb-3 border-b border-slate-100">
                 <div class="flex items-center gap-3">
@@ -162,7 +161,6 @@
             </form>
         </section>
 
-        <!-- Card de Login Prompt -->
         <div id="loginPromptCard" class="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-3xl border border-blue-100 p-6 text-center shadow-xs">
             <div class="w-12 h-12 rounded-2xl bg-blue-600 text-white flex items-center justify-center mx-auto text-xl shadow-md mb-3">
                 <i class="fa-solid fa-lock"></i>
@@ -174,7 +172,6 @@
             </button>
         </div>
 
-        <!-- Histórico e Listagem de Avisos -->
         <section class="space-y-4">
             <div class="flex items-center justify-between px-1">
                 <div class="flex items-center gap-2.5">
@@ -209,7 +206,7 @@
       </div>
     </div>
 
-    <!-- Perfil do Colaborador Selecionado -->
+    <!-- Perfil do Colaborador Selecionado com Engrenagem de Troca de Senha -->
     <div id="userProfileCard" class="hidden bg-white rounded-2xl shadow-sm border border-slate-200/80 p-4 transition-all">
       <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
         <div class="flex items-center space-x-3.5 min-w-0">
@@ -219,6 +216,11 @@
           <div class="min-w-0">
             <div class="flex items-center gap-2">
               <h2 id="userName" class="text-base font-bold text-slate-900 leading-tight truncate">Carregando...</h2>
+              
+              <!-- Botão de Engrenagem para Trocar Senha -->
+              <button onclick="openChangePasswordModal()" title="Alterar senha deste colaborador" class="w-7 h-7 rounded-lg bg-slate-100 hover:bg-blue-50 hover:text-blue-600 text-slate-400 transition flex items-center justify-center active:scale-95 border border-slate-200/60">
+                <i class="fa-solid fa-gear text-xs"></i>
+              </button>
             </div>
             <p id="userRole" class="text-xs font-medium text-slate-500 mt-1 flex flex-wrap items-center gap-1.5">
               <span id="userSectorText" class="font-semibold text-blue-700 bg-blue-50 px-2 py-0.5 rounded-md truncate max-w-[200px] sm:max-w-none">-</span>
@@ -247,7 +249,6 @@
             <span id="statOpen" class="text-sm sm:text-base font-extrabold text-amber-600 leading-tight mt-0.5">0</span>
           </div>
 
-          <!-- Intermediário posicionado entre Aberturas e Fechamento -->
           <div id="statIntBox" class="flex-1 min-w-[70px] bg-white rounded-lg py-1.5 px-2.5 text-center border border-slate-200/60 shadow-2xs flex flex-col justify-center">
             <span class="block text-[9px] sm:text-[10px] uppercase font-bold text-slate-500 tracking-tight truncate">Intermed.</span>
             <span id="statInt" class="text-sm sm:text-base font-extrabold text-purple-600 leading-tight mt-0.5">0</span>
@@ -326,11 +327,9 @@
 
   </main>
 
-  <!-- Modal de Carrossel de Avisos Diários (Cabeçalho em Azul) -->
+  <!-- Modal de Carrossel de Avisos Diários -->
   <div id="avisoModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm transition-opacity">
     <div class="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden transform scale-100 transition-all border border-slate-200">
-      
-      <!-- Cabeçalho em azul sólido sem amarelo -->
       <div class="bg-blue-600 px-4 py-3 flex items-center justify-between text-white shadow-sm">
         <div class="flex items-center gap-2">
           <i class="fa-solid fa-bullhorn text-sm"></i>
@@ -350,7 +349,6 @@
         </div>
       </div>
 
-      <!-- Conteúdo do Slide de Aviso -->
       <div class="p-5 max-h-[65vh] overflow-y-auto flex flex-col gap-3">
         <div id="avisoModalImageWrapper" class="hidden rounded-xl overflow-hidden border border-slate-200 bg-slate-50 max-h-72 flex justify-center shadow-inner">
           <img id="avisoModalImage" src="" alt="Imagem do Aviso" class="object-contain max-h-72 rounded-xl">
@@ -366,13 +364,67 @@
         <p id="avisoModalContent" class="text-slate-700 text-sm whitespace-pre-line leading-relaxed font-medium"></p>
       </div>
 
-      <!-- Rodapé do Modal -->
       <div class="p-3.5 bg-slate-50 border-t border-slate-100 flex items-center justify-between">
         <span id="avisoModalAuthor" class="text-[11px] font-semibold text-slate-500"></span>
         <button onclick="closeAvisoModal()" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold transition-colors shadow-sm">
           Ciente
         </button>
       </div>
+    </div>
+  </div>
+
+  <!-- Modal de Alteração de Senha -->
+  <div id="changePasswordModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-white rounded-3xl max-w-sm w-full p-6 sm:p-7 shadow-2xl border border-slate-100 space-y-4 animate-in fade-in zoom-in duration-200">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center shadow-inner">
+            <i class="fa-solid fa-key text-sm"></i>
+          </div>
+          <div>
+            <h3 class="font-bold text-slate-900 text-base leading-tight">Alterar Senha</h3>
+            <p id="changePassCollabName" class="text-xs text-slate-500 truncate max-w-[170px]">-</p>
+          </div>
+        </div>
+        <button onclick="closeChangePasswordModal()" class="w-9 h-9 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 flex items-center justify-center transition active:scale-95">
+          <i class="fa-solid fa-xmark text-sm"></i>
+        </button>
+      </div>
+
+      <form id="changePasswordForm" onsubmit="handleChangePasswordSubmit(event)" class="space-y-3.5">
+        <div>
+          <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">Senha Atual</label>
+          <div class="relative">
+            <input type="password" id="currentPasswordInput" required placeholder="Digite sua senha atual..."
+                   class="w-full pl-4 pr-11 py-2.5 rounded-2xl border border-slate-200 text-sm focus:outline-none focus:ring-4 focus:ring-blue-500/15 focus:border-blue-600 bg-slate-50/50 font-medium">
+            <button type="button" onclick="toggleInputVisibility('currentPasswordInput', 'iconEyeCurrent')" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-blue-600 transition p-1">
+              <i id="iconEyeCurrent" class="fa-regular fa-eye"></i>
+            </button>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">Nova Senha</label>
+          <div class="relative">
+            <input type="password" id="newPasswordInput" required minlength="4" placeholder="Nova senha (mínimo 4 caracteres)..."
+                   class="w-full pl-4 pr-11 py-2.5 rounded-2xl border border-slate-200 text-sm focus:outline-none focus:ring-4 focus:ring-blue-500/15 focus:border-blue-600 bg-slate-50/50 font-medium">
+            <button type="button" onclick="toggleInputVisibility('newPasswordInput', 'iconEyeNew')" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-blue-600 transition p-1">
+              <i id="iconEyeNew" class="fa-regular fa-eye"></i>
+            </button>
+          </div>
+        </div>
+
+        <p id="changePassErrorMsg" class="text-xs text-rose-500 font-bold hidden flex items-center gap-1.5">
+          <i class="fa-solid fa-circle-exclamation"></i> Senha atual incorreta ou usuário não encontrado.
+        </p>
+
+        <div class="pt-2">
+          <button type="submit" id="btnSavePassword" class="w-full py-3 bg-blue-600 hover:bg-blue-700 active:scale-95 text-white font-bold rounded-2xl text-sm transition shadow-md shadow-blue-500/20 flex items-center justify-center gap-2">
+            <i class="fa-solid fa-check"></i>
+            <span>Salvar Nova Senha</span>
+          </button>
+        </div>
+      </form>
     </div>
   </div>
 
@@ -554,6 +606,20 @@
         }
     };
 
+    window.toggleInputVisibility = function(inputId, iconId) {
+        const input = document.getElementById(inputId);
+        const icon = document.getElementById(iconId);
+        if (!input || !icon) return;
+
+        if (input.type === 'password') {
+            input.type = 'text';
+            icon.className = 'fa-regular fa-eye-slash text-blue-600';
+        } else {
+            input.type = 'password';
+            icon.className = 'fa-regular fa-eye text-slate-400';
+        }
+    };
+
     window.openAuthModal = function() {
         if (window.currentAdminUser) {
             showModal("Encerrar Sessão", "Deseja sair da sua conta administrativa?", false, () => {
@@ -666,6 +732,95 @@
         if (typeof window.updateHeaderSubtitle === 'function') window.updateHeaderSubtitle();
         if (typeof renderLinks === 'function') renderLinks();
     }
+
+    // Modal de Troca de Senha
+    window.openChangePasswordModal = function() {
+        const collab = (window.collaborators || []).find(c => c.id === window.currentCollaboratorId);
+        if (!collab) return;
+
+        document.getElementById('changePassCollabName').textContent = collab.name;
+        document.getElementById('currentPasswordInput').value = '';
+        document.getElementById('newPasswordInput').value = '';
+        document.getElementById('changePassErrorMsg').classList.add('hidden');
+        document.getElementById('changePasswordModal').classList.remove('hidden');
+    };
+
+    window.closeChangePasswordModal = function() {
+        document.getElementById('changePasswordModal').classList.add('hidden');
+    };
+
+    window.handleChangePasswordSubmit = async function(e) {
+        e.preventDefault();
+        const collab = (window.collaborators || []).find(c => c.id === window.currentCollaboratorId);
+        if (!collab) return;
+
+        const currentPass = document.getElementById('currentPasswordInput').value.trim();
+        const newPass = document.getElementById('newPasswordInput').value.trim();
+        const errorMsg = document.getElementById('changePassErrorMsg');
+        const btn = document.getElementById('btnSavePassword');
+
+        errorMsg.classList.add('hidden');
+
+        const firstName = collab.name.split(' ')[0].toLowerCase();
+        const mat = String(collab.matricula || '').trim().toLowerCase();
+        const cid = String(collab.id || '').trim().toLowerCase();
+
+        try {
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Validando...';
+
+            const collabsSnap = await getDocs(collection(db, "colaboradores"));
+            let targetDocRef = null;
+            let currentPasswordValid = false;
+
+            collabsSnap.forEach(docSnap => {
+                const data = docSnap.data();
+                const possibleMatches = [
+                    data.matricula,
+                    data.mat,
+                    data.id,
+                    docSnap.id,
+                    data.username,
+                    data.usuario,
+                    data.user,
+                    data.nomeCompleto ? data.nomeCompleto.split(' ')[0] : '',
+                    data.name ? data.name.split(' ')[0] : ''
+                ].filter(Boolean).map(v => String(v).trim().toLowerCase());
+
+                const isThisCollab = possibleMatches.includes(mat) || possibleMatches.includes(cid) || possibleMatches.includes(firstName);
+
+                if (isThisCollab) {
+                    const dbPass = String((data.password !== undefined ? data.password : data.senha) || '').trim();
+                    if (dbPass === currentPass) {
+                        currentPasswordValid = true;
+                        targetDocRef = doc(db, "colaboradores", docSnap.id);
+                    }
+                }
+            });
+
+            if (!currentPasswordValid || !targetDocRef) {
+                errorMsg.classList.remove('hidden');
+                return;
+            }
+
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Atualizando...';
+
+            await updateDoc(targetDocRef, {
+                password: newPass,
+                senha: newPass,
+                updatedAt: new Date().toISOString()
+            });
+
+            closeChangePasswordModal();
+            showModal("Senha Atualizada", `A senha de ${collab.name.split(' ')[0]} foi alterada com sucesso!`);
+        } catch (err) {
+            console.error("Erro ao atualizar senha:", err);
+            showModal("Erro", "Ocorreu um erro ao atualizar a senha no banco de dados.", true);
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fa-solid fa-check"></i><span>Salvar Nova Senha</span>';
+        }
+    };
 
     function formatDriveUrl(url) {
         if (!url) return '';
@@ -1109,11 +1264,13 @@
       '-':  { label: 'Sem Registro', bg: 'bg-slate-50', border: 'border-slate-200', text: 'text-slate-500', badge: 'bg-slate-400 text-white' }
     };
 
-    let collaborators = [];
+    window.collaborators = [];
+    let collaborators = window.collaborators;
     let scheduleData = {};
     let monthDaysCount = 31;
     let currentMonth = ALLOWED_TWO_MONTHS[0];
-    let currentCollaboratorId = null;
+    window.currentCollaboratorId = null;
+    let currentCollaboratorId = window.currentCollaboratorId;
     let currentView = 'list';
     let activeSector = 'Todos';
     let allData = null;
@@ -1268,13 +1425,17 @@
       if (!allData) return;
       if (!AVAILABLE_MONTHS.includes(currentMonth)) currentMonth = AVAILABLE_MONTHS[0] || allData.months[0];
       collaborators = allData.collabs;
+      window.collaborators = collaborators;
       scheduleData = allData.sched[currentMonth] || {};
       monthDaysCount = (allData.days && allData.days[currentMonth]) || 31;
       
       const badge = document.getElementById('badgeActiveMonth');
       if (badge && currentView !== 'avisos') badge.textContent = currentMonth;
 
-      if (currentCollaboratorId && !collaborators.some(c => c.id === currentCollaboratorId)) currentCollaboratorId = null;
+      if (currentCollaboratorId && !collaborators.some(c => c.id === currentCollaboratorId)) {
+        currentCollaboratorId = null;
+        window.currentCollaboratorId = null;
+      }
       renderApp();
     }
 
@@ -1283,6 +1444,7 @@
       currentMonth = ALLOWED_TWO_MONTHS[0];
       activeSector = 'Todos';
       currentCollaboratorId = null;
+      window.currentCollaboratorId = null;
       switchView('list');
       closeMenu();
       window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -1407,6 +1569,7 @@
 
     function selectCollaborator(id) {
       currentCollaboratorId = id;
+      window.currentCollaboratorId = id;
       renderCollaboratorChips();
       displayScheduleFor(id);
     }
@@ -1617,7 +1780,6 @@
       grid.innerHTML = html;
     }
 
-    // Variáveis e Lógica do Carrossel de Avisos
     let currentAvisosModalList = [];
     let currentAvisoIndex = 0;
 
