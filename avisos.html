@@ -70,7 +70,7 @@
 
             <form id="noticeForm" onsubmit="submitNotice(event)" class="space-y-4">
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <!-- Data do Aviso (pré-selecionada com o dia atual) -->
+                    <!-- Data do Aviso -->
                     <div>
                         <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">
                             <i class="fa-regular fa-calendar text-blue-600 mr-1"></i> Data do Aviso
@@ -173,8 +173,8 @@
 
             <form onsubmit="handleAdminLogin(event)" class="space-y-4">
                 <div>
-                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">Usuário (Primeiro Nome)</label>
-                    <input type="text" id="loginUsername" required placeholder="Ex: whatyson"
+                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">Usuário (Matrícula ou Primeiro Nome)</label>
+                    <input type="text" id="loginUsername" required placeholder="Ex: 50777"
                            class="w-full px-4 py-3 rounded-2xl border border-slate-200 text-sm focus:outline-none focus:ring-4 focus:ring-blue-500/15 focus:border-blue-600 bg-slate-50/50 font-medium">
                 </div>
                 <div>
@@ -705,19 +705,34 @@
 
                 const logsSnap = await getDocs(collection(db, "logs_acesso"));
                 const logsListDiv = document.getElementById('auditLogsList');
-                let logsHtml = '';
+                let logsArray = [];
 
                 logsSnap.forEach(docSnap => {
-                    const data = docSnap.data();
+                    logsArray.push({ id: docSnap.id, ...docSnap.data() });
+                });
+
+                // Ordenar do mais recente para o mais antigo com base em ultimoAcessoLocal, ultimoAcesso ou timestamp
+                logsArray.sort((a, b) => {
+                    const timeA = new Date(a.ultimoAcessoLocal || a.ultimoAcesso || a.timestamp || '1970-01-01').getTime();
+                    const timeB = new Date(b.ultimoAcessoLocal || b.ultimoAcesso || b.timestamp || '1970-01-01').getTime();
+                    return timeB - timeA;
+                });
+
+                let logsHtml = '';
+                logsArray.forEach(data => {
                     const cliques = data.cliques || [];
+                    const disp = (data.dispositivo || '').trim();
+                    const isMobilePhone = disp === 'Celular - Android' || disp === 'Celular - iOS';
+                    const deviceIcon = isMobilePhone ? '<i class="fa-solid fa-mobile-screen mr-1 text-blue-600"></i>' : '<i class="fa-solid fa-desktop mr-1 text-indigo-600"></i>';
+
                     logsHtml += `
                         <div class="bg-slate-50 rounded-2xl p-3 border border-slate-200/80 text-xs space-y-1">
                             <div class="font-bold text-slate-800 flex justify-between">
-                                <span><i class="fa-solid fa-mobile-screen mr-1 text-blue-600"></i> ${data.dispositivo || 'Dispositivo'}</span>
-                                <span class="text-[10px] text-slate-500">Último: ${data.ultimoAcesso || '-'}</span>
+                                <span>${deviceIcon} ${disp || 'Dispositivo'}</span>
+                                <span class="text-[10px] text-slate-500">Último: ${data.ultimoAcessoLocal || data.ultimoAcesso || '-'}</span>
                             </div>
                             <div class="text-slate-600 font-medium pl-4 border-l-2 border-blue-500 mt-1">
-                                ${cliques.slice(-3).reverse().map(c => `<div>• ${c}</div>`).join('')}
+                                ${cliques.slice().reverse().map(c => `<div>• ${c}</div>`).join('')}
                             </div>
                         </div>
                     `;
@@ -747,27 +762,5 @@
             updateAuthUI();
         });
     </script>
-    <!-- ... existing code ... -->
-        window.deleteNotice = async function(docId) {
-            if (!currentSuperadmin) {
-                showModal("Acesso Negado", "Apenas administradores logados podem excluir avisos.", true);
-                return;
-            }
-            showModal("Confirmar Exclusão", "Tem certeza que deseja excluir permanentemente este aviso do banco de dados?", true, async () => {
-                try {
-                    const element = document.getElementById(`notice-card-${docId}`);
-                    if (element) element.remove();
-
-                    await deleteDoc(doc(db, "painel_avisos", docId));
-                    showModal("Removido", "O aviso foi excluído do banco de dados com sucesso.");
-                } catch (err) {
-                    console.error("Erro ao excluir:", err);
-                    showModal("Erro", "Não foi possível excluir o registro.", true);
-                }
-            });
-        };
-
-        
 </body>
 </html>
-```eof
