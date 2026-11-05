@@ -228,7 +228,7 @@
           </div>
         </div>
 
-        <!-- Estatísticas do Mês -->
+        <!-- Estatísticas do Mês (Com Intermediário entre Abertura e Fechamento) -->
         <div class="grid grid-cols-2 xs:grid-cols-3 sm:flex sm:flex-wrap lg:flex-nowrap items-stretch justify-between gap-1.5 sm:gap-2 bg-slate-50/90 border border-slate-200/80 rounded-xl p-2 text-xs w-full lg:w-auto">
           <div class="flex-1 min-w-[70px] bg-white rounded-lg py-1.5 px-2.5 text-center border border-slate-200/60 shadow-2xs flex flex-col justify-center">
             <span class="block text-[9px] sm:text-[10px] uppercase font-bold text-slate-500 tracking-tight truncate">Trabalho</span>
@@ -246,11 +246,13 @@
             <span class="block text-[9px] sm:text-[10px] uppercase font-bold text-slate-500 tracking-tight truncate">Aberturas</span>
             <span id="statOpen" class="text-sm sm:text-base font-extrabold text-amber-600 leading-tight mt-0.5">0</span>
           </div>
+
           <!-- Intermediário posicionado entre Aberturas e Fechamento -->
           <div id="statIntBox" class="flex-1 min-w-[70px] bg-white rounded-lg py-1.5 px-2.5 text-center border border-slate-200/60 shadow-2xs flex flex-col justify-center">
             <span class="block text-[9px] sm:text-[10px] uppercase font-bold text-slate-500 tracking-tight truncate">Intermed.</span>
             <span id="statInt" class="text-sm sm:text-base font-extrabold text-purple-600 leading-tight mt-0.5">0</span>
           </div>
+
           <div class="flex-1 min-w-[70px] bg-white rounded-lg py-1.5 px-2.5 text-center border border-slate-200/60 shadow-2xs flex flex-col justify-center">
             <span class="block text-[9px] sm:text-[10px] uppercase font-bold text-slate-500 tracking-tight truncate">Fecham.</span>
             <span id="statClose" class="text-sm sm:text-base font-extrabold text-sky-600 leading-tight mt-0.5">0</span>
@@ -324,27 +326,25 @@
 
   </main>
 
-  <!-- Modal de Carrossel de Avisos Diários (Estilo Azul/Índigo) -->
-  <div id="avisoModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm transition-opacity">
-    <div class="bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden transform scale-100 transition-all border border-slate-200">
+  <!-- Modal de Carrossel de Avisos Diários (Cabeçalho em Azul) -->
+  <div id="avisoModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm transition-opacity">
+    <div class="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden transform scale-100 transition-all border border-slate-200">
       
-      <!-- Cabeçalho do Modal Azul/Índigo -->
-      <div class="bg-gradient-to-r from-blue-600 to-indigo-600 px-5 py-4 flex items-center justify-between text-white">
-        <div class="flex items-center gap-2.5">
-          <div class="w-8 h-8 rounded-xl bg-white/20 flex items-center justify-center text-sm shadow-inner">
-            <i class="fa-solid fa-bullhorn"></i>
-          </div>
+      <!-- Cabeçalho em azul sólido sem amarelo -->
+      <div class="bg-blue-600 px-4 py-3 flex items-center justify-between text-white shadow-sm">
+        <div class="flex items-center gap-2">
+          <i class="fa-solid fa-bullhorn text-sm"></i>
           <h3 class="font-bold text-sm sm:text-base leading-none">Avisos do Dia</h3>
-          <span id="avisoCarouselCounter" class="text-[10px] px-2.5 py-0.5 rounded-full bg-white/20 font-bold ml-1 hidden border border-white/20">1/1</span>
+          <span id="avisoCarouselCounter" class="text-[11px] px-2 py-0.5 rounded-full bg-white/20 font-bold ml-1 hidden">1/1</span>
         </div>
-        <div class="flex items-center gap-1.5">
-          <button id="avisoBtnPrev" onclick="navigateAvisoCarousel(-1)" class="w-7 h-7 rounded-lg bg-white/15 hover:bg-white/25 active:scale-95 transition flex items-center justify-center text-xs">
+        <div class="flex items-center gap-1">
+          <button id="avisoBtnPrev" onclick="navigateAvisoCarousel(-1)" class="w-7 h-7 rounded-lg bg-white/20 hover:bg-white/30 active:scale-95 transition flex items-center justify-center text-xs">
             <i class="fa-solid fa-chevron-left"></i>
           </button>
-          <button id="avisoBtnNext" onclick="navigateAvisoCarousel(1)" class="w-7 h-7 rounded-lg bg-white/15 hover:bg-white/25 active:scale-95 transition flex items-center justify-center text-xs">
+          <button id="avisoBtnNext" onclick="navigateAvisoCarousel(1)" class="w-7 h-7 rounded-lg bg-white/20 hover:bg-white/30 active:scale-95 transition flex items-center justify-center text-xs">
             <i class="fa-solid fa-chevron-right"></i>
           </button>
-          <button onclick="closeAvisoModal()" class="w-7 h-7 rounded-lg bg-white/15 hover:bg-white/25 active:scale-95 transition flex items-center justify-center text-xs ml-1">
+          <button onclick="closeAvisoModal()" class="w-7 h-7 rounded-lg bg-white/20 hover:bg-white/30 active:scale-95 transition flex items-center justify-center text-xs ml-1">
             <i class="fa-solid fa-xmark"></i>
           </button>
         </div>
@@ -352,14 +352,14 @@
 
       <!-- Conteúdo do Slide de Aviso -->
       <div class="p-5 max-h-[65vh] overflow-y-auto flex flex-col gap-3">
-        <div id="avisoModalImageWrapper" class="hidden rounded-2xl overflow-hidden border border-slate-200 bg-slate-50 max-h-72 flex justify-center shadow-inner">
+        <div id="avisoModalImageWrapper" class="hidden rounded-xl overflow-hidden border border-slate-200 bg-slate-50 max-h-72 flex justify-center shadow-inner">
           <img id="avisoModalImage" src="" alt="Imagem do Aviso" class="object-contain max-h-72 rounded-xl">
         </div>
-        <div id="avisoModalDocWrapper" class="hidden p-3.5 rounded-2xl bg-blue-50 border border-blue-100 text-xs flex items-center justify-between gap-2 shadow-2xs">
-          <span class="font-bold text-slate-700 flex items-center gap-2 truncate">
-            <i class="fa-solid fa-file-lines text-blue-600 text-sm"></i> Documento anexado
+        <div id="avisoModalDocWrapper" class="hidden p-3 rounded-xl bg-blue-50 border border-blue-100 text-xs flex items-center justify-between gap-2">
+          <span class="font-bold text-slate-700 flex items-center gap-1.5 truncate">
+            <i class="fa-solid fa-file-lines text-blue-600"></i> Documento anexado
           </span>
-          <a id="avisoModalDocLink" href="#" target="_blank" class="px-3.5 py-1.5 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 transition shrink-0 shadow-2xs">
+          <a id="avisoModalDocLink" href="#" target="_blank" class="px-3 py-1.5 bg-blue-600 text-white rounded-lg font-bold hover:bg-blue-700 transition shrink-0">
             Abrir
           </a>
         </div>
@@ -367,9 +367,9 @@
       </div>
 
       <!-- Rodapé do Modal -->
-      <div class="p-4 bg-slate-50 border-t border-slate-100 flex items-center justify-between">
+      <div class="p-3.5 bg-slate-50 border-t border-slate-100 flex items-center justify-between">
         <span id="avisoModalAuthor" class="text-[11px] font-semibold text-slate-500"></span>
-        <button onclick="closeAvisoModal()" class="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold transition-all shadow-md shadow-blue-500/20 active:scale-95">
+        <button onclick="closeAvisoModal()" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold transition-colors shadow-sm">
           Ciente
         </button>
       </div>
@@ -1573,10 +1573,9 @@
                   <span class="text-[9px] uppercase tracking-wider opacity-80 mt-0.5">${WEEKDAYS_SHORT[dayOfWeekIndex]}</span>
                 </div>
                 ${avisosArray && avisosArray.length > 0 ? `
-                  <button onclick="showAvisoModal('${currentMonth}', ${day})" class="h-8 px-2.5 rounded-xl bg-blue-50 text-blue-700 hover:bg-blue-100 flex items-center gap-1.5 shadow-xs transition-all border border-blue-200/70 shrink-0 font-bold text-xs active:scale-95" title="Ver Avisos (${avisosArray.length})">
+                  <button onclick="showAvisoModal('${currentMonth}', ${day})" class="h-8 px-2.5 rounded-full bg-blue-50 text-blue-700 hover:bg-blue-100 flex items-center gap-1.5 animate-bounce shadow-sm transition-colors border border-blue-200 shrink-0 font-bold text-xs" title="Ver Avisos (${avisosArray.length})">
                     <i class="fa-solid fa-bullhorn text-xs"></i>
-                    <span>Aviso</span>
-                    ${avisosArray.length > 1 ? `<span class="bg-blue-600 text-white rounded-full px-1.5 py-0.2 text-[9px] leading-tight font-extrabold">${avisosArray.length}</span>` : ''}
+                    ${avisosArray.length > 1 ? `<span class="bg-blue-600 text-white rounded-full px-1.5 py-0.2 text-[10px] leading-tight">${avisosArray.length}</span>` : ''}
                   </button>
                 ` : ''}
               </div>
@@ -1618,6 +1617,7 @@
       grid.innerHTML = html;
     }
 
+    // Variáveis e Lógica do Carrossel de Avisos
     let currentAvisosModalList = [];
     let currentAvisoIndex = 0;
 
@@ -1720,4 +1720,164 @@
         if (syncPulse) syncPulse.classList.add('hidden');
         
         if (subtitleText) {
-          if (adminUser)
+          if (adminUser) {
+            subtitleText.textContent = `Administrador: ${adminUser}`;
+          } else {
+            subtitleText.textContent = 'Modo Visitante';
+          }
+        }
+      } else {
+        if (mainTitle) mainTitle.textContent = 'Escala Decathlon';
+        if (monthBadge) monthBadge.classList.remove('hidden');
+        if (syncPulse) syncPulse.classList.remove('hidden');
+        
+        if (subtitleText) {
+          if (subtitleText.dataset.time) {
+            subtitleText.textContent = 'Atualizado às ' + subtitleText.dataset.time;
+          } else if (allData === null) {
+            subtitleText.textContent = 'Conectando à planilha...';
+          } else {
+            subtitleText.textContent = 'Modo Operacional';
+          }
+        }
+      }
+    };
+
+    function switchView(view) {
+      currentView = view;
+      const btnList = document.getElementById('btnViewList');
+      const btnCal = document.getElementById('btnViewCal');
+      const btnAvisos = document.getElementById('btnViewAvisos');
+      const viewList = document.getElementById('viewList');
+      const viewCal = document.getElementById('viewCalendar');
+      const viewAvisos = document.getElementById('viewAvisos');
+      const escalaFiltersCard = document.getElementById('escalaFiltersCard');
+      const userProfileCard = document.getElementById('userProfileCard');
+      const shiftLegend = document.getElementById('shiftLegend');
+
+      btnList.className = 'px-2.5 sm:px-3 py-1.5 rounded-lg font-medium transition flex items-center gap-1 text-white/80 hover:text-white';
+      btnCal.className = 'px-2.5 sm:px-3 py-1.5 rounded-lg font-medium transition flex items-center gap-1 text-white/80 hover:text-white';
+      btnAvisos.className = 'px-2.5 sm:px-3 py-1.5 rounded-lg font-medium transition flex items-center gap-1 text-white/80 hover:text-white';
+
+      if (view === 'list') {
+        btnList.className = 'px-2.5 sm:px-3 py-1.5 rounded-lg font-medium transition flex items-center gap-1 bg-white text-slate-900 shadow-sm';
+        viewList.classList.remove('hidden');
+        viewCal.classList.add('hidden');
+        viewAvisos.classList.add('hidden');
+        if (escalaFiltersCard) escalaFiltersCard.classList.remove('hidden');
+        if (currentCollaboratorId && userProfileCard) userProfileCard.classList.remove('hidden');
+        if (shiftLegend) shiftLegend.classList.add('hidden');
+      } else if (view === 'calendar') {
+        btnCal.className = 'px-2.5 sm:px-3 py-1.5 rounded-lg font-medium transition flex items-center gap-1 bg-white text-slate-900 shadow-sm';
+        viewCal.classList.remove('hidden');
+        viewList.classList.add('hidden');
+        viewAvisos.classList.add('hidden');
+        if (escalaFiltersCard) escalaFiltersCard.classList.remove('hidden');
+        if (currentCollaboratorId && userProfileCard) userProfileCard.classList.remove('hidden');
+        if (shiftLegend) shiftLegend.classList.remove('hidden');
+      } else if (view === 'avisos') {
+        btnAvisos.className = 'px-2.5 sm:px-3 py-1.5 rounded-lg font-medium transition flex items-center gap-1 bg-white text-slate-900 shadow-sm';
+        viewAvisos.classList.remove('hidden');
+        viewList.classList.add('hidden');
+        viewCal.classList.add('hidden');
+        if (escalaFiltersCard) escalaFiltersCard.classList.add('hidden');
+        if (userProfileCard) userProfileCard.classList.add('hidden');
+        if (shiftLegend) shiftLegend.classList.add('hidden');
+      }
+      window.updateHeaderSubtitle();
+    }
+
+    function changeCurrentMonth(month) {
+      currentMonth = month;
+      applyMonth();
+    }
+
+    const GROUP1_LINKS = [
+      { title: 'Decanet', url: 'https://sites.google.com/decathlon.com/decanet/home?pli=1&authuser=0' },
+      { title: 'Links úteis', url: 'https://docs.google.com/spreadsheets/d/1bTOMrvGp9gTFyvWWz6YBMOwkB38sum1_7sZkHKuDywc/edit?usp=drivesdk' },
+      { title: 'NOVO l PLANNING 2026', url: 'https://docs.google.com/spreadsheets/d/1PhwTN8y8sCCy7uhzPbr7ihKgUi6TeN5YSWkqk9K6lgQ/edit?usp=sharing' }
+    ];
+
+    const GROUP2_LINKS = [
+      { title: 'Cálculo de horas trabalhadas', url: 'https://whatyson2.github.io/Gestao-de-Ponto-e-Interjornada/' },
+      { title: 'VTEX (Venda PLUS 📱)', url: 'https://decathlonstore.myvtex.com/assisted-sales/sales-app/sale' },
+      { title: 'Chapeira Digital', url: 'https://chapeira.decathlon.com.br/go-bretas' }
+    ];
+
+    const ADMIN_SOURCE_LINK = {
+      title: 'Planilha Fonte (Google Sheets)',
+      url: `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/edit#gid=0`
+    };
+
+    window.toggleMenu = function(e) {
+      if (e) e.stopPropagation();
+      const p = document.getElementById('menuPanel');
+      p.classList.toggle('hidden');
+      if (!p.classList.contains('hidden')) renderLinks();
+    };
+
+    window.closeMenu = function() {
+      const p = document.getElementById('menuPanel');
+      if (p) p.classList.add('hidden');
+    };
+
+    document.addEventListener('click', (event) => {
+      const menuPanel = document.getElementById('menuPanel');
+      const btnMenu = document.getElementById('btnMenu');
+      if (menuPanel && !menuPanel.classList.contains('hidden')) {
+        if (!menuPanel.contains(event.target) && !btnMenu.contains(event.target)) {
+          menuPanel.classList.add('hidden');
+        }
+      }
+    });
+
+    function renderLinks() {
+      const box1 = document.getElementById('menuLinksGroup1');
+      const box2 = document.getElementById('menuLinksGroup2');
+      const footerNote = document.getElementById('menuFooterNote');
+      if (!box1 || !box2) return;
+      
+      box1.innerHTML = '';
+      box2.innerHTML = '';
+
+      const activeCollab = collaborators.find(c => c.id === currentCollaboratorId);
+      const isWhatyson = activeCollab && activeCollab.name.toLowerCase().includes('whatyson');
+
+      const group2Links = [...GROUP2_LINKS];
+      if (isWhatyson) {
+        group2Links.push(ADMIN_SOURCE_LINK);
+      }
+
+      group2Links.forEach(l => {
+        const a = document.createElement('a');
+        a.href = l.url;
+        a.target = '_blank';
+        a.rel = 'noopener noreferrer';
+        a.className = 'block truncate px-3 py-2 rounded-xl bg-slate-50 hover:bg-slate-100 text-blue-700 font-medium text-xs border border-slate-200/60 transition';
+        a.textContent = '🔗 ' + l.title;
+        box2.appendChild(a);
+      });
+
+      GROUP1_LINKS.forEach(l => {
+        const a = document.createElement('a');
+        a.href = l.url;
+        a.target = '_blank';
+        a.rel = 'noopener noreferrer';
+        a.className = 'block truncate px-3 py-2 rounded-xl bg-slate-50 hover:bg-slate-100 text-blue-700 font-medium text-xs border border-slate-200/60 transition';
+        a.textContent = '🔗 ' + l.title;
+        box1.appendChild(a);
+      });
+
+      if (footerNote) {
+        footerNote.classList.toggle('hidden', !isWhatyson);
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      fetchLiveScheduleData();
+      setInterval(fetchLiveScheduleData, REFRESH_MS);
+      window.updateHeaderSubtitle();
+    });
+  </script>
+</body>
+</html>
