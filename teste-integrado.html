@@ -71,23 +71,17 @@
       <button onclick="toggleMenu()" class="text-slate-400 hover:text-slate-600 text-sm">✕</button>
     </div>
     
-    <!-- Bloco 1 de Links -->
-    <div id="menuLinksGroup1" class="space-y-2"></div>
+    <!-- Bloco 1: Outros Links (Topo) -->
+    <div id="menuLinksGroup2" class="space-y-2"></div>
 
-    <div class="my-2 border-t border-slate-100 pt-2">
-      <p class="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1.5">Outros Links</p>
-      <!-- Bloco 2 de Links -->
-      <div id="menuLinksGroup2" class="space-y-2"></div>
+    <!-- Bloco 2: Acesso com Hub (Último bloco) -->
+    <div class="mt-3 pt-3 border-t border-slate-100">
+      <p class="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1.5 flex items-center gap-1.5">
+        <i class="fa-solid fa-network-wired text-blue-600 text-xs"></i> Acesso com Hub
+      </p>
+      <div id="menuLinksGroup1" class="space-y-2"></div>
     </div>
 
-    <div class="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between">
-      <button id="authActionButton" onclick="openAuthModal()" class="w-full py-2 px-3 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-700 font-bold text-xs border border-blue-200 transition flex items-center justify-center gap-1">
-        <i class="fa-solid fa-user-shield"></i> <span id="authButtonLabel">Entrar como Administrador</span>
-      </button>
-    </div>
-    <div class="mt-2 text-center">
-      <span id="currentUserDisplay" class="text-[10px] font-semibold text-slate-400">Modo Visitante</span>
-    </div>
     <div id="menuFooterNote" class="hidden mt-3 pt-3 border-t border-slate-100">
       <p class="text-[11px] text-slate-400">Planilha vinculada: aba <i>Backup Atualizado</i>.</p>
     </div>
@@ -555,7 +549,7 @@
             }
         } catch (err) {
             console.error("Erro ao validar login de administrador:", err);
-            errorMsg.classList.add('hidden');
+            errorMsg.classList.remove('hidden');
         }
     };
 
@@ -564,7 +558,6 @@
         const loginPrompt = document.getElementById('loginPromptCard');
         const currentUserDisplay = document.getElementById('currentUserDisplay');
         const activeAuthorName = document.getElementById('activeAuthorName');
-        const authButtonLabel = document.getElementById('authButtonLabel');
         const adminAuditBtn = document.getElementById('adminAuditBtn');
 
         if (currentAdminUser) {
@@ -575,8 +568,6 @@
             const nameParts = currentAdminUser.trim().split(/\s+/);
             const shortName = nameParts.slice(0, 2).join(' ');
             if (activeAuthorName) activeAuthorName.textContent = shortName;
-
-            if (authButtonLabel) authButtonLabel.textContent = 'Entrar como Administrador';
 
             if (adminAuditBtn) {
                 if (isSuperAdmin) {
@@ -589,7 +580,6 @@
             if (publishSec) publishSec.classList.add('hidden');
             if (loginPrompt) loginPrompt.classList.remove('hidden');
             if (currentUserDisplay) currentUserDisplay.textContent = 'Modo Visitante';
-            if (authButtonLabel) authButtonLabel.textContent = 'Entrar como Administrador';
             if (adminAuditBtn) adminAuditBtn.classList.add('hidden');
         }
         initRealtimeNotices();
@@ -1209,21 +1199,16 @@
         const hh = String(n.getHours()).padStart(2, '0') + ':' + String(n.getMinutes()).padStart(2, '0');
         if (syncStatus) {
             syncStatus.dataset.time = hh;
-            if (currentView !== 'avisos') {
-              syncStatus.textContent = 'Atualizado às ' + hh;
-            }
         }
         applyMonth();
       } catch (err) {
         allData = generateFallbackData();
         AVAILABLE_MONTHS = [...ALLOWED_TWO_MONTHS];
         if (syncPulse) syncPulse.className = 'inline-block w-2 h-2 rounded-full bg-blue-400';
-        if (syncStatus && currentView !== 'avisos') {
-          syncStatus.textContent = 'Modo Local (Offline / Backup)';
-        }
         applyMonth();
       } finally {
         if (refreshIcon) refreshIcon.classList.remove('animate-spin');
+        updateHeaderSubtitle();
       }
     }
 
@@ -1510,26 +1495,18 @@
       const monthBadge = document.getElementById('badgeActiveMonth');
       const subtitleText = document.getElementById('syncStatusText');
       
+      const userText = currentAdminUser ? `Administrador: ${currentAdminUser}` : 'Modo Visitante';
+
       if (currentView === 'avisos') {
         if (mainTitle) mainTitle.textContent = 'Painel de Avisos';
         if (monthBadge) monthBadge.classList.add('hidden');
-        if (subtitleText) {
-          if (currentAdminUser) {
-            subtitleText.textContent = `Administrador: ${currentAdminUser}`;
-          } else {
-            subtitleText.textContent = 'Modo Visitante';
-          }
-        }
       } else {
         if (mainTitle) mainTitle.textContent = 'Escala Decathlon';
         if (monthBadge) monthBadge.classList.remove('hidden');
-        if (subtitleText) {
-          if (currentAdminUser) {
-            subtitleText.textContent = `Administrador: ${currentAdminUser}`;
-          } else {
-            subtitleText.textContent = 'Modo Visitante';
-          }
-        }
+      }
+
+      if (subtitleText) {
+        subtitleText.textContent = userText;
       }
     }
 
@@ -1617,16 +1594,7 @@
       const activeCollab = collaborators.find(c => c.id === currentCollaboratorId);
       const isWhatyson = activeCollab && activeCollab.name.toLowerCase().includes('whatyson');
 
-      GROUP1_LINKS.forEach(l => {
-        const a = document.createElement('a');
-        a.href = l.url;
-        a.target = '_blank';
-        a.rel = 'noopener noreferrer';
-        a.className = 'block truncate px-3 py-2 rounded-xl bg-slate-50 hover:bg-slate-100 text-blue-700 font-medium text-xs border border-slate-200/60 transition';
-        a.textContent = '🔗 ' + l.title;
-        box1.appendChild(a);
-      });
-
+      // Bloco 1 (Outros links no topo)
       const group2Links = [...GROUP2_LINKS];
       if (isWhatyson) {
         group2Links.push(ADMIN_SOURCE_LINK);
@@ -1640,6 +1608,17 @@
         a.className = 'block truncate px-3 py-2 rounded-xl bg-slate-50 hover:bg-slate-100 text-blue-700 font-medium text-xs border border-slate-200/60 transition';
         a.textContent = '🔗 ' + l.title;
         box2.appendChild(a);
+      });
+
+      // Bloco 2 (Acesso com Hub no final)
+      GROUP1_LINKS.forEach(l => {
+        const a = document.createElement('a');
+        a.href = l.url;
+        a.target = '_blank';
+        a.rel = 'noopener noreferrer';
+        a.className = 'block truncate px-3 py-2 rounded-xl bg-slate-50 hover:bg-slate-100 text-blue-700 font-medium text-xs border border-slate-200/60 transition';
+        a.textContent = '🔗 ' + l.title;
+        box1.appendChild(a);
       });
 
       if (footerNote) {
