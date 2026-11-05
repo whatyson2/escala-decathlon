@@ -32,7 +32,7 @@
           </div>
           <p id="headerSubtitle" class="text-[11px] sm:text-xs text-blue-100 flex items-center gap-1.5 font-medium mt-0.5 truncate">
             <span id="syncPulse" class="inline-block w-2 h-2 rounded-full bg-amber-400 animate-pulse flex-shrink-0"></span>
-            <span id="syncStatusText" class="truncate">Modo Visitante</span>
+            <span id="syncStatusText" class="truncate">Conectando à planilha...</span>
           </p>
         </div>
       </div>
@@ -74,7 +74,7 @@
     <!-- Bloco 1: Outros Links (Topo) -->
     <div id="menuLinksGroup2" class="space-y-2"></div>
 
-    <!-- Bloco 2: Acesso com Hub (Último bloco) -->
+    <!-- Bloco 2: Acesso com Hub (Final) -->
     <div class="mt-3 pt-3 border-t border-slate-100">
       <p class="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1.5 flex items-center gap-1.5">
         <i class="fa-solid fa-network-wired text-blue-600 text-xs"></i> Acesso com Hub
@@ -556,14 +556,12 @@
     function updateAuthUI() {
         const publishSec = document.getElementById('publishSection');
         const loginPrompt = document.getElementById('loginPromptCard');
-        const currentUserDisplay = document.getElementById('currentUserDisplay');
         const activeAuthorName = document.getElementById('activeAuthorName');
         const adminAuditBtn = document.getElementById('adminAuditBtn');
 
         if (currentAdminUser) {
             if (publishSec) publishSec.classList.remove('hidden');
             if (loginPrompt) loginPrompt.classList.add('hidden');
-            if (currentUserDisplay) currentUserDisplay.textContent = `Administrador: ${currentAdminUser}`;
             
             const nameParts = currentAdminUser.trim().split(/\s+/);
             const shortName = nameParts.slice(0, 2).join(' ');
@@ -579,7 +577,6 @@
         } else {
             if (publishSec) publishSec.classList.add('hidden');
             if (loginPrompt) loginPrompt.classList.remove('hidden');
-            if (currentUserDisplay) currentUserDisplay.textContent = 'Modo Visitante';
             if (adminAuditBtn) adminAuditBtn.classList.add('hidden');
         }
         initRealtimeNotices();
@@ -1494,19 +1491,36 @@
       const mainTitle = document.getElementById('headerMainTitle');
       const monthBadge = document.getElementById('badgeActiveMonth');
       const subtitleText = document.getElementById('syncStatusText');
+      const syncPulse = document.getElementById('syncPulse');
       
-      const userText = currentAdminUser ? `Administrador: ${currentAdminUser}` : 'Modo Visitante';
-
       if (currentView === 'avisos') {
+        // Modo Avisos: Título "Painel de Avisos", sem badge de mês e com identificador de admin/visitante
         if (mainTitle) mainTitle.textContent = 'Painel de Avisos';
         if (monthBadge) monthBadge.classList.add('hidden');
+        if (syncPulse) syncPulse.classList.add('hidden');
+        
+        if (subtitleText) {
+          if (currentAdminUser) {
+            subtitleText.textContent = `Administrador: ${currentAdminUser}`;
+          } else {
+            subtitleText.textContent = 'Modo Visitante';
+          }
+        }
       } else {
+        // Modo Escala (Lista ou Calendário): Volta para "Escala Decathlon", mostra o mês e a sincronização
         if (mainTitle) mainTitle.textContent = 'Escala Decathlon';
         if (monthBadge) monthBadge.classList.remove('hidden');
-      }
-
-      if (subtitleText) {
-        subtitleText.textContent = userText;
+        if (syncPulse) syncPulse.classList.remove('hidden');
+        
+        if (subtitleText) {
+          if (subtitleText.dataset.time) {
+            subtitleText.textContent = 'Atualizado às ' + subtitleText.dataset.time;
+          } else if (allData === null) {
+            subtitleText.textContent = 'Conectando à planilha...';
+          } else {
+            subtitleText.textContent = 'Modo Operacional';
+          }
+        }
       }
     }
 
@@ -1594,7 +1608,7 @@
       const activeCollab = collaborators.find(c => c.id === currentCollaboratorId);
       const isWhatyson = activeCollab && activeCollab.name.toLowerCase().includes('whatyson');
 
-      // Bloco 1 (Outros links no topo)
+      // Bloco 1: Outros links no topo
       const group2Links = [...GROUP2_LINKS];
       if (isWhatyson) {
         group2Links.push(ADMIN_SOURCE_LINK);
@@ -1610,7 +1624,7 @@
         box2.appendChild(a);
       });
 
-      // Bloco 2 (Acesso com Hub no final)
+      // Bloco 2: Acesso com Hub (Decanet, Links úteis, Novo Planning)
       GROUP1_LINKS.forEach(l => {
         const a = document.createElement('a');
         a.href = l.url;
