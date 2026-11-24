@@ -438,116 +438,116 @@
                  class="w-full px-4 py-2.5 rounded-2xl border border-slate-200 text-sm focus:outline-none focus:ring-4 focus:ring-blue-500/15 focus:border-blue-600 bg-slate-50/50 font-medium">
         </div>
 
-        <div>
-          <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">Senha</label>
-          <div class="relative">
-            <input type="password" id="settingsLoginPass" required placeholder="Digite sua senha..."
-                   class="w-full pl-4 pr-11 py-2.5 rounded-2xl border border-slate-200 text-sm focus:outline-none focus:ring-4 focus:ring-blue-500/15 focus:border-blue-600 bg-slate-50/50 font-medium">
-            <button type="button" onclick="toggleInputVisibility('settingsLoginPass', 'iconEyeSettingsLogin')" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-blue-600 transition p-1">
-              <i id="iconEyeSettingsLogin" class="fa-regular fa-eye"></i>
-            </button>
-          </div>
+      <!-- Etapa 2: Opções do Perfil (Abas separadas: Foto/Cor e Trocar Senha) -->
+      <div id="settingsOptionsStep" class="hidden space-y-4">
+        <!-- Seletor de Abas -->
+        <div class="grid grid-cols-2 gap-1.5 bg-slate-100 p-1 rounded-2xl border border-slate-200/80 text-xs font-bold">
+          <button type="button" id="btnSettingsTabAppearance" onclick="switchSettingsTab('appearance')" class="py-2.5 px-3 rounded-xl bg-white text-blue-600 shadow-xs transition flex items-center justify-center gap-1.5">
+            <i class="fa-solid fa-palette"></i>
+            <span>Foto e Cor</span>
+          </button>
+          <button type="button" id="btnSettingsTabPassword" onclick="switchSettingsTab('password')" class="py-2.5 px-3 rounded-xl text-slate-600 hover:text-slate-900 transition flex items-center justify-center gap-1.5">
+            <i class="fa-solid fa-key"></i>
+            <span>Trocar Senha</span>
+          </button>
         </div>
 
-        <p id="settingsLoginError" class="text-xs text-rose-500 font-bold hidden flex items-center gap-1.5">
-          <i class="fa-solid fa-circle-exclamation"></i> Usuário ou senha incorretos para este perfil.
-        </p>
-
-        <button type="submit" id="btnSettingsLoginSubmit" class="w-full py-3 bg-blue-600 hover:bg-blue-700 active:scale-95 text-white font-bold rounded-2xl text-sm transition shadow-md shadow-blue-500/20 flex items-center justify-center gap-2">
-          <i class="fa-solid fa-right-to-bracket"></i>
-          <span>Entrar nas Configurações</span>
-        </button>
-      </form>
-
-      <!-- Etapa 2: Opções do Perfil (Foto, Cor de Fundo e Alterar Senha) -->
-      <div id="settingsOptionsStep" class="hidden space-y-5">
-        <!-- Pré-visualização ao vivo -->
-        <div id="settingsPreviewCard" class="rounded-2xl border border-slate-200/80 p-3.5 flex items-center gap-3 transition-colors">
-          <div id="settingsPreviewAvatar" class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-600 text-white font-black text-xl flex items-center justify-center overflow-hidden shadow-sm flex-shrink-0">
-            -
+        <!-- Aba 1: Foto do Perfil e Cor de Fundo -->
+        <div id="settingsTabAppearance" class="space-y-4">
+          <!-- Pré-visualização ao vivo -->
+          <div id="settingsPreviewCard" class="rounded-2xl border border-slate-200/80 p-3.5 flex items-center gap-3 transition-colors">
+            <div id="settingsPreviewAvatar" class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-600 text-white font-black text-xl flex items-center justify-center overflow-hidden shadow-sm flex-shrink-0">
+              -
+            </div>
+            <div class="min-w-0">
+              <p id="settingsPreviewName" class="text-sm font-bold text-slate-900 truncate">-</p>
+              <p id="settingsPreviewHint" class="text-[11px] text-slate-500">Prévia do seu cartão de perfil</p>
+            </div>
           </div>
-          <div class="min-w-0">
-            <p id="settingsPreviewName" class="text-sm font-bold text-slate-900 truncate">-</p>
-            <p id="settingsPreviewHint" class="text-[11px] text-slate-500">Prévia do seu cartão de perfil</p>
-          </div>
-        </div>
 
-        <!-- Seção: Foto do Perfil -->
-        <div class="space-y-2.5 pt-1">
-          <label class="block text-xs font-bold uppercase tracking-wider text-slate-600">
-            <i class="fa-regular fa-image text-blue-600 mr-1"></i> Foto do Perfil
-          </label>
-          <div class="flex items-center gap-2">
-            <label for="settingsPhotoInput" class="flex-1 cursor-pointer px-4 py-2.5 rounded-2xl border border-dashed border-blue-300 bg-blue-50/50 hover:bg-blue-50 text-blue-700 text-xs font-bold text-center transition flex items-center justify-center gap-2">
-              <i class="fa-solid fa-camera"></i>
-              <span>Escolher Foto</span>
-            </label>
-            <input type="file" id="settingsPhotoInput" accept="image/*" onchange="handleProfilePhotoSelect(event)" class="hidden">
-            <button type="button" id="btnRemoveProfilePhoto" onclick="removeProfilePhoto()" class="hidden px-3.5 py-2.5 rounded-2xl bg-rose-50 hover:bg-rose-100 text-rose-600 text-xs font-bold border border-rose-200 transition" title="Remover foto">
-              <i class="fa-solid fa-trash-can"></i>
-            </button>
-          </div>
-          <p class="text-[11px] text-slate-400">A imagem é recortada e comprimida automaticamente antes de salvar.</p>
-        </div>
-
-        <!-- Seção: Cor de Fundo do Perfil -->
-        <div class="space-y-2.5 pt-1">
-          <div class="flex items-center justify-between">
+          <!-- Seção: Foto do Perfil -->
+          <div class="space-y-2 pt-1">
             <label class="block text-xs font-bold uppercase tracking-wider text-slate-600">
-              <i class="fa-solid fa-palette text-blue-600 mr-1"></i> Cor de Fundo do Perfil
+              <i class="fa-regular fa-image text-blue-600 mr-1"></i> Foto do Perfil
             </label>
-            <button type="button" onclick="selectProfileBgColor('#ffffff')" class="text-[11px] font-semibold text-blue-600 hover:underline">
-              Restaurar padrão
-            </button>
+            <div class="flex items-center gap-2">
+              <label for="settingsPhotoInput" class="flex-1 cursor-pointer px-4 py-2.5 rounded-2xl border border-dashed border-blue-300 bg-blue-50/50 hover:bg-blue-50 text-blue-700 text-xs font-bold text-center transition flex items-center justify-center gap-2">
+                <i class="fa-solid fa-camera"></i>
+                <span>Escolher Foto</span>
+              </label>
+              <input type="file" id="settingsPhotoInput" accept="image/*" onchange="handleProfilePhotoSelect(event)" class="hidden">
+              <button type="button" id="btnRemoveProfilePhoto" onclick="removeProfilePhoto()" class="hidden px-3.5 py-2.5 rounded-2xl bg-rose-50 hover:bg-rose-100 text-rose-600 text-xs font-bold border border-rose-200 transition" title="Remover foto">
+                <i class="fa-solid fa-trash-can"></i>
+              </button>
+            </div>
+            <p class="text-[11px] text-slate-400">A imagem é recortada e comprimida automaticamente antes de salvar.</p>
           </div>
 
-          <div class="flex items-center flex-wrap gap-2">
-            <button type="button" onclick="selectProfileBgColor('#ffffff')" class="w-8 h-8 rounded-xl border-2 border-slate-300 bg-white shadow-2xs hover:scale-105 transition" title="Branco (Padrão)"></button>
-            <button type="button" onclick="selectProfileBgColor('#eff6ff')" class="w-8 h-8 rounded-xl border-2 border-blue-200 bg-[#eff6ff] shadow-2xs hover:scale-105 transition" title="Azul Suave"></button>
-            <button type="button" onclick="selectProfileBgColor('#eef2ff')" class="w-8 h-8 rounded-xl border-2 border-indigo-200 bg-[#eef2ff] shadow-2xs hover:scale-105 transition" title="Índigo Suave"></button>
-            <button type="button" onclick="selectProfileBgColor('#ecfdf5')" class="w-8 h-8 rounded-xl border-2 border-emerald-200 bg-[#ecfdf5] shadow-2xs hover:scale-105 transition" title="Verde Suave"></button>
-            <button type="button" onclick="selectProfileBgColor('#fffbeb')" class="w-8 h-8 rounded-xl border-2 border-amber-200 bg-[#fffbeb] shadow-2xs hover:scale-105 transition" title="Âmbar Suave"></button>
-            <button type="button" onclick="selectProfileBgColor('#fdf2f8')" class="w-8 h-8 rounded-xl border-2 border-pink-200 bg-[#fdf2f8] shadow-2xs hover:scale-105 transition" title="Rosa Suave"></button>
-            <button type="button" onclick="selectProfileBgColor('#faf5ff')" class="w-8 h-8 rounded-xl border-2 border-purple-200 bg-[#faf5ff] shadow-2xs hover:scale-105 transition" title="Roxo Suave"></button>
-            <button type="button" onclick="selectProfileBgColor('#0f172a')" class="w-8 h-8 rounded-xl border-2 border-slate-700 bg-[#0f172a] shadow-2xs hover:scale-105 transition" title="Escuro"></button>
-            <label class="w-8 h-8 rounded-xl border-2 border-slate-200 bg-slate-50 flex items-center justify-center cursor-pointer hover:border-blue-400 transition overflow-hidden" title="Cor personalizada">
-              <input type="color" id="settingsBgColorPicker" value="#ffffff" oninput="selectProfileBgColor(this.value)" class="w-10 h-10 border-0 p-0 cursor-pointer bg-transparent">
-            </label>
+          <!-- Seção: Cor de Fundo do Perfil -->
+          <div class="space-y-2 pt-1">
+            <div class="flex items-center justify-between">
+              <label class="block text-xs font-bold uppercase tracking-wider text-slate-600">
+                <i class="fa-solid fa-palette text-blue-600 mr-1"></i> Cor de Fundo do Perfil
+              </label>
+              <button type="button" onclick="selectProfileBgColor('#ffffff')" class="text-[11px] font-semibold text-blue-600 hover:underline">
+                Restaurar padrão
+              </button>
+            </div>
+
+            <div class="flex items-center flex-wrap gap-2">
+              <button type="button" onclick="selectProfileBgColor('#ffffff')" class="w-8 h-8 rounded-xl border-2 border-slate-300 bg-white shadow-2xs hover:scale-105 transition" title="Branco (Padrão)"></button>
+              <button type="button" onclick="selectProfileBgColor('#eff6ff')" class="w-8 h-8 rounded-xl border-2 border-blue-200 bg-[#eff6ff] shadow-2xs hover:scale-105 transition" title="Azul Suave"></button>
+              <button type="button" onclick="selectProfileBgColor('#eef2ff')" class="w-8 h-8 rounded-xl border-2 border-indigo-200 bg-[#eef2ff] shadow-2xs hover:scale-105 transition" title="Índigo Suave"></button>
+              <button type="button" onclick="selectProfileBgColor('#ecfdf5')" class="w-8 h-8 rounded-xl border-2 border-emerald-200 bg-[#ecfdf5] shadow-2xs hover:scale-105 transition" title="Verde Suave"></button>
+              <button type="button" onclick="selectProfileBgColor('#fffbeb')" class="w-8 h-8 rounded-xl border-2 border-amber-200 bg-[#fffbeb] shadow-2xs hover:scale-105 transition" title="Âmbar Suave"></button>
+              <button type="button" onclick="selectProfileBgColor('#fdf2f8')" class="w-8 h-8 rounded-xl border-2 border-pink-200 bg-[#fdf2f8] shadow-2xs hover:scale-105 transition" title="Rosa Suave"></button>
+              <button type="button" onclick="selectProfileBgColor('#faf5ff')" class="w-8 h-8 rounded-xl border-2 border-purple-200 bg-[#faf5ff] shadow-2xs hover:scale-105 transition" title="Roxo Suave"></button>
+              <button type="button" onclick="selectProfileBgColor('#0f172a')" class="w-8 h-8 rounded-xl border-2 border-slate-700 bg-[#0f172a] shadow-2xs hover:scale-105 transition" title="Escuro"></button>
+              <label class="w-8 h-8 rounded-xl border-2 border-slate-200 bg-slate-50 flex items-center justify-center cursor-pointer hover:border-blue-400 transition overflow-hidden" title="Cor personalizada">
+                <input type="color" id="settingsBgColorPicker" value="#ffffff" oninput="selectProfileBgColor(this.value)" class="w-10 h-10 border-0 p-0 cursor-pointer bg-transparent">
+              </label>
+            </div>
           </div>
+
+          <button type="button" id="btnSaveAppearance" onclick="saveProfileAppearance()" class="w-full py-3 bg-blue-600 hover:bg-blue-700 active:scale-95 text-white font-bold rounded-2xl text-sm transition shadow-md shadow-blue-500/20 flex items-center justify-center gap-2">
+            <i class="fa-solid fa-floppy-disk"></i>
+            <span>Salvar Foto e Cor do Perfil</span>
+          </button>
         </div>
 
-        <button type="button" id="btnSaveAppearance" onclick="saveProfileAppearance()" class="w-full py-3 bg-blue-600 hover:bg-blue-700 active:scale-95 text-white font-bold rounded-2xl text-sm transition shadow-md shadow-blue-500/20 flex items-center justify-center gap-2">
-          <i class="fa-solid fa-floppy-disk"></i>
-          <span>Salvar Foto e Cor do Perfil</span>
-        </button>
-
-        <!-- Seção: Alterar Senha -->
-        <form id="settingsPasswordForm" onsubmit="handleSettingsPasswordChange(event)" class="pt-4 border-t border-slate-100 space-y-3">
-          <p class="text-xs font-bold uppercase tracking-wider text-slate-600 flex items-center gap-1.5">
-            <i class="fa-solid fa-key text-blue-600"></i> Alterar Senha
+        <!-- Aba 2: Alterar Senha (Separada) -->
+        <form id="settingsPasswordForm" onsubmit="handleSettingsPasswordChange(event)" class="hidden space-y-3.5 pt-1">
+          <p class="text-xs text-slate-500 leading-relaxed">
+            Digite e confirme sua nova senha abaixo. Esta alteração não afeta sua foto ou cor de perfil.
           </p>
 
-          <div class="relative">
-            <input type="password" id="settingsNewPass" required minlength="4" placeholder="Nova senha (mínimo 4 caracteres)"
-                   class="w-full pl-4 pr-11 py-2.5 rounded-2xl border border-slate-200 text-sm focus:outline-none focus:ring-4 focus:ring-blue-500/15 focus:border-blue-600 bg-slate-50/50 font-medium">
-            <button type="button" onclick="toggleInputVisibility('settingsNewPass', 'iconEyeSettingsNew')" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-blue-600 transition p-1">
-              <i id="iconEyeSettingsNew" class="fa-regular fa-eye"></i>
-            </button>
+          <div>
+            <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">Nova Senha</label>
+            <div class="relative">
+              <input type="password" id="settingsNewPass" required minlength="4" placeholder="Nova senha (mínimo 4 caracteres)"
+                     class="w-full pl-4 pr-11 py-2.5 rounded-2xl border border-slate-200 text-sm focus:outline-none focus:ring-4 focus:ring-blue-500/15 focus:border-blue-600 bg-slate-50/50 font-medium">
+              <button type="button" onclick="toggleInputVisibility('settingsNewPass', 'iconEyeSettingsNew')" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-blue-600 transition p-1">
+                <i id="iconEyeSettingsNew" class="fa-regular fa-eye"></i>
+              </button>
+            </div>
           </div>
 
-          <div class="relative">
-            <input type="password" id="settingsConfirmPass" required minlength="4" placeholder="Confirmar nova senha"
-                   class="w-full pl-4 pr-11 py-2.5 rounded-2xl border border-slate-200 text-sm focus:outline-none focus:ring-4 focus:ring-blue-500/15 focus:border-blue-600 bg-slate-50/50 font-medium">
-            <button type="button" onclick="toggleInputVisibility('settingsConfirmPass', 'iconEyeSettingsConfirm')" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-blue-600 transition p-1">
-              <i id="iconEyeSettingsConfirm" class="fa-regular fa-eye"></i>
-            </button>
+          <div>
+            <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">Confirmar Nova Senha</label>
+            <div class="relative">
+              <input type="password" id="settingsConfirmPass" required minlength="4" placeholder="Repita a nova senha"
+                     class="w-full pl-4 pr-11 py-2.5 rounded-2xl border border-slate-200 text-sm focus:outline-none focus:ring-4 focus:ring-blue-500/15 focus:border-blue-600 bg-slate-50/50 font-medium">
+              <button type="button" onclick="toggleInputVisibility('settingsConfirmPass', 'iconEyeSettingsConfirm')" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-blue-600 transition p-1">
+                <i id="iconEyeSettingsConfirm" class="fa-regular fa-eye"></i>
+              </button>
+            </div>
           </div>
 
           <p id="settingsPassError" class="text-xs text-rose-500 font-bold hidden flex items-center gap-1.5">
             <i class="fa-solid fa-circle-exclamation"></i> As senhas não coincidem.
           </p>
 
-          <button type="submit" id="btnSavePassword" class="w-full py-2.5 bg-slate-800 hover:bg-slate-900 active:scale-95 text-white font-bold rounded-2xl text-xs transition flex items-center justify-center gap-2">
+          <button type="submit" id="btnSavePassword" class="w-full py-3 bg-slate-800 hover:bg-slate-900 active:scale-95 text-white font-bold rounded-2xl text-sm transition shadow-md flex items-center justify-center gap-2">
             <i class="fa-solid fa-check"></i>
             <span>Atualizar Senha</span>
           </button>
@@ -933,6 +933,28 @@
     }
 
     // Abre o modal de configurações sempre solicitando login primeiro
+    window.switchSettingsTab = function(tab) {
+        const tabAppearance = document.getElementById('settingsTabAppearance');
+        const tabPassword = document.getElementById('settingsPasswordForm');
+        const btnAppearance = document.getElementById('btnSettingsTabAppearance');
+        const btnPassword = document.getElementById('btnSettingsTabPassword');
+        const passError = document.getElementById('settingsPassError');
+
+        if (passError) passError.classList.add('hidden');
+
+        if (tab === 'password') {
+            if (tabAppearance) tabAppearance.classList.add('hidden');
+            if (tabPassword) tabPassword.classList.remove('hidden');
+            if (btnAppearance) btnAppearance.className = 'py-2.5 px-3 rounded-xl text-slate-600 hover:text-slate-900 transition flex items-center justify-center gap-1.5';
+            if (btnPassword) btnPassword.className = 'py-2.5 px-3 rounded-xl bg-white text-blue-600 shadow-xs transition flex items-center justify-center gap-1.5';
+        } else {
+            if (tabAppearance) tabAppearance.classList.remove('hidden');
+            if (tabPassword) tabPassword.classList.add('hidden');
+            if (btnAppearance) btnAppearance.className = 'py-2.5 px-3 rounded-xl bg-white text-blue-600 shadow-xs transition flex items-center justify-center gap-1.5';
+            if (btnPassword) btnPassword.className = 'py-2.5 px-3 rounded-xl text-slate-600 hover:text-slate-900 transition flex items-center justify-center gap-1.5';
+        }
+    };
+
     window.openProfileSettingsModal = function() {
         const collab = (window.collaborators || []).find(c => c.id === window.currentCollaboratorId);
         if (!collab) return;
@@ -954,6 +976,7 @@
         document.getElementById('settingsNewPass').value = '';
         document.getElementById('settingsConfirmPass').value = '';
 
+        window.switchSettingsTab('appearance');
         document.getElementById('settingsLoginStep').classList.remove('hidden');
         document.getElementById('settingsOptionsStep').classList.add('hidden');
         document.getElementById('profileSettingsModal').classList.remove('hidden');
@@ -1023,6 +1046,7 @@
 
             document.getElementById('settingsLoginStep').classList.add('hidden');
             document.getElementById('settingsOptionsStep').classList.remove('hidden');
+            window.switchSettingsTab('appearance');
             updateSettingsPreview();
         } catch (err) {
             console.error("Erro ao validar login nas configurações:", err);
