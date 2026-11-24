@@ -28,11 +28,11 @@
         <div class="min-w-0">
           <div class="flex items-center gap-1.5 flex-wrap">
             <h1 id="headerMainTitle" class="text-sm sm:text-base font-bold tracking-tight leading-tight truncate">Escala Decathlon</h1>
-            <span id="badgeActiveMonth" class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-white/20 text-white uppercase tracking-wider">-</span>
+            <span id="badgeActiveMonth" class="hidden px-2 py-0.5 rounded-full text-[10px] font-semibold bg-white/20 text-white uppercase tracking-wider">-</span>
           </div>
           <p id="headerSubtitle" class="text-[11px] sm:text-xs text-blue-100 flex items-center gap-1.5 font-medium mt-0.5 truncate">
             <span id="syncPulse" class="inline-block w-2 h-2 rounded-full bg-amber-400 animate-pulse flex-shrink-0"></span>
-            <span id="syncStatusText" class="truncate">Modo Visitante</span>
+            <span id="syncStatusText" class="truncate">Conectando à planilha...</span>
           </p>
         </div>
       </div>
@@ -49,7 +49,7 @@
         </div>
 
         <!-- Grupo com Lista, Mês e Avisos -->
-        <div class="flex items-center bg-black/25 p-1 rounded-xl backdrop-blur-sm border border-white/15 text-xs">
+        <div id="headerViewControls" class="hidden flex items-center bg-black/25 p-1 rounded-xl backdrop-blur-sm border border-white/15 text-xs">
           <button id="btnViewList" onclick="switchView('list')" class="px-2.5 sm:px-3 py-1.5 rounded-lg font-medium transition flex items-center gap-1 bg-white text-slate-900 shadow-sm">
             <span>Lista</span>
           </button>
@@ -89,6 +89,23 @@
 
   <!-- Conteúdo Principal -->
   <main class="max-w-4xl mx-auto px-3 sm:px-4 pt-4 space-y-4">
+
+    <!-- Tela de Manutenção (exibida quando não há dados da planilha) -->
+    <section id="maintenanceScreen" class="hidden bg-white rounded-3xl shadow-sm border border-slate-200/80 p-8 sm:p-12 text-center mt-6">
+      <div class="w-16 h-16 rounded-2xl bg-amber-50 text-amber-500 flex items-center justify-center mx-auto text-3xl shadow-inner mb-4 border border-amber-100">
+        <i class="fa-solid fa-screwdriver-wrench"></i>
+      </div>
+      <h2 class="text-lg sm:text-xl font-extrabold text-slate-900">Sistema em Manutenção</h2>
+      <p class="text-xs sm:text-sm text-slate-500 mt-2 max-w-md mx-auto leading-relaxed">
+        Nenhuma informação foi encontrada na planilha da escala no momento. Aguarde a atualização ou utilize o menu de links úteis (☰) no topo da página.
+      </p>
+      <div>
+        <button onclick="handleManualRefresh()" class="mt-6 px-6 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 active:scale-95 text-white text-xs font-bold shadow-md shadow-blue-500/20 transition inline-flex items-center gap-2">
+          <i class="fa-solid fa-rotate-right"></i>
+          <span>Tentar Novamente</span>
+        </button>
+      </div>
+    </section>
 
     <!-- Seção de Avisos Integrada -->
     <div id="viewAvisos" class="hidden space-y-6">
@@ -192,7 +209,7 @@
     </div>
 
     <!-- Card de Filtros e Seleção (Escala) -->
-    <div id="escalaFiltersCard" class="bg-white rounded-2xl shadow-sm border border-slate-200/80 p-3 sm:p-4">
+    <div id="escalaFiltersCard" class="hidden bg-white rounded-2xl shadow-sm border border-slate-200/80 p-3 sm:p-4">
       <div class="space-y-3">
         <div class="flex items-center justify-between">
           <span class="text-xs font-bold uppercase tracking-wider text-slate-500 flex items-center gap-1.5">
@@ -286,7 +303,7 @@
     </div>
 
     <!-- Vista 1: Lista Diária -->
-    <div id="viewList" class="space-y-2"></div>
+    <div id="viewList" class="hidden space-y-2"></div>
 
     <!-- Vista 2: Calendário Mensal -->
     <div id="viewCalendar" class="hidden bg-white rounded-2xl shadow-sm border border-slate-200/80 p-3 sm:p-5">
@@ -1312,22 +1329,45 @@
     let currentView = 'list';
     let activeSector = 'Todos';
     let allData = null;
+    let isMaintenanceMode = false;
     window.avisosData = {};
 
-    function generateFallbackData() {
-      const collabsList = [
-        { id: '101', name: 'Whatyson Silva', matricula: '10142', sector: 'Atendimento', role: 'Líder de Atendimento' },
-        { id: '102', name: 'Lucas Ferreira', matricula: '10255', sector: 'Montanha', role: 'Vendedor Montanha & Água' }
+    function setMaintenanceMode(active) {
+      isMaintenanceMode = active;
+
+      const maintenanceScreen = document.getElementById('maintenanceScreen');
+      const headerViewControls = document.getElementById('headerViewControls');
+      const badgeActiveMonth = document.getElementById('badgeActiveMonth');
+      const syncPulse = document.getElementById('syncPulse');
+
+      const elementsToHide = [
+        'viewAvisos',
+        'escalaFiltersCard',
+        'userProfileCard',
+        'shiftLegend',
+        'viewList',
+        'viewCalendar',
+        'monthSelectorContainer'
       ];
-      const days = { 'JANEIRO': 31, 'FEVEREIRO': 28, 'MARÇO': 31, 'ABRIL': 30, 'MAIO': 31, 'JUNHO': 30, 'JULHO': 31, 'AGOSTO': 31, 'SETEMBRO': 30, 'OUTUBRO': 31, 'NOVEMBRO': 30, 'DEZEMBRO': 31 };
-      const sched = {};
-      MONTH_NAMES.forEach(m => {
-        sched[m] = {};
-        collabsList.forEach(c => {
-          sched[m][c.id] = Array(days[m]).fill('A');
+
+      if (active) {
+        if (maintenanceScreen) maintenanceScreen.classList.remove('hidden');
+        if (headerViewControls) headerViewControls.classList.add('hidden');
+        if (badgeActiveMonth) badgeActiveMonth.classList.add('hidden');
+        if (syncPulse) syncPulse.className = 'inline-block w-2 h-2 rounded-full bg-amber-400 animate-pulse flex-shrink-0';
+
+        elementsToHide.forEach(id => {
+          const el = document.getElementById(id);
+          if (el) el.classList.add('hidden');
         });
-      });
-      return { months: MONTH_NAMES, days, collabs: collabsList, sched };
+      } else {
+        if (maintenanceScreen) maintenanceScreen.classList.add('hidden');
+        if (headerViewControls) headerViewControls.classList.remove('hidden');
+        if (badgeActiveMonth && currentView !== 'avisos') badgeActiveMonth.classList.remove('hidden');
+        switchView(currentView);
+      }
+
+      window.updateHeaderSubtitle();
     }
 
     function getISOWeekNumber(d) {
@@ -1338,34 +1378,110 @@
       return Math.ceil((((date - yearStart) / 86400000) + 1) / 7);
     }
 
+    // Parser CSV completo que respeita quebras de linha dentro de células com aspas
     function parseCSV(text) {
-      return text.split('\n').map(line => {
-        const row = [];
-        let cur = '';
-        let insideQuotes = false;
-        for (let i = 0; i < line.length; i++) {
-          const char = line[i];
-          if (char === '"') {
-            if (insideQuotes && line[i + 1] === '"') { cur += '"'; i++; }
-            else { insideQuotes = !insideQuotes; }
-          } else if (char === ',' && !insideQuotes) {
-            row.push(cur.trim());
-            cur = '';
+      const rows = [];
+      let row = [];
+      let cur = '';
+      let insideQuotes = false;
+      const cleanText = (text || '').replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+
+      for (let i = 0; i < cleanText.length; i++) {
+        const char = cleanText[i];
+        if (char === '"') {
+          if (insideQuotes && cleanText[i + 1] === '"') {
+            cur += '"';
+            i++;
           } else {
-            cur += char;
+            insideQuotes = !insideQuotes;
           }
+        } else if (char === ',' && !insideQuotes) {
+          row.push(cur.trim());
+          cur = '';
+        } else if (char === '\n' && !insideQuotes) {
+          row.push(cur.trim());
+          rows.push(row);
+          row = [];
+          cur = '';
+        } else {
+          cur += char;
         }
+      }
+      if (cur.length > 0 || row.length > 0) {
         row.push(cur.trim());
-        return row;
-      });
+        rows.push(row);
+      }
+      return rows;
     }
 
     function normName(s) { return (s || '').replace(/\s+/g, ' ').trim(); }
+    function stripAccents(s) { return (s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, ''); }
+
     function extractMonthName(cellValue) {
-      const upper = (cellValue || '').toUpperCase().trim();
-      if (!upper) return null;
+      const raw = (cellValue || '').replace(/\s+/g, ' ').trim();
+      if (!raw) return null;
+
+      // Verifica se a célula está no formato data DD/MM ou DD/MM/AAAA
+      const brDate = raw.match(/^\d{1,2}[\/\-](\d{1,2})(?:[\/\-]\d{2,4})?$/);
+      if (brDate) {
+        const mIdx = parseInt(brDate[1], 10) - 1;
+        if (mIdx >= 0 && mIdx < 12) return MONTH_NAMES[mIdx];
+      }
+
+      // Verifica se a célula está no formato ISO AAAA-MM-DD
+      const isoDate = raw.match(/^\d{4}-(\d{1,2})-\d{1,2}$/);
+      if (isoDate) {
+        const mIdx = parseInt(isoDate[1], 10) - 1;
+        if (mIdx >= 0 && mIdx < 12) return MONTH_NAMES[mIdx];
+      }
+
+      const upper = stripAccents(raw.toUpperCase());
       for (const m of MONTH_NAMES) {
-        if (upper === m || upper.startsWith(m + ' ') || upper.startsWith(m + '/') || upper.startsWith(m + '-')) return m;
+        const mNorm = stripAccents(m);
+        if (
+          upper === mNorm ||
+          upper.startsWith(mNorm + ' ') ||
+          upper.startsWith(mNorm + '/') ||
+          upper.startsWith(mNorm + '-') ||
+          upper.includes(' ' + mNorm)
+        ) {
+          return m;
+        }
+      }
+      return null;
+    }
+
+    function extractDayNumber(cellValue) {
+      const s = (cellValue || '').replace(/\s+/g, ' ').trim();
+      if (!s) return null;
+
+      // Número puro (ex: "1", "01", "31")
+      if (/^\d{1,2}$/.test(s)) {
+        const n = parseInt(s, 10);
+        return (n >= 1 && n <= 31) ? n : null;
+      }
+
+      // Data DD/MM ou DD/MM/AAAA
+      const brDate = s.match(/^(\d{1,2})[\/\-](\d{1,2})(?:[\/\-]\d{2,4})?$/);
+      if (brDate) {
+        const n = parseInt(brDate[1], 10);
+        return (n >= 1 && n <= 31) ? n : null;
+      }
+
+      // Data ISO AAAA-MM-DD
+      const isoDate = s.match(/^\d{4}-(\d{1,2})-(\d{1,2})$/);
+      if (isoDate) {
+        const n = parseInt(isoDate[2], 10);
+        return (n >= 1 && n <= 31) ? n : null;
+      }
+
+      // Cabeçalho mesclado pelo Google Sheets (ex: "NOVEMBRO 1", "SEG 01", "1 DOM")
+      const tokens = s.split(/[\s\-\/]+/);
+      for (const tok of tokens) {
+        if (/^\d{1,2}$/.test(tok)) {
+          const n = parseInt(tok, 10);
+          if (n >= 1 && n <= 31) return n;
+        }
       }
       return null;
     }
@@ -1373,34 +1489,70 @@
     function parseBackupSheet(csvText) {
       const rows = parseCSV(csvText);
       let monthRow = -1, dateRow = -1, firstCol = -1;
-      for (let r = 0; r < Math.min(rows.length, 15); r++) {
-        if (monthRow === -1 && rows[r].some(v => extractMonthName(v) !== null)) monthRow = r;
+      const scanLimit = Math.min(rows.length, 30);
+
+      for (let r = 0; r < scanLimit; r++) {
+        if (monthRow === -1 && rows[r].some(v => extractMonthName(v) !== null)) {
+          monthRow = r;
+        }
       }
-      for (let r = 0; r < Math.min(rows.length, 15); r++) {
+
+      for (let r = 0; r < scanLimit; r++) {
         for (let c = 0; c < rows[r].length - 2; c++) {
-          if (rows[r][c] === '1' && rows[r][c + 1] === '2' && rows[r][c + 2] === '3') { dateRow = r; firstCol = c; break; }
+          const d1 = extractDayNumber(rows[r][c]);
+          const d2 = extractDayNumber(rows[r][c + 1]);
+          const d3 = extractDayNumber(rows[r][c + 2]);
+          if (d1 === 1 && d2 === 2 && d3 === 3) {
+            dateRow = r;
+            firstCol = c;
+            break;
+          }
         }
         if (dateRow !== -1) break;
       }
-      if (dateRow === -1 || monthRow === -1) throw new Error('Layout não reconhecido');
+
+      // Fallback caso o dia 1 tenha sido mesclado/omitido, mas existam 2, 3, 4 em sequência
+      if (dateRow === -1) {
+        for (let r = 0; r < scanLimit; r++) {
+          for (let c = 1; c < rows[r].length - 2; c++) {
+            const d2 = extractDayNumber(rows[r][c]);
+            const d3 = extractDayNumber(rows[r][c + 1]);
+            const d4 = extractDayNumber(rows[r][c + 2]);
+            if (d2 === 2 && d3 === 3 && d4 === 4) {
+              dateRow = r;
+              firstCol = c - 1;
+              break;
+            }
+          }
+          if (dateRow !== -1) break;
+        }
+      }
+
+      if (dateRow === -1) throw new Error('Linha de dias (1, 2, 3...) não encontrada na planilha');
+      if (monthRow === -1) monthRow = Math.max(0, dateRow - 1);
 
       const colInfo = [];
       let label = '', prevDay = 0;
-      const maxCols = Math.max(rows[dateRow].length, rows[monthRow].length);
+      const maxCols = Math.max(rows[dateRow].length, rows[monthRow] ? rows[monthRow].length : 0);
 
       for (let c = 0; c < maxCols; c++) {
-        let detectedMonth = extractMonthName(rows[monthRow][c]);
-        if (!detectedMonth && monthRow > 0) detectedMonth = extractMonthName(rows[monthRow - 1][c]);
-        const rawDay = (rows[dateRow][c] || '').trim();
-        const day = parseInt(rawDay, 10);
+        let detectedMonth = extractMonthName(rows[dateRow][c]);
+        if (!detectedMonth && rows[monthRow]) detectedMonth = extractMonthName(rows[monthRow][c]);
+        if (!detectedMonth && monthRow > 0 && rows[monthRow - 1]) detectedMonth = extractMonthName(rows[monthRow - 1][c]);
+        if (!detectedMonth && dateRow > 0 && rows[dateRow - 1]) detectedMonth = extractMonthName(rows[dateRow - 1][c]);
 
-        if (detectedMonth) label = detectedMonth;
-        else if (c >= firstCol && day === 1 && prevDay >= 28 && label) {
+        const day = extractDayNumber(rows[dateRow][c]);
+
+        if (detectedMonth) {
+          label = detectedMonth;
+        } else if (c >= firstCol && day === 1 && prevDay >= 28 && label) {
           const idx = MONTH_NAMES.indexOf(label);
           if (idx !== -1) label = MONTH_NAMES[(idx + 1) % 12];
+        } else if (c >= firstCol && !label && day !== null) {
+          label = ALLOWED_TWO_MONTHS[0];
         }
 
-        if (c >= firstCol && label && !isNaN(day) && day >= 1 && day <= 31 && String(day) === rawDay) {
+        if (c >= firstCol && label && day !== null) {
           colInfo[c] = { month: label, day };
           prevDay = day;
         }
@@ -1415,39 +1567,76 @@
 
       const collabs = [], sched = {};
       months.forEach(m => sched[m] = {});
-      let sectorRole = null;
+      let sectorRole = 'Geral';
 
       for (let r = dateRow + 1; r < rows.length; r++) {
         const row = rows[r];
-        const name = normName(row[1]);
+        if (!row || row.length === 0) continue;
+
+        // Procura o nome do colaborador preferindo a coluna B (índice 1) e depois demais colunas antes dos dias
+        let name = normName(row[1]);
+        if (!name || /^\d+$/.test(name)) {
+          name = '';
+          for (let c = 0; c < firstCol; c++) {
+            const candidate = normName(row[c]);
+            if (candidate && /[A-Za-zÀ-ÿ]{2,}/.test(candidate) && !/^\d+$/.test(candidate)) {
+              name = candidate;
+              break;
+            }
+          }
+        }
         if (!name) continue;
-        const upper = name.toUpperCase();
+
+        const upper = stripAccents(name.toUpperCase());
         const shiftsByMonth = {};
         let hasShift = false;
 
         colInfo.forEach((ci, c) => {
           if (!ci) return;
           const v = (row[c] || '').trim().toUpperCase();
-          if (v && isNaN(Number(v))) {
+          if (v && v !== '-' && isNaN(Number(v))) {
             (shiftsByMonth[ci.month] = shiftsByMonth[ci.month] || {})[ci.day] = v;
             hasShift = true;
           }
         });
 
-        if (!hasShift && (upper.includes('GERENTE') || upper.includes('ATENDIMENTO') || upper.includes('FITNESS') || upper.includes('MONTANHA'))) {
-          sectorRole = name;
+        // Linha sem turnos: verifica se é cabeçalho de setor
+        if (!hasShift) {
+          if (
+            upper.includes('GERENTE') || upper.includes('GERENCIA') ||
+            upper.includes('ATENDIMENTO') || upper.includes('FITNESS') ||
+            upper.includes('MONTANHA') || upper.includes('CAIXA') ||
+            upper.includes('ESPORTE') || upper.includes('LIDER') ||
+            upper.includes('SETOR') || upper.includes('EQUIPE')
+          ) {
+            sectorRole = name;
+          }
           continue;
         }
-        if (!sectorRole || !hasShift) continue;
 
-        const matricula = (row[3] || '').trim() || '-';
+        // Ignora eventuais linhas de cabeçalho/resumo repetidas
+        if (upper === 'NOME' || upper === 'COLABORADOR' || upper.startsWith('TOTAL')) continue;
+
+        let matricula = (row[3] || '').trim();
+        if (!matricula || !/\d/.test(matricula)) {
+          matricula = '-';
+          for (let c = 0; c < firstCol; c++) {
+            const val = (row[c] || '').trim();
+            if (/^\d{3,}$/.test(val)) {
+              matricula = val;
+              break;
+            }
+          }
+        }
+
         const id = matricula !== '-' ? matricula : 'n-' + name;
-        const secUpper = (sectorRole || '').toUpperCase();
+        const secUpper = stripAccents((sectorRole || '').toUpperCase());
         let sector = 'Outros';
         if (secUpper.includes('MONTANHA')) sector = 'Montanha';
-        else if (secUpper.includes('ATENDIMENTO')) sector = 'Atendimento';
+        else if (secUpper.includes('ATENDIMENTO') || secUpper.includes('CAIXA')) sector = 'Atendimento';
         else if (secUpper.includes('FITNESS')) sector = 'Fitness';
-        else if (secUpper.includes('GERENTE')) sector = 'Gerência';
+        else if (secUpper.includes('GERENTE') || secUpper.includes('GERENCIA')) sector = 'Gerência';
+        else if (sectorRole && sectorRole !== 'Geral') sector = sectorRole;
 
         collabs.push({ id, name, matricula, sector, role: sectorRole || 'Colaborador' });
         months.forEach(m => {
@@ -1483,7 +1672,7 @@
       activeSector = 'Todos';
       currentCollaboratorId = null;
       window.currentCollaboratorId = null;
-      switchView('list');
+      currentView = 'list';
       closeMenu();
       window.scrollTo({ top: 0, behavior: 'smooth' });
       await fetchLiveScheduleData();
@@ -1497,29 +1686,68 @@
 
       ALLOWED_TWO_MONTHS = getAllowedMonths();
 
-      try {
-        const url = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(SHEET_TAB)}&t=${Date.now()}`;
-        const response = await fetch(url);
-        if (!response.ok) throw new Error('Falha na resposta da planilha');
-        
-        const text = await response.text();
-        allData = parseBackupSheet(text);
+      // Tenta primeiro no modo padrão do Google Sheets (preserva números dos dias) e depois com headers=0
+      const urlsToTry = [
+        `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(SHEET_TAB)}&t=${Date.now()}`,
+        `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?tqx=out:csv&headers=0&sheet=${encodeURIComponent(SHEET_TAB)}&t=${Date.now()}`
+      ];
 
+      try {
+        let parsed = null;
+        let lastError = 'Nenhuma informação encontrada na planilha';
+
+        for (const url of urlsToTry) {
+          try {
+            const response = await fetch(url);
+            if (!response.ok) {
+              lastError = `Erro HTTP ${response.status} ao acessar a planilha`;
+              continue;
+            }
+
+            const text = await response.text();
+            const trimmed = (text || '').trim();
+            if (!trimmed || trimmed.startsWith('<!DOCTYPE') || trimmed.startsWith('<html')) {
+              lastError = 'Planilha sem permissão pública ou aba inacessível';
+              continue;
+            }
+
+            const attempt = parseBackupSheet(text);
+            if (attempt && attempt.collabs && attempt.collabs.length > 0 && attempt.months && attempt.months.length > 0) {
+              parsed = attempt;
+              break;
+            } else {
+              lastError = 'Nenhum colaborador encontrado na aba Backup Atualizado';
+            }
+          } catch (innerErr) {
+            lastError = innerErr.message;
+          }
+        }
+
+        if (!parsed) {
+          throw new Error(lastError);
+        }
+
+        allData = parsed;
         const matched = allData.months.filter(m => ALLOWED_TWO_MONTHS.includes(m) || m === 'DEZEMBRO');
         AVAILABLE_MONTHS = matched.length > 0 ? matched : allData.months;
 
-        if (syncPulse) syncPulse.className = 'inline-block w-2 h-2 rounded-full bg-emerald-400 animate-pulse';
+        if (syncPulse) syncPulse.className = 'inline-block w-2 h-2 rounded-full bg-emerald-400 animate-pulse flex-shrink-0';
         const n = new Date();
         const hh = String(n.getHours()).padStart(2, '0') + ':' + String(n.getMinutes()).padStart(2, '0');
         if (syncStatus) {
-            syncStatus.dataset.time = hh;
+          syncStatus.dataset.time = hh;
         }
+
+        setMaintenanceMode(false);
         applyMonth();
       } catch (err) {
-        allData = generateFallbackData();
-        AVAILABLE_MONTHS = [...ALLOWED_TWO_MONTHS];
-        if (syncPulse) syncPulse.className = 'inline-block w-2 h-2 rounded-full bg-blue-400';
-        applyMonth();
+        console.warn('Ativando modo manutenção:', err.message);
+        allData = null;
+        collaborators = [];
+        window.collaborators = [];
+        scheduleData = {};
+        if (syncStatus) delete syncStatus.dataset.time;
+        setMaintenanceMode(true);
       } finally {
         if (refreshIcon) refreshIcon.classList.remove('animate-spin');
         window.updateHeaderSubtitle();
@@ -1534,6 +1762,7 @@
     }
 
     window.refreshCurrentScheduleDisplay = function() {
+        if (isMaintenanceMode) return;
         if (currentCollaboratorId && scheduleData[currentCollaboratorId]) {
             renderListView(scheduleData[currentCollaboratorId]);
             renderCalendarView(scheduleData[currentCollaboratorId]);
@@ -2052,6 +2281,14 @@
         }
       }
 
+      if (isMaintenanceMode) {
+        if (mainTitle) mainTitle.textContent = 'Escala Decathlon';
+        if (monthBadge) monthBadge.classList.add('hidden');
+        if (syncPulse) syncPulse.classList.remove('hidden');
+        if (subtitleText) subtitleText.textContent = 'Em manutenção';
+        return;
+      }
+
       if (currentView === 'avisos') {
         if (mainTitle) mainTitle.textContent = 'Painel de Avisos';
         if (monthBadge) monthBadge.classList.add('hidden');
@@ -2082,6 +2319,8 @@
     };
 
     function switchView(view) {
+      if (isMaintenanceMode) return;
+
       currentView = view;
       const btnList = document.getElementById('btnViewList');
       const btnCal = document.getElementById('btnViewCal');
