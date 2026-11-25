@@ -34,6 +34,10 @@
             <span id="syncPulse" class="inline-block w-2 h-2 rounded-full bg-amber-400 animate-pulse flex-shrink-0"></span>
             <span id="syncStatusText" class="truncate">Conectando à planilha...</span>
           </p>
+          <div id="headerLoggedUserBadge" class="hidden inline-flex items-center gap-1.5 mt-1 px-2 py-0.5 rounded-full bg-white/15 border border-white/25 text-[10px] sm:text-[11px] font-semibold text-white max-w-full">
+            <i class="fa-solid fa-user-check text-[10px] text-emerald-300 flex-shrink-0"></i>
+            <span id="headerLoggedUserName" class="truncate">-</span>
+          </div>
         </div>
       </div>
       
@@ -633,6 +637,71 @@
     </div>
   </div>
 
+  <!-- Modal de Recorte Interativo da Foto de Perfil -->
+  <div id="photoCropModal" class="fixed inset-0 bg-slate-950/75 backdrop-blur-md z-[60] flex items-center justify-center p-4 hidden">
+    <div class="bg-white rounded-3xl max-w-sm w-full p-5 sm:p-6 shadow-2xl border border-slate-100 space-y-4 animate-in fade-in zoom-in duration-200">
+      <div class="flex items-center justify-between pb-2.5 border-b border-slate-100">
+        <div class="flex items-center gap-2.5">
+          <div class="w-9 h-9 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center shadow-inner">
+            <i class="fa-solid fa-crop-simple text-sm"></i>
+          </div>
+          <div>
+            <h3 class="font-bold text-slate-900 text-sm sm:text-base leading-tight">Recortar Foto</h3>
+            <p class="text-[11px] text-slate-500">Arraste e ajuste o zoom para enquadrar</p>
+          </div>
+        </div>
+        <button type="button" onclick="closePhotoCropModal()" class="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 flex items-center justify-center transition active:scale-95">
+          <i class="fa-solid fa-xmark text-xs"></i>
+        </button>
+      </div>
+
+      <!-- Área Interativa de Recorte -->
+      <div class="flex flex-col items-center space-y-3">
+        <div id="cropStageContainer" class="relative w-64 h-64 sm:w-72 sm:h-72 rounded-2xl overflow-hidden bg-slate-900 border-2 border-blue-500/80 shadow-inner touch-none cursor-grab active:cursor-grabbing select-none">
+          <canvas id="photoCropCanvas" class="w-full h-full block"></canvas>
+          <!-- Grade de enquadramento -->
+          <div class="pointer-events-none absolute inset-0 grid grid-cols-3 grid-rows-3">
+            <div class="border-r border-b border-white/25"></div>
+            <div class="border-r border-b border-white/25"></div>
+            <div class="border-b border-white/25"></div>
+            <div class="border-r border-b border-white/25"></div>
+            <div class="border-r border-b border-white/25"></div>
+            <div class="border-b border-white/25"></div>
+            <div class="border-r border-white/25"></div>
+            <div class="border-r border-white/25"></div>
+            <div></div>
+          </div>
+          <!-- Borda guia interna -->
+          <div class="pointer-events-none absolute inset-0 rounded-2xl ring-2 ring-inset ring-white/50"></div>
+        </div>
+
+        <!-- Controle de Zoom -->
+        <div class="w-full flex items-center gap-2.5 px-1">
+          <button type="button" onclick="adjustCropZoom(-0.15)" class="w-8 h-8 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center justify-center transition active:scale-95 text-xs" title="Diminuir zoom">
+            <i class="fa-solid fa-magnifying-glass-minus"></i>
+          </button>
+          <input type="range" id="cropZoomSlider" min="1" max="3" step="0.01" value="1" oninput="handleCropZoomInput(this.value)" class="flex-1 accent-blue-600 cursor-pointer h-2 bg-slate-200 rounded-lg">
+          <button type="button" onclick="adjustCropZoom(0.15)" class="w-8 h-8 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center justify-center transition active:scale-95 text-xs" title="Aumentar zoom">
+            <i class="fa-solid fa-magnifying-glass-plus"></i>
+          </button>
+          <button type="button" onclick="resetCropPosition()" class="px-2.5 h-8 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 text-[11px] font-bold transition active:scale-95" title="Centralizar imagem">
+            Reset
+          </button>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2 pt-1">
+        <button type="button" onclick="closePhotoCropModal()" class="flex-1 py-2.5 rounded-2xl bg-slate-100 hover:bg-slate-200 active:scale-95 text-slate-700 font-bold text-xs transition">
+          Cancelar
+        </button>
+        <button type="button" onclick="confirmPhotoCrop()" class="flex-1 py-2.5 rounded-2xl bg-blue-600 hover:bg-blue-700 active:scale-95 text-white font-bold text-xs shadow-md shadow-blue-500/20 transition flex items-center justify-center gap-1.5">
+          <i class="fa-solid fa-check"></i>
+          <span>Usar Recorte</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- Modal de Login -->
   <div id="authModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
       <div class="bg-white rounded-3xl max-w-sm w-full p-6 sm:p-7 shadow-2xl border border-slate-100 space-y-5 animate-in fade-in zoom-in duration-200">
@@ -754,6 +823,7 @@
 
     window.currentAdminUser = null;
     window.isSuperAdmin = false;
+    window.loggedInProfileName = null;
     window.cachedColaboradores = [];
     window.verifiedProfileCollabIds = new Set();
     window.verifiedProfileDocs = {};
@@ -1066,8 +1136,16 @@
             showModal("Sair do Perfil", `Deseja encerrar o login de ${collab.name.split(' ')[0]}?`, false, () => {
                 window.verifiedProfileCollabIds.delete(collab.id);
                 delete window.verifiedProfileDocs[collab.id];
+                if (window.loggedInProfileName === collab.name) {
+                    const remainingIds = Array.from(window.verifiedProfileCollabIds);
+                    const nextCollab = remainingIds.length > 0
+                        ? (window.collaborators || []).find(c => c.id === remainingIds[remainingIds.length - 1])
+                        : null;
+                    window.loggedInProfileName = nextCollab ? nextCollab.name : null;
+                }
                 if (typeof window.updateCollabSettingsGear === 'function') window.updateCollabSettingsGear();
                 if (typeof window.renderExclusiveProfileBlocks === 'function') window.renderExclusiveProfileBlocks();
+                if (typeof window.updateLoggedUserHeaderBadge === 'function') window.updateLoggedUserHeaderBadge();
                 showModal("Sessão Encerrada", "Você saiu deste perfil com sucesso.");
             });
             return;
@@ -1084,7 +1162,9 @@
         const titleEl = document.getElementById('settingsModalTitle');
         if (titleEl) titleEl.textContent = 'Login do Perfil';
         document.getElementById('settingsCollabName').textContent = collab.name;
-        document.getElementById('settingsLoginUser').value = collab.name.split(' ')[0];
+        const cleanMatricula = String(collab.matricula || '').trim();
+        const hasValidMatricula = cleanMatricula !== '' && cleanMatricula !== '-';
+        document.getElementById('settingsLoginUser').value = hasValidMatricula ? cleanMatricula : collab.name.split(' ')[0];
         const passInput = document.getElementById('settingsLoginPass');
         passInput.value = '';
         passInput.type = 'password';
@@ -1176,7 +1256,7 @@
                 ].filter(Boolean).map(v => String(v).trim().toLowerCase());
 
                 const isSelectedCollab = possibleMatches.includes(mat) || possibleMatches.includes(cid) || possibleMatches.includes(firstName);
-                const userMatches = possibleMatches.includes(userInput);
+                const userMatches = possibleMatches.includes(userInput) || (mat !== '' && mat !== '-' && userInput === mat);
                 const dbPass = String((data.password !== undefined ? data.password : data.senha) || '').trim();
 
                 if (isSelectedCollab && userMatches && dbPass === passInput) {
@@ -1193,12 +1273,16 @@
             // Marca este colaborador como verificado na sessão atual e libera o botão de configurações
             window.verifiedProfileCollabIds.add(collab.id);
             window.verifiedProfileDocs[collab.id] = { docId: matchedDocId, data: matchedData };
+            window.loggedInProfileName = collab.name;
 
             if (typeof window.updateCollabSettingsGear === 'function') {
                 window.updateCollabSettingsGear();
             }
             if (typeof window.renderExclusiveProfileBlocks === 'function') {
                 window.renderExclusiveProfileBlocks();
+            }
+            if (typeof window.updateLoggedUserHeaderBadge === 'function') {
+                window.updateLoggedUserHeaderBadge();
             }
 
             closeProfileSettingsModal();
@@ -1212,7 +1296,176 @@
         }
     };
 
-    // Comprime e recorta a imagem selecionada em quadrado 256x256 JPEG para economizar espaço no Firebase
+    // Estado e lógica do recortador interativo de foto de perfil (pan + zoom com mouse e toque)
+    const CROP_VIEW_SIZE = 288;
+    const CROP_OUTPUT_SIZE = 256;
+    const cropState = {
+        img: null,
+        baseScale: 1,
+        zoom: 1,
+        offsetX: 0,
+        offsetY: 0,
+        isDragging: false,
+        startX: 0,
+        startY: 0,
+        startOffsetX: 0,
+        startOffsetY: 0,
+        eventsBound: false
+    };
+
+    function clampCropOffsets() {
+        if (!cropState.img) return;
+        const scale = cropState.baseScale * cropState.zoom;
+        const drawW = cropState.img.width * scale;
+        const drawH = cropState.img.height * scale;
+        const maxOffsetX = Math.max(0, (drawW - CROP_VIEW_SIZE) / 2);
+        const maxOffsetY = Math.max(0, (drawH - CROP_VIEW_SIZE) / 2);
+        cropState.offsetX = Math.max(-maxOffsetX, Math.min(maxOffsetX, cropState.offsetX));
+        cropState.offsetY = Math.max(-maxOffsetY, Math.min(maxOffsetY, cropState.offsetY));
+    }
+
+    function renderCropCanvas() {
+        const canvas = document.getElementById('photoCropCanvas');
+        if (!canvas || !cropState.img) return;
+        if (canvas.width !== CROP_VIEW_SIZE || canvas.height !== CROP_VIEW_SIZE) {
+            canvas.width = CROP_VIEW_SIZE;
+            canvas.height = CROP_VIEW_SIZE;
+        }
+        const ctx = canvas.getContext('2d');
+        ctx.clearRect(0, 0, CROP_VIEW_SIZE, CROP_VIEW_SIZE);
+        ctx.fillStyle = '#0f172a';
+        ctx.fillRect(0, 0, CROP_VIEW_SIZE, CROP_VIEW_SIZE);
+
+        clampCropOffsets();
+        const scale = cropState.baseScale * cropState.zoom;
+        const drawW = cropState.img.width * scale;
+        const drawH = cropState.img.height * scale;
+        const dx = (CROP_VIEW_SIZE - drawW) / 2 + cropState.offsetX;
+        const dy = (CROP_VIEW_SIZE - drawH) / 2 + cropState.offsetY;
+
+        ctx.drawImage(cropState.img, dx, dy, drawW, drawH);
+    }
+
+    function bindCropStageEvents() {
+        if (cropState.eventsBound) return;
+        const stage = document.getElementById('cropStageContainer');
+        if (!stage) return;
+
+        const getPoint = (e) => {
+            if (e.touches && e.touches.length > 0) {
+                return { x: e.touches[0].clientX, y: e.touches[0].clientY };
+            }
+            return { x: e.clientX, y: e.clientY };
+        };
+
+        const onStart = (e) => {
+            if (!cropState.img) return;
+            if (e.cancelable) e.preventDefault();
+            const pt = getPoint(e);
+            cropState.isDragging = true;
+            cropState.startX = pt.x;
+            cropState.startY = pt.y;
+            cropState.startOffsetX = cropState.offsetX;
+            cropState.startOffsetY = cropState.offsetY;
+        };
+
+        const onMove = (e) => {
+            if (!cropState.isDragging || !cropState.img) return;
+            if (e.cancelable) e.preventDefault();
+            const pt = getPoint(e);
+            const rect = stage.getBoundingClientRect();
+            const ratio = rect.width > 0 ? (CROP_VIEW_SIZE / rect.width) : 1;
+            cropState.offsetX = cropState.startOffsetX + (pt.x - cropState.startX) * ratio;
+            cropState.offsetY = cropState.startOffsetY + (pt.y - cropState.startY) * ratio;
+            renderCropCanvas();
+        };
+
+        const onEnd = () => {
+            cropState.isDragging = false;
+        };
+
+        stage.addEventListener('mousedown', onStart);
+        window.addEventListener('mousemove', onMove);
+        window.addEventListener('mouseup', onEnd);
+
+        stage.addEventListener('touchstart', onStart, { passive: false });
+        window.addEventListener('touchmove', onMove, { passive: false });
+        window.addEventListener('touchend', onEnd);
+        window.addEventListener('touchcancel', onEnd);
+
+        stage.addEventListener('wheel', (e) => {
+            if (!cropState.img) return;
+            e.preventDefault();
+            const delta = e.deltaY < 0 ? 0.1 : -0.1;
+            window.adjustCropZoom(delta);
+        }, { passive: false });
+
+        cropState.eventsBound = true;
+    }
+
+    window.handleCropZoomInput = function(value) {
+        const parsed = parseFloat(value);
+        if (isNaN(parsed)) return;
+        cropState.zoom = Math.max(1, Math.min(3, parsed));
+        renderCropCanvas();
+    };
+
+    window.adjustCropZoom = function(delta) {
+        const nextZoom = Math.max(1, Math.min(3, +(cropState.zoom + delta).toFixed(2)));
+        cropState.zoom = nextZoom;
+        const slider = document.getElementById('cropZoomSlider');
+        if (slider) slider.value = String(nextZoom);
+        renderCropCanvas();
+    };
+
+    window.resetCropPosition = function() {
+        cropState.zoom = 1;
+        cropState.offsetX = 0;
+        cropState.offsetY = 0;
+        const slider = document.getElementById('cropZoomSlider');
+        if (slider) slider.value = '1';
+        renderCropCanvas();
+    };
+
+    window.closePhotoCropModal = function() {
+        cropState.isDragging = false;
+        cropState.img = null;
+        const modal = document.getElementById('photoCropModal');
+        if (modal) modal.classList.add('hidden');
+    };
+
+    window.confirmPhotoCrop = function() {
+        if (!cropState.img) return;
+        clampCropOffsets();
+
+        const outCanvas = document.createElement('canvas');
+        outCanvas.width = CROP_OUTPUT_SIZE;
+        outCanvas.height = CROP_OUTPUT_SIZE;
+        const outCtx = outCanvas.getContext('2d');
+
+        const scale = cropState.baseScale * cropState.zoom;
+        const drawW = cropState.img.width * scale;
+        const drawH = cropState.img.height * scale;
+        const dx = (CROP_VIEW_SIZE - drawW) / 2 + cropState.offsetX;
+        const dy = (CROP_VIEW_SIZE - drawH) / 2 + cropState.offsetY;
+        const outRatio = CROP_OUTPUT_SIZE / CROP_VIEW_SIZE;
+
+        outCtx.fillStyle = '#ffffff';
+        outCtx.fillRect(0, 0, CROP_OUTPUT_SIZE, CROP_OUTPUT_SIZE);
+        outCtx.drawImage(
+            cropState.img,
+            dx * outRatio,
+            dy * outRatio,
+            drawW * outRatio,
+            drawH * outRatio
+        );
+
+        draftProfilePhoto = outCanvas.toDataURL('image/jpeg', 0.78);
+        updateSettingsPreview();
+        window.closePhotoCropModal();
+    };
+
+    // Abre o modal de recorte interativo ao selecionar uma foto de perfil
     window.handleProfilePhotoSelect = function(event) {
         const file = event.target.files && event.target.files[0];
         if (!file || !file.type.startsWith('image/')) return;
@@ -1221,19 +1474,19 @@
         reader.onload = (e) => {
             const img = new Image();
             img.onload = () => {
-                const SIZE = 256;
-                const canvas = document.createElement('canvas');
-                canvas.width = SIZE;
-                canvas.height = SIZE;
-                const ctx = canvas.getContext('2d');
+                bindCropStageEvents();
+                cropState.img = img;
+                cropState.baseScale = Math.max(CROP_VIEW_SIZE / img.width, CROP_VIEW_SIZE / img.height);
+                cropState.zoom = 1;
+                cropState.offsetX = 0;
+                cropState.offsetY = 0;
 
-                const minSide = Math.min(img.width, img.height);
-                const sx = (img.width - minSide) / 2;
-                const sy = (img.height - minSide) / 2;
+                const slider = document.getElementById('cropZoomSlider');
+                if (slider) slider.value = '1';
 
-                ctx.drawImage(img, sx, sy, minSide, minSide, 0, 0, SIZE, SIZE);
-                draftProfilePhoto = canvas.toDataURL('image/jpeg', 0.72);
-                updateSettingsPreview();
+                const modal = document.getElementById('photoCropModal');
+                if (modal) modal.classList.remove('hidden');
+                renderCropCanvas();
             };
             img.src = e.target.result;
         };
@@ -1279,6 +1532,8 @@
                 window.applyCollabProfileAppearance(collab);
             }
 
+            // Fecha o modal de configurações e volta para a tela do usuário
+            closeProfileSettingsModal();
             showModal("Perfil Atualizado", "Sua foto de perfil e cor de fundo foram salvas com sucesso!");
         } catch (err) {
             console.error("Erro ao salvar aparência do perfil:", err);
@@ -1316,6 +1571,9 @@
 
             document.getElementById('settingsNewPass').value = '';
             document.getElementById('settingsConfirmPass').value = '';
+
+            // Fecha o modal de configurações e volta para a tela do usuário
+            closeProfileSettingsModal();
             showModal("Senha Atualizada", "Sua nova senha foi salva com sucesso!");
         } catch (err) {
             console.error("Erro ao atualizar senha:", err);
@@ -3267,6 +3525,28 @@
       currentAvisoIndex = 0;
     };
 
+    window.updateLoggedUserHeaderBadge = function() {
+      const badge = document.getElementById('headerLoggedUserBadge');
+      const nameEl = document.getElementById('headerLoggedUserName');
+      if (!badge || !nameEl) return;
+
+      let activeName = window.currentAdminUser || window.loggedInProfileName || null;
+      if (!activeName && window.verifiedProfileCollabIds && window.verifiedProfileCollabIds.size > 0) {
+        const verifiedIds = Array.from(window.verifiedProfileCollabIds);
+        const lastCollab = (window.collaborators || []).find(c => c.id === verifiedIds[verifiedIds.length - 1]);
+        if (lastCollab) activeName = lastCollab.name;
+      }
+
+      if (activeName) {
+        const shortName = String(activeName).trim().split(/\s+/).slice(0, 2).join(' ');
+        nameEl.textContent = shortName;
+        badge.classList.remove('hidden');
+      } else {
+        nameEl.textContent = '-';
+        badge.classList.add('hidden');
+      }
+    };
+
     window.updateHeaderSubtitle = function() {
       const header = document.getElementById('mainHeader');
       const mainTitle = document.getElementById('headerMainTitle');
@@ -3276,6 +3556,10 @@
       
       const adminUser = window.currentAdminUser;
       const isSuper = window.isSuperAdmin === true;
+
+      if (typeof window.updateLoggedUserHeaderBadge === 'function') {
+        window.updateLoggedUserHeaderBadge();
+      }
 
       if (header) {
         if (isSuper) {
