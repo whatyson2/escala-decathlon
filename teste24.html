@@ -223,7 +223,7 @@
     <!-- Perfil do Colaborador Selecionado com Engrenagem Condicional (Apenas Admin) -->
     <div id="userProfileCard" class="hidden relative bg-white rounded-2xl shadow-sm border border-slate-200/80 p-4 transition-all">
       <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-        <div class="flex items-center space-x-3.5 min-w-0 pr-12 lg:pr-0">
+        <div class="flex items-center space-x-3.5 min-w-0 pr-24 lg:pr-0">
           <div id="userAvatar" class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-600 text-white font-black text-xl flex items-center justify-center shadow-md shadow-blue-500/20 flex-shrink-0">
             -
           </div>
@@ -281,9 +281,14 @@
           </div>
         </div>
 
-        <button id="btnCollabSettings" onclick="openProfileSettingsModal()" title="Configurações do perfil" class="hidden absolute top-3.5 right-3.5 lg:static lg:self-start flex-shrink-0 w-10 h-10 rounded-xl bg-slate-100 hover:bg-blue-50 hover:text-blue-600 text-slate-500 transition flex items-center justify-center active:scale-95 border border-slate-200/80 shadow-2xs">
-          <i class="fa-solid fa-gear text-lg"></i>
-        </button>
+        <div class="absolute top-3.5 right-3.5 lg:static lg:self-start flex items-center gap-1.5 flex-shrink-0">
+          <button id="btnCollabLogin" onclick="handleProfileLoginButtonClick()" title="Fazer login neste perfil" class="hidden w-10 h-10 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-600 transition flex items-center justify-center active:scale-95 border border-blue-200/80 shadow-2xs">
+            <i id="iconCollabLogin" class="fa-solid fa-right-to-bracket text-base"></i>
+          </button>
+          <button id="btnCollabSettings" onclick="openProfileSettingsModal()" title="Configurações do perfil" class="hidden w-10 h-10 rounded-xl bg-slate-100 hover:bg-blue-50 hover:text-blue-600 text-slate-500 transition flex items-center justify-center active:scale-95 border border-slate-200/80 shadow-2xs">
+            <i class="fa-solid fa-gear text-lg"></i>
+          </button>
+        </div>
       </div>
 
       <!-- Seletor Lista / Mês dentro do bloco do colaborador -->
@@ -467,7 +472,7 @@
             <i class="fa-solid fa-sliders text-sm"></i>
           </div>
           <div>
-            <h3 class="font-bold text-slate-900 text-base leading-tight">Configurações do Perfil</h3>
+            <h3 id="settingsModalTitle" class="font-bold text-slate-900 text-base leading-tight">Configurações do Perfil</h3>
             <p id="settingsCollabName" class="text-xs text-slate-500 truncate max-w-[200px]">-</p>
           </div>
         </div>
@@ -505,7 +510,7 @@
 
         <button type="submit" id="btnSettingsLoginSubmit" class="w-full py-3 bg-blue-600 hover:bg-blue-700 active:scale-95 text-white font-bold rounded-2xl text-sm transition shadow-md shadow-blue-500/20 flex items-center justify-center gap-2">
           <i class="fa-solid fa-right-to-bracket"></i>
-          <span>Entrar nas Configurações</span>
+          <span>Entrar</span>
         </button>
       </form>
 
@@ -751,6 +756,7 @@
     window.isSuperAdmin = false;
     window.cachedColaboradores = [];
     window.verifiedProfileCollabIds = new Set();
+    window.verifiedProfileDocs = {};
 
     async function loadColaboradoresData() {
         try {
@@ -878,6 +884,8 @@
             const collabsSnap = await getDocs(collection(db, "colaboradores"));
             let foundAdminName = null;
             let foundSuperAdmin = false;
+            let foundDocId = null;
+            let foundDocData = null;
 
             collabsSnap.forEach(docSnap => {
                 const data = docSnap.data();
@@ -902,6 +910,8 @@
                 if (loginMatches && String(dbPass).trim() === passwordInput && isAdmin) {
                     foundAdminName = data.nomeCompleto || data.name || data.username || usernameInput;
                     foundSuperAdmin = data.superadmin === true || data.superAdmin === true;
+                    foundDocId = docSnap.id;
+                    foundDocData = data;
                 }
             });
 
@@ -913,6 +923,9 @@
                 );
                 if (matchedCollab && window.verifiedProfileCollabIds) {
                     window.verifiedProfileCollabIds.add(matchedCollab.id);
+                    if (foundDocId && foundDocData) {
+                        window.verifiedProfileDocs[matchedCollab.id] = { docId: foundDocId, data: foundDocData };
+                    }
                 }
                 closeAuthModal();
                 updateAuthUI();
@@ -990,61 +1003,86 @@
         const btnRemove = document.getElementById('btnRemoveProfilePhoto');
         const picker = document.getElementById('settingsBgColorPicker');
 
-        if (!previewCard || !previewAvatar) return;
+        const bgColor = draftProfileBgColor || '#ffffff';
+        const isDark = isDarkHexColor(bgColor);
 
-        const bg = draftProfileBgColor || '#ffffff';
-        previewCard.style.backgroundColor = bg;
-        if (picker && /^#[0-9a-fA-F]{6}$/.test(bg)) picker.value = bg;
-
-        const dark = isDarkHexColor(bg);
+        if (previewCard) {
+            previewCard.style.backgroundColor = bgColor;
+        }
         if (previewName) {
             previewName.textContent = collab ? collab.name : '-';
-            previewName.className = `text-sm font-bold truncate ${dark ? 'text-white' : 'text-slate-900'}`;
+            previewName.classList.toggle('text-white', isDark);
+            previewName.classList.toggle('text-slate-900', !isDark);
         }
         if (previewHint) {
-            previewHint.className = `text-[11px] ${dark ? 'text-slate-300' : 'text-slate-500'}`;
+            previewHint.classList.toggle('text-slate-300', isDark);
+            previewHint.classList.toggle('text-slate-500', !isDark);
         }
-
-        if (draftProfilePhoto) {
-            previewAvatar.innerHTML = `<img src="${draftProfilePhoto}" alt="Foto de perfil" class="w-full h-full object-cover">`;
-            if (btnRemove) btnRemove.classList.remove('hidden');
-        } else {
-            previewAvatar.textContent = collab ? collab.name.charAt(0) : '-';
-            if (btnRemove) btnRemove.classList.add('hidden');
+        if (previewAvatar) {
+            if (draftProfilePhoto) {
+                previewAvatar.innerHTML = `<img src="${draftProfilePhoto}" alt="Foto de perfil" class="w-full h-full object-cover rounded-2xl">`;
+                previewAvatar.classList.add('overflow-hidden');
+            } else {
+                previewAvatar.textContent = collab ? collab.name.charAt(0) : '-';
+                previewAvatar.classList.remove('overflow-hidden');
+            }
+        }
+        if (btnRemove) {
+            btnRemove.classList.toggle('hidden', !draftProfilePhoto);
+        }
+        if (picker && /^#[0-9a-fA-F]{6}$/.test(bgColor)) {
+            picker.value = bgColor;
         }
     }
 
-    // Abre o modal de configurações sempre solicitando login primeiro
     window.switchSettingsTab = function(tab) {
-        const tabAppearance = document.getElementById('settingsTabAppearance');
-        const tabPassword = document.getElementById('settingsPasswordForm');
+        const appearanceTab = document.getElementById('settingsTabAppearance');
+        const passwordTab = document.getElementById('settingsPasswordForm');
         const btnAppearance = document.getElementById('btnSettingsTabAppearance');
         const btnPassword = document.getElementById('btnSettingsTabPassword');
-        const passError = document.getElementById('settingsPassError');
 
-        if (passError) passError.classList.add('hidden');
+        const activeClasses = 'py-2.5 px-3 rounded-xl bg-white text-blue-600 shadow-xs transition flex items-center justify-center gap-1.5';
+        const inactiveClasses = 'py-2.5 px-3 rounded-xl text-slate-600 hover:text-slate-900 transition flex items-center justify-center gap-1.5';
 
         if (tab === 'password') {
-            if (tabAppearance) tabAppearance.classList.add('hidden');
-            if (tabPassword) tabPassword.classList.remove('hidden');
-            if (btnAppearance) btnAppearance.className = 'py-2.5 px-3 rounded-xl text-slate-600 hover:text-slate-900 transition flex items-center justify-center gap-1.5';
-            if (btnPassword) btnPassword.className = 'py-2.5 px-3 rounded-xl bg-white text-blue-600 shadow-xs transition flex items-center justify-center gap-1.5';
+            if (appearanceTab) appearanceTab.classList.add('hidden');
+            if (passwordTab) passwordTab.classList.remove('hidden');
+            if (btnAppearance) btnAppearance.className = inactiveClasses;
+            if (btnPassword) btnPassword.className = activeClasses;
         } else {
-            if (tabAppearance) tabAppearance.classList.remove('hidden');
-            if (tabPassword) tabPassword.classList.add('hidden');
-            if (btnAppearance) btnAppearance.className = 'py-2.5 px-3 rounded-xl bg-white text-blue-600 shadow-xs transition flex items-center justify-center gap-1.5';
-            if (btnPassword) btnPassword.className = 'py-2.5 px-3 rounded-xl text-slate-600 hover:text-slate-900 transition flex items-center justify-center gap-1.5';
+            if (appearanceTab) appearanceTab.classList.remove('hidden');
+            if (passwordTab) passwordTab.classList.add('hidden');
+            if (btnAppearance) btnAppearance.className = activeClasses;
+            if (btnPassword) btnPassword.className = inactiveClasses;
         }
     };
 
-    window.openProfileSettingsModal = function() {
+    window.handleProfileLoginButtonClick = function() {
         const collab = (window.collaborators || []).find(c => c.id === window.currentCollaboratorId);
         if (!collab) return;
 
+        const isVerified = window.verifiedProfileCollabIds && window.verifiedProfileCollabIds.has(collab.id);
+        if (isVerified) {
+            showModal("Sair do Perfil", `Deseja encerrar o login de ${collab.name.split(' ')[0]}?`, false, () => {
+                window.verifiedProfileCollabIds.delete(collab.id);
+                delete window.verifiedProfileDocs[collab.id];
+                if (typeof window.updateCollabSettingsGear === 'function') window.updateCollabSettingsGear();
+                if (typeof window.renderExclusiveProfileBlocks === 'function') window.renderExclusiveProfileBlocks();
+                showModal("Sessão Encerrada", "Você saiu deste perfil com sucesso.");
+            });
+            return;
+        }
+
+        openProfileLoginStep(collab);
+    };
+
+    function openProfileLoginStep(collab) {
         activeSettingsDocId = null;
         draftProfilePhoto = '';
         draftProfileBgColor = '#ffffff';
 
+        const titleEl = document.getElementById('settingsModalTitle');
+        if (titleEl) titleEl.textContent = 'Login do Perfil';
         document.getElementById('settingsCollabName').textContent = collab.name;
         document.getElementById('settingsLoginUser').value = collab.name.split(' ')[0];
         const passInput = document.getElementById('settingsLoginPass');
@@ -1058,9 +1096,39 @@
         document.getElementById('settingsNewPass').value = '';
         document.getElementById('settingsConfirmPass').value = '';
 
-        window.switchSettingsTab('appearance');
         document.getElementById('settingsLoginStep').classList.remove('hidden');
         document.getElementById('settingsOptionsStep').classList.add('hidden');
+        document.getElementById('profileSettingsModal').classList.remove('hidden');
+    }
+
+    window.openProfileSettingsModal = function() {
+        const collab = (window.collaborators || []).find(c => c.id === window.currentCollaboratorId);
+        if (!collab) return;
+
+        const isVerified = window.verifiedProfileCollabIds && window.verifiedProfileCollabIds.has(collab.id);
+        const verifiedInfo = window.verifiedProfileDocs ? window.verifiedProfileDocs[collab.id] : null;
+
+        if (!isVerified || !verifiedInfo) {
+            openProfileLoginStep(collab);
+            return;
+        }
+
+        activeSettingsDocId = verifiedInfo.docId;
+        const cached = (window.cachedColaboradores || []).find(c => c.id === verifiedInfo.docId) || verifiedInfo.data || {};
+        draftProfilePhoto = cached.fotoPerfil || '';
+        draftProfileBgColor = cached.corPerfil || '#ffffff';
+
+        const titleEl = document.getElementById('settingsModalTitle');
+        if (titleEl) titleEl.textContent = 'Configurações do Perfil';
+        document.getElementById('settingsCollabName').textContent = collab.name;
+        document.getElementById('settingsPassError').classList.add('hidden');
+        document.getElementById('settingsNewPass').value = '';
+        document.getElementById('settingsConfirmPass').value = '';
+
+        document.getElementById('settingsLoginStep').classList.add('hidden');
+        document.getElementById('settingsOptionsStep').classList.remove('hidden');
+        window.switchSettingsTab('appearance');
+        updateSettingsPreview();
         document.getElementById('profileSettingsModal').classList.remove('hidden');
     };
 
@@ -1122,26 +1190,25 @@
                 return;
             }
 
-            activeSettingsDocId = matchedDocId;
-            draftProfilePhoto = matchedData.fotoPerfil || '';
-            draftProfileBgColor = matchedData.corPerfil || '#ffffff';
-
-            // Marca este colaborador como verificado na sessão atual
+            // Marca este colaborador como verificado na sessão atual e libera o botão de configurações
             window.verifiedProfileCollabIds.add(collab.id);
+            window.verifiedProfileDocs[collab.id] = { docId: matchedDocId, data: matchedData };
+
+            if (typeof window.updateCollabSettingsGear === 'function') {
+                window.updateCollabSettingsGear();
+            }
             if (typeof window.renderExclusiveProfileBlocks === 'function') {
                 window.renderExclusiveProfileBlocks();
             }
 
-            document.getElementById('settingsLoginStep').classList.add('hidden');
-            document.getElementById('settingsOptionsStep').classList.remove('hidden');
-            window.switchSettingsTab('appearance');
-            updateSettingsPreview();
+            closeProfileSettingsModal();
+            showModal("Login Realizado", `Bem-vindo, ${collab.name.split(' ')[0]}! O botão de configurações foi liberado.`);
         } catch (err) {
             console.error("Erro ao validar login nas configurações:", err);
             errorMsg.classList.remove('hidden');
         } finally {
             btn.disabled = false;
-            btn.innerHTML = '<i class="fa-solid fa-right-to-bracket"></i><span>Entrar nas Configurações</span>';
+            btn.innerHTML = '<i class="fa-solid fa-right-to-bracket"></i><span>Entrar</span>';
         }
     };
 
@@ -2278,11 +2345,14 @@
 
     window.updateCollabSettingsGear = function() {
         const gearBtn = document.getElementById('btnCollabSettings');
-        if (!gearBtn) return;
+        const loginBtn = document.getElementById('btnCollabLogin');
+        const loginIcon = document.getElementById('iconCollabLogin');
+        if (!gearBtn || !loginBtn) return;
 
         const collab = (window.collaborators || []).find(c => c.id === window.currentCollaboratorId);
         if (!collab) {
             gearBtn.classList.add('hidden');
+            loginBtn.classList.add('hidden');
             return;
         }
 
@@ -2307,10 +2377,25 @@
         });
 
         const hasCredentials = found && (found.admin === true || found.password !== undefined || found.senha !== undefined);
-        if (hasCredentials) {
+        if (!hasCredentials) {
+            gearBtn.classList.add('hidden');
+            loginBtn.classList.add('hidden');
+            return;
+        }
+
+        const isVerified = window.verifiedProfileCollabIds && window.verifiedProfileCollabIds.has(collab.id);
+        loginBtn.classList.remove('hidden');
+
+        if (isVerified) {
             gearBtn.classList.remove('hidden');
+            loginBtn.title = 'Sair deste perfil';
+            loginBtn.className = 'w-10 h-10 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-600 transition flex items-center justify-center active:scale-95 border border-rose-200/80 shadow-2xs';
+            if (loginIcon) loginIcon.className = 'fa-solid fa-right-from-bracket text-base';
         } else {
             gearBtn.classList.add('hidden');
+            loginBtn.title = 'Fazer login neste perfil';
+            loginBtn.className = 'w-10 h-10 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-600 transition flex items-center justify-center active:scale-95 border border-blue-200/80 shadow-2xs';
+            if (loginIcon) loginIcon.className = 'fa-solid fa-right-to-bracket text-base';
         }
     };
 
