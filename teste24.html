@@ -302,6 +302,56 @@
       </div>
     </div>
 
+    <!-- Bloco Exclusivo (Whatyson & Sabrinna após verificação): Fechamentos Juntos -->
+    <div id="sharedClosingCard" class="hidden bg-gradient-to-br from-sky-50 via-white to-indigo-50 rounded-2xl shadow-sm border border-sky-200/80 p-4 transition-all">
+      <div class="flex items-start justify-between gap-2">
+        <div class="flex items-center gap-2.5 min-w-0">
+          <div class="w-9 h-9 rounded-xl bg-sky-100 text-sky-700 flex items-center justify-center flex-shrink-0 shadow-2xs border border-sky-200/70">
+            <i class="fa-solid fa-moon text-sm"></i>
+          </div>
+          <div class="min-w-0">
+            <h3 class="text-sm font-bold text-slate-900 leading-tight">Whatyson & Sabrinna • Fechamentos Juntos</h3>
+            <p class="text-[11px] text-slate-500 mt-0.5">Dias em que os dois estão escalados no fechamento (F ou PF)</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-1.5 flex-shrink-0">
+          <span id="sharedClosingBadge" class="px-2.5 py-1 rounded-full bg-sky-100 text-sky-800 text-[11px] font-bold border border-sky-200 whitespace-nowrap">0 dias</span>
+          <button type="button" onclick="toggleExclusiveCard('sharedClosing')" class="px-2.5 py-1 rounded-xl bg-white hover:bg-sky-50 text-slate-600 hover:text-sky-700 text-[11px] font-bold border border-sky-200/80 transition flex items-center gap-1 active:scale-95" title="Ocultar ou mostrar bloco">
+            <span id="labelToggleSharedClosing">Ocultar</span>
+            <i id="iconToggleSharedClosing" class="fa-solid fa-chevron-up text-[10px]"></i>
+          </button>
+        </div>
+      </div>
+      <div id="sharedClosingBody" class="mt-3 pt-2.5 border-t border-sky-200/60">
+        <div id="sharedClosingList" class="space-y-2"></div>
+      </div>
+    </div>
+
+    <!-- Bloco Exclusivo (Whatyson & Silvia Nascimento após verificação): Fechamento/Intermediário seguido de Abertura -->
+    <div id="silviaTurnAlertCard" class="hidden bg-gradient-to-br from-amber-50 via-white to-sky-50 rounded-2xl shadow-sm border border-amber-200/80 p-4 transition-all">
+      <div class="flex items-start justify-between gap-2">
+        <div class="flex items-center gap-2.5 min-w-0">
+          <div class="w-9 h-9 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center flex-shrink-0 shadow-2xs border border-amber-200/70">
+            <i class="fa-solid fa-clock-rotate-left text-sm"></i>
+          </div>
+          <div class="min-w-0">
+            <h3 class="text-sm font-bold text-slate-900 leading-tight">Silvia Nascimento • Fech./Interm. → Abertura</h3>
+            <p class="text-[11px] text-slate-500 mt-0.5">Dias em que Silvia faz fechamento ou intermediário e abre no dia seguinte</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-1.5 flex-shrink-0">
+          <span id="silviaTurnAlertBadge" class="px-2.5 py-1 rounded-full bg-amber-100 text-amber-800 text-[11px] font-bold border border-amber-200 whitespace-nowrap">0 dias</span>
+          <button type="button" onclick="toggleExclusiveCard('silviaTurn')" class="px-2.5 py-1 rounded-xl bg-white hover:bg-amber-50 text-slate-600 hover:text-amber-700 text-[11px] font-bold border border-amber-200/80 transition flex items-center gap-1 active:scale-95" title="Ocultar ou mostrar bloco">
+            <span id="labelToggleSilviaTurn">Ocultar</span>
+            <i id="iconToggleSilviaTurn" class="fa-solid fa-chevron-up text-[10px]"></i>
+          </button>
+        </div>
+      </div>
+      <div id="silviaTurnAlertBody" class="mt-3 pt-2.5 border-t border-amber-200/60">
+        <div id="silviaTurnAlertList" class="space-y-2"></div>
+      </div>
+    </div>
+
     <!-- Legenda de Turnos -->
     <div id="shiftLegend" class="hidden bg-white/90 backdrop-blur rounded-xl p-3 border border-slate-200/70 text-[11px] text-slate-700 flex flex-wrap items-center justify-between gap-2 shadow-xs">
       <span class="font-bold text-slate-800 mr-1 flex items-center gap-1">Legenda:</span>
@@ -438,6 +488,27 @@
                  class="w-full px-4 py-2.5 rounded-2xl border border-slate-200 text-sm focus:outline-none focus:ring-4 focus:ring-blue-500/15 focus:border-blue-600 bg-slate-50/50 font-medium">
         </div>
 
+        <div>
+          <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">Senha</label>
+          <div class="relative">
+            <input type="password" id="settingsLoginPass" required placeholder="Digite sua senha..."
+                   class="w-full pl-4 pr-11 py-2.5 rounded-2xl border border-slate-200 text-sm focus:outline-none focus:ring-4 focus:ring-blue-500/15 focus:border-blue-600 bg-slate-50/50 font-medium">
+            <button type="button" onclick="toggleInputVisibility('settingsLoginPass', 'iconEyeSettingsLogin')" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-blue-600 transition p-1">
+              <i id="iconEyeSettingsLogin" class="fa-regular fa-eye"></i>
+            </button>
+          </div>
+        </div>
+
+        <p id="settingsLoginError" class="text-xs text-rose-500 font-bold hidden flex items-center gap-1.5">
+          <i class="fa-solid fa-circle-exclamation"></i> Usuário ou senha incorretos para este perfil.
+        </p>
+
+        <button type="submit" id="btnSettingsLoginSubmit" class="w-full py-3 bg-blue-600 hover:bg-blue-700 active:scale-95 text-white font-bold rounded-2xl text-sm transition shadow-md shadow-blue-500/20 flex items-center justify-center gap-2">
+          <i class="fa-solid fa-right-to-bracket"></i>
+          <span>Entrar nas Configurações</span>
+        </button>
+      </form>
+
       <!-- Etapa 2: Opções do Perfil (Abas separadas: Foto/Cor e Trocar Senha) -->
       <div id="settingsOptionsStep" class="hidden space-y-4">
         <!-- Seletor de Abas -->
@@ -496,13 +567,14 @@
 
             <div class="flex items-center flex-wrap gap-2">
               <button type="button" onclick="selectProfileBgColor('#ffffff')" class="w-8 h-8 rounded-xl border-2 border-slate-300 bg-white shadow-2xs hover:scale-105 transition" title="Branco (Padrão)"></button>
-              <button type="button" onclick="selectProfileBgColor('#eff6ff')" class="w-8 h-8 rounded-xl border-2 border-blue-200 bg-[#eff6ff] shadow-2xs hover:scale-105 transition" title="Azul Suave"></button>
-              <button type="button" onclick="selectProfileBgColor('#eef2ff')" class="w-8 h-8 rounded-xl border-2 border-indigo-200 bg-[#eef2ff] shadow-2xs hover:scale-105 transition" title="Índigo Suave"></button>
-              <button type="button" onclick="selectProfileBgColor('#ecfdf5')" class="w-8 h-8 rounded-xl border-2 border-emerald-200 bg-[#ecfdf5] shadow-2xs hover:scale-105 transition" title="Verde Suave"></button>
-              <button type="button" onclick="selectProfileBgColor('#fffbeb')" class="w-8 h-8 rounded-xl border-2 border-amber-200 bg-[#fffbeb] shadow-2xs hover:scale-105 transition" title="Âmbar Suave"></button>
-              <button type="button" onclick="selectProfileBgColor('#fdf2f8')" class="w-8 h-8 rounded-xl border-2 border-pink-200 bg-[#fdf2f8] shadow-2xs hover:scale-105 transition" title="Rosa Suave"></button>
-              <button type="button" onclick="selectProfileBgColor('#faf5ff')" class="w-8 h-8 rounded-xl border-2 border-purple-200 bg-[#faf5ff] shadow-2xs hover:scale-105 transition" title="Roxo Suave"></button>
-              <button type="button" onclick="selectProfileBgColor('#0f172a')" class="w-8 h-8 rounded-xl border-2 border-slate-700 bg-[#0f172a] shadow-2xs hover:scale-105 transition" title="Escuro"></button>
+              <button type="button" onclick="selectProfileBgColor('#000000')" class="w-8 h-8 rounded-xl border-2 border-slate-700 bg-black shadow-2xs hover:scale-105 transition" title="Preto"></button>
+              <button type="button" onclick="selectProfileBgColor('#dc2626')" class="w-8 h-8 rounded-xl border-2 border-red-800/30 bg-[#dc2626] shadow-2xs hover:scale-105 transition" title="Vermelho"></button>
+              <button type="button" onclick="selectProfileBgColor('#7c3aed')" class="w-8 h-8 rounded-xl border-2 border-purple-900/30 bg-[#7c3aed] shadow-2xs hover:scale-105 transition" title="Roxo"></button>
+              <button type="button" onclick="selectProfileBgColor('#16a34a')" class="w-8 h-8 rounded-xl border-2 border-green-900/30 bg-[#16a34a] shadow-2xs hover:scale-105 transition" title="Verde"></button>
+              <button type="button" onclick="selectProfileBgColor('#2563eb')" class="w-8 h-8 rounded-xl border-2 border-blue-900/30 bg-[#2563eb] shadow-2xs hover:scale-105 transition" title="Azul"></button>
+              <button type="button" onclick="selectProfileBgColor('#ea580c')" class="w-8 h-8 rounded-xl border-2 border-orange-900/30 bg-[#ea580c] shadow-2xs hover:scale-105 transition" title="Laranja"></button>
+              <button type="button" onclick="selectProfileBgColor('#facc15')" class="w-8 h-8 rounded-xl border-2 border-yellow-600/30 bg-[#facc15] shadow-2xs hover:scale-105 transition" title="Amarelo"></button>
+              <button type="button" onclick="selectProfileBgColor('#db2777')" class="w-8 h-8 rounded-xl border-2 border-pink-900/30 bg-[#db2777] shadow-2xs hover:scale-105 transition" title="Rosa"></button>
               <label class="w-8 h-8 rounded-xl border-2 border-slate-200 bg-slate-50 flex items-center justify-center cursor-pointer hover:border-blue-400 transition overflow-hidden" title="Cor personalizada">
                 <input type="color" id="settingsBgColorPicker" value="#ffffff" oninput="selectProfileBgColor(this.value)" class="w-10 h-10 border-0 p-0 cursor-pointer bg-transparent">
               </label>
@@ -678,6 +750,7 @@
     window.currentAdminUser = null;
     window.isSuperAdmin = false;
     window.cachedColaboradores = [];
+    window.verifiedProfileCollabIds = new Set();
 
     async function loadColaboradoresData() {
         try {
@@ -835,8 +908,17 @@
             if (foundAdminName) {
                 window.currentAdminUser = foundAdminName;
                 window.isSuperAdmin = foundSuperAdmin;
+                const matchedCollab = (window.collaborators || []).find(c =>
+                    c.name.toLowerCase().includes(foundAdminName.split(' ')[0].toLowerCase())
+                );
+                if (matchedCollab && window.verifiedProfileCollabIds) {
+                    window.verifiedProfileCollabIds.add(matchedCollab.id);
+                }
                 closeAuthModal();
                 updateAuthUI();
+                if (typeof window.renderExclusiveProfileBlocks === 'function') {
+                    window.renderExclusiveProfileBlocks();
+                }
                 
                 const nameParts = window.currentAdminUser.trim().split(/\s+/);
                 const shortName = nameParts.slice(0, 2).join(' ');
@@ -1043,6 +1125,12 @@
             activeSettingsDocId = matchedDocId;
             draftProfilePhoto = matchedData.fotoPerfil || '';
             draftProfileBgColor = matchedData.corPerfil || '#ffffff';
+
+            // Marca este colaborador como verificado na sessão atual
+            window.verifiedProfileCollabIds.add(collab.id);
+            if (typeof window.renderExclusiveProfileBlocks === 'function') {
+                window.renderExclusiveProfileBlocks();
+            }
 
             document.getElementById('settingsLoginStep').classList.add('hidden');
             document.getElementById('settingsOptionsStep').classList.remove('hidden');
@@ -1666,6 +1754,7 @@
     let lastScheduleView = 'list';
     let activeSector = 'Todos';
     let selectedSummaryDay = null;
+    let showPastDaysInList = false;
     let allData = null;
     let isMaintenanceMode = false;
     window.avisosData = {};
@@ -1682,6 +1771,8 @@
         'viewAvisos',
         'escalaFiltersCard',
         'userProfileCard',
+        'sharedClosingCard',
+        'silviaTurnAlertCard',
         'shiftLegend',
         'viewList',
         'viewCalendar',
@@ -2009,6 +2100,7 @@
       currentMonth = ALLOWED_TWO_MONTHS[0];
       activeSector = 'Todos';
       selectedSummaryDay = null;
+      showPastDaysInList = false;
       currentCollaboratorId = null;
       window.currentCollaboratorId = null;
       currentView = 'list';
@@ -2106,6 +2198,7 @@
         if (currentCollaboratorId && scheduleData[currentCollaboratorId]) {
             renderListView(scheduleData[currentCollaboratorId]);
             renderCalendarView(scheduleData[currentCollaboratorId]);
+            window.renderExclusiveProfileBlocks();
         }
     };
 
@@ -2178,6 +2271,7 @@
     function selectCollaborator(id) {
       currentCollaboratorId = id;
       window.currentCollaboratorId = id;
+      showPastDaysInList = false;
       renderCollaboratorChips();
       displayScheduleFor(id);
     }
@@ -2319,6 +2413,293 @@
       displayScheduleFor(null);
     };
 
+    const exclusiveCardsCollapsed = {
+      sharedClosing: false,
+      silviaTurn: false
+    };
+
+    window.toggleExclusiveCard = function(cardKey) {
+      exclusiveCardsCollapsed[cardKey] = !exclusiveCardsCollapsed[cardKey];
+      applyExclusiveCardToggleUI(cardKey);
+    };
+
+    function applyExclusiveCardToggleUI(cardKey) {
+      const isCollapsed = !!exclusiveCardsCollapsed[cardKey];
+      const map = {
+        sharedClosing: {
+          body: 'sharedClosingBody',
+          label: 'labelToggleSharedClosing',
+          icon: 'iconToggleSharedClosing'
+        },
+        silviaTurn: {
+          body: 'silviaTurnAlertBody',
+          label: 'labelToggleSilviaTurn',
+          icon: 'iconToggleSilviaTurn'
+        }
+      };
+      const ids = map[cardKey];
+      if (!ids) return;
+
+      const bodyEl = document.getElementById(ids.body);
+      const labelEl = document.getElementById(ids.label);
+      const iconEl = document.getElementById(ids.icon);
+
+      if (bodyEl) bodyEl.classList.toggle('hidden', isCollapsed);
+      if (labelEl) labelEl.textContent = isCollapsed ? 'Mostrar' : 'Ocultar';
+      if (iconEl) iconEl.className = `fa-solid ${isCollapsed ? 'fa-chevron-down' : 'fa-chevron-up'} text-[10px]`;
+    }
+
+    function isWhatysonProfile(collab) {
+      if (!collab || !collab.name) return false;
+      return stripAccents(collab.name.toLowerCase()).includes('whatyson');
+    }
+
+    function isSabrinnaProfile(collab) {
+      if (!collab || !collab.name) return false;
+      const norm = stripAccents(collab.name.toLowerCase());
+      return norm.includes('sabrinna') || norm.includes('sabrina');
+    }
+
+    function isWhatysonOrSilviaProfile(collab) {
+      if (!collab || !collab.name) return false;
+      const norm = stripAccents(collab.name.toLowerCase());
+      return norm.includes('whatyson') || (norm.includes('silvia') && norm.includes('nascimento')) || norm.startsWith('silvia ');
+    }
+
+    function findWhatysonCollab() {
+      return collaborators.find(c => isWhatysonProfile(c)) || null;
+    }
+
+    function findSabrinnaCollab() {
+      return collaborators.find(c => isSabrinnaProfile(c)) || null;
+    }
+
+    function findSilviaNascimentoCollab() {
+      const exact = collaborators.find(c => {
+        const norm = stripAccents((c.name || '').toLowerCase());
+        return norm.includes('silvia') && norm.includes('nascimento');
+      });
+      if (exact) return exact;
+      return collaborators.find(c => stripAccents((c.name || '').toLowerCase()).includes('silvia')) || null;
+    }
+
+    // Exibe para Whatyson e Sabrinna (após verificação) os dias em que ambos estão fechando (F ou PF)
+    window.renderSharedClosingCard = function() {
+      const card = document.getElementById('sharedClosingCard');
+      const listEl = document.getElementById('sharedClosingList');
+      const badgeEl = document.getElementById('sharedClosingBadge');
+      if (!card || !listEl || !badgeEl) return;
+
+      if (isMaintenanceMode || currentView === 'avisos' || !currentCollaboratorId) {
+        card.classList.add('hidden');
+        return;
+      }
+
+      const activeCollab = collaborators.find(c => c.id === currentCollaboratorId);
+      const isVerified = window.verifiedProfileCollabIds && window.verifiedProfileCollabIds.has(currentCollaboratorId);
+
+      if (!activeCollab || (!isWhatysonProfile(activeCollab) && !isSabrinnaProfile(activeCollab)) || !isVerified) {
+        card.classList.add('hidden');
+        return;
+      }
+
+      const whatyson = findWhatysonCollab();
+      const sabrinna = findSabrinnaCollab();
+      if (!whatyson || !sabrinna) {
+        card.classList.add('hidden');
+        return;
+      }
+
+      const wSched = scheduleData[whatyson.id] || [];
+      const sSched = scheduleData[sabrinna.id] || [];
+      const monthIndex = MONTH_INDEXES[currentMonth] ?? (new Date().getMonth());
+      const now = new Date();
+      const curYear = now.getFullYear();
+      const isCurrentRealMonth = (now.getMonth() === monthIndex);
+      const currentRealDay = isCurrentRealMonth ? now.getDate() : -1;
+      const monthDisplay = currentMonth.charAt(0) + currentMonth.slice(1).toLowerCase();
+
+      const closingShifts = ['F', 'PF'];
+      const matches = [];
+
+      for (let day = 1; day <= monthDaysCount; day++) {
+        const wShift = wSched[day - 1] || '-';
+        const sShift = sSched[day - 1] || '-';
+        if (closingShifts.includes(wShift) && closingShifts.includes(sShift)) {
+          matches.push({ day, wShift, sShift });
+        }
+      }
+
+      badgeEl.textContent = `${matches.length} dia${matches.length !== 1 ? 's' : ''}`;
+
+      if (matches.length === 0) {
+        listEl.innerHTML = `
+          <div class="bg-white/80 rounded-xl border border-slate-200/70 p-3 text-xs text-slate-500 text-center font-medium">
+            Nenhum dia encontrado em <strong>${monthDisplay}</strong> com Whatyson e Sabrinna fechando juntos.
+          </div>
+        `;
+      } else {
+        listEl.innerHTML = matches.map(m => {
+          const dateObj = new Date(curYear, monthIndex, m.day);
+          const wd = WEEKDAYS_SHORT[dateObj.getDay()];
+          const isToday = (m.day === currentRealDay);
+          const wStyle = SHIFT_STYLES[m.wShift] || SHIFT_STYLES['F'];
+          const sStyle = SHIFT_STYLES[m.sShift] || SHIFT_STYLES['F'];
+
+          return `
+            <div class="bg-white rounded-xl border ${isToday ? 'border-blue-500 ring-2 ring-blue-500/20' : 'border-sky-200/70'} px-3 py-2.5 flex flex-wrap items-center justify-between gap-2 shadow-2xs">
+              <div class="flex items-center gap-2 flex-wrap">
+                <span class="px-2.5 py-1 rounded-lg ${isToday ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-800'} text-xs font-extrabold">
+                  Dia ${String(m.day).padStart(2, '0')} (${wd})
+                </span>
+                ${isToday ? '<span class="px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 text-[10px] font-bold">Hoje</span>' : ''}
+              </div>
+              <div class="flex items-center gap-1.5 flex-wrap">
+                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-bold ${wStyle.badge}">
+                  Whatyson (${m.wShift})
+                </span>
+                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-bold ${sStyle.badge}">
+                  Sabrinna (${m.sShift})
+                </span>
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
+
+      applyExclusiveCardToggleUI('sharedClosing');
+      card.classList.remove('hidden');
+    };
+
+    // Exibe para Whatyson e Silvia Nascimento (após verificação) os dias em que Silvia está em F/PF/I e no dia seguinte em A/A1/A2/PA
+    window.renderSilviaTurnAlertCard = function() {
+      const card = document.getElementById('silviaTurnAlertCard');
+      const listEl = document.getElementById('silviaTurnAlertList');
+      const badgeEl = document.getElementById('silviaTurnAlertBadge');
+      if (!card || !listEl || !badgeEl) return;
+
+      if (isMaintenanceMode || currentView === 'avisos' || !currentCollaboratorId) {
+        card.classList.add('hidden');
+        return;
+      }
+
+      const activeCollab = collaborators.find(c => c.id === currentCollaboratorId);
+      const isVerified = window.verifiedProfileCollabIds && window.verifiedProfileCollabIds.has(currentCollaboratorId);
+
+      if (!activeCollab || !isWhatysonOrSilviaProfile(activeCollab) || !isVerified) {
+        card.classList.add('hidden');
+        return;
+      }
+
+      const silvia = findSilviaNascimentoCollab();
+      if (!silvia) {
+        card.classList.add('hidden');
+        return;
+      }
+
+      const silviaSched = scheduleData[silvia.id] || [];
+      const monthIndex = MONTH_INDEXES[currentMonth] ?? (new Date().getMonth());
+      const now = new Date();
+      const curYear = now.getFullYear();
+      const isCurrentRealMonth = (now.getMonth() === monthIndex);
+      const currentRealDay = isCurrentRealMonth ? now.getDate() : -1;
+      const monthDisplay = currentMonth.charAt(0) + currentMonth.slice(1).toLowerCase();
+
+      const lateShifts = ['F', 'PF', 'I'];
+      const openShifts = ['A', 'A1', 'A2', 'PA'];
+      const matches = [];
+
+      // Verifica dias dentro do mês atual
+      for (let day = 1; day < monthDaysCount; day++) {
+        const shiftToday = silviaSched[day - 1] || '-';
+        const shiftTomorrow = silviaSched[day] || '-';
+        if (lateShifts.includes(shiftToday) && openShifts.includes(shiftTomorrow)) {
+          matches.push({
+            day,
+            nextDay: day + 1,
+            nextMonthName: currentMonth,
+            shiftToday,
+            shiftTomorrow
+          });
+        }
+      }
+
+      // Verifica também a virada do último dia do mês para o dia 1 do mês seguinte (se existir na planilha)
+      if (monthDaysCount >= 28 && allData && allData.sched) {
+        const nextMonthIdx = (monthIndex + 1) % 12;
+        const nextMonthName = MONTH_NAMES[nextMonthIdx];
+        const nextMonthSched = allData.sched[nextMonthName] && allData.sched[nextMonthName][silvia.id];
+        if (nextMonthSched && nextMonthSched.length > 0) {
+          const shiftLastDay = silviaSched[monthDaysCount - 1] || '-';
+          const shiftNextFirst = nextMonthSched[0] || '-';
+          if (lateShifts.includes(shiftLastDay) && openShifts.includes(shiftNextFirst)) {
+            matches.push({
+              day: monthDaysCount,
+              nextDay: 1,
+              nextMonthName,
+              shiftToday: shiftLastDay,
+              shiftTomorrow: shiftNextFirst
+            });
+          }
+        }
+      }
+
+      badgeEl.textContent = `${matches.length} dia${matches.length !== 1 ? 's' : ''}`;
+
+      if (matches.length === 0) {
+        listEl.innerHTML = `
+          <div class="bg-white/80 rounded-xl border border-slate-200/70 p-3 text-xs text-slate-500 text-center font-medium">
+            Nenhum dia encontrado em <strong>${monthDisplay}</strong> com Fechamento ou Intermediário seguido de Abertura para Silvia Nascimento.
+          </div>
+        `;
+      } else {
+        listEl.innerHTML = matches.map(m => {
+          const dateToday = new Date(curYear, monthIndex, m.day);
+          const nextMonthIdx = MONTH_INDEXES[m.nextMonthName] ?? monthIndex;
+          const nextYear = (m.nextMonthName !== currentMonth && nextMonthIdx === 0) ? curYear + 1 : curYear;
+          const dateTomorrow = new Date(nextYear, nextMonthIdx, m.nextDay);
+
+          const wdToday = WEEKDAYS_SHORT[dateToday.getDay()];
+          const wdTomorrow = WEEKDAYS_SHORT[dateTomorrow.getDay()];
+          const styleToday = SHIFT_STYLES[m.shiftToday] || SHIFT_STYLES['-'];
+          const styleTomorrow = SHIFT_STYLES[m.shiftTomorrow] || SHIFT_STYLES['-'];
+          const isToday = (m.day === currentRealDay);
+          const nextMonthShort = m.nextMonthName !== currentMonth ? `/${m.nextMonthName.slice(0, 3)}` : '';
+
+          return `
+            <div class="bg-white rounded-xl border ${isToday ? 'border-blue-500 ring-2 ring-blue-500/20' : 'border-amber-200/70'} px-3 py-2.5 flex flex-wrap items-center justify-between gap-2 shadow-2xs">
+              <div class="flex items-center gap-2 flex-wrap">
+                <span class="px-2.5 py-1 rounded-lg ${isToday ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-800'} text-xs font-extrabold">
+                  Dia ${String(m.day).padStart(2, '0')} (${wdToday})
+                </span>
+                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-bold ${styleToday.badge}">
+                  ${SHIFT_EMOJI[m.shiftToday] || ''} ${styleToday.label} (${m.shiftToday})
+                </span>
+              </div>
+
+              <div class="flex items-center gap-2 flex-wrap">
+                <i class="fa-solid fa-arrow-right text-amber-500 text-xs"></i>
+                <span class="px-2 py-0.5 rounded-lg bg-slate-100 text-slate-700 text-xs font-bold">
+                  Dia ${String(m.nextDay).padStart(2, '0')}${nextMonthShort} (${wdTomorrow})
+                </span>
+                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-bold ${styleTomorrow.badge}">
+                  ${SHIFT_EMOJI[m.shiftTomorrow] || ''} ${styleTomorrow.label} (${m.shiftTomorrow})
+                </span>
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
+
+      applyExclusiveCardToggleUI('silviaTurn');
+      card.classList.remove('hidden');
+    };
+
+    window.renderExclusiveProfileBlocks = function() {
+      window.renderSharedClosingCard();
+      window.renderSilviaTurnAlertCard();
+    };
+
     function displayScheduleFor(id) {
       const profileCard = document.getElementById('userProfileCard');
       const monthSelectorContainer = document.getElementById('monthSelectorContainer');
@@ -2329,6 +2710,7 @@
 
       if (!id) {
         if (profileCard) profileCard.classList.add('hidden');
+        window.renderExclusiveProfileBlocks();
         updateMonthSelectorVisibility();
         renderLinks();
 
@@ -2487,6 +2869,7 @@
 
       window.applyCollabProfileAppearance(collab);
       window.updateCollabSettingsGear();
+      window.renderExclusiveProfileBlocks();
 
       // Mostra o calendário e esconde o prompt quando um colaborador for selecionado
       if (calHeaderBar) calHeaderBar.classList.remove('hidden');
@@ -2521,6 +2904,7 @@
       document.getElementById('statInt').textContent = intCount;
       document.getElementById('statPA').textContent = paCount;
       document.getElementById('statPF').textContent = pfCount;
+      document.getElementById('statVG').textContent = vgCount;
 
       const intBox = document.getElementById('statIntBox');
       if (intBox) intBox.classList.toggle('hidden', intCount === 0);
@@ -2538,6 +2922,13 @@
       renderCalendarView(schedule);
     }
 
+    window.togglePastDaysInList = function() {
+      showPastDaysInList = !showPastDaysInList;
+      if (currentCollaboratorId && scheduleData[currentCollaboratorId]) {
+        renderListView(scheduleData[currentCollaboratorId]);
+      }
+    };
+
     function renderListView(schedule) {
       const container = document.getElementById('viewList');
       const holidaysOfMonth = HOLIDAYS[currentMonth] || {};
@@ -2546,42 +2937,42 @@
       const isCurrentMonthReal = (now.getMonth() === monthIndex);
       const currentRealDay = isCurrentMonthReal ? now.getDate() : -1;
       const curYear = now.getFullYear();
+      const hasPastDays = isCurrentMonthReal && currentRealDay > 1 && currentRealDay <= monthDaysCount;
 
-      let html = '';
+      const renderWeekHeader = (dateObj) => {
+        const weekNum = getISOWeekNumber(dateObj);
+        return `
+          <div class="pt-3 pb-1 flex items-center gap-2">
+            <span class="text-[11px] font-extrabold uppercase tracking-wider text-slate-500 bg-slate-200/80 px-2 py-0.5 rounded-md flex items-center gap-1.5">
+              Semana ${weekNum}
+            </span>
+            <div class="h-px bg-slate-200 flex-1"></div>
+          </div>
+        `;
+      };
 
-      for (let day = 1; day <= monthDaysCount; day++) {
+      const renderDayCard = (day, isPast = false) => {
         const dateObj = new Date(curYear, monthIndex, day);
         const dayOfWeekIndex = dateObj.getDay();
-        const isMonday = dayOfWeekIndex === 1;
-        const isFirstDay = day === 1;
-
-        if (isMonday || isFirstDay) {
-          const weekNum = getISOWeekNumber(dateObj);
-          html += `
-            <div class="pt-3 pb-1 flex items-center gap-2">
-              <span class="text-[11px] font-extrabold uppercase tracking-wider text-slate-500 bg-slate-200/80 px-2 py-0.5 rounded-md flex items-center gap-1.5">
-                Semana ${weekNum}
-              </span>
-              <div class="h-px bg-slate-200 flex-1"></div>
-            </div>
-          `;
-        }
-
         const shiftCode = schedule[day - 1] || '-';
         const style = (SHIFT_STYLES[shiftCode] || { ...SHIFT_STYLES['-'], label: shiftCode });
         const holiday = holidaysOfMonth[day];
         const isToday = (day === currentRealDay);
         const avisosArray = (window.avisosData && window.avisosData[currentMonth]) ? window.avisosData[currentMonth][day] : null;
 
-        html += `
-          <div class="bg-white rounded-xl border ${isToday ? 'border-blue-500 ring-2 ring-blue-500/20 shadow-sm' : 'border-slate-200/80'} p-3 transition-all">
+        const cardClasses = isToday
+          ? 'bg-gradient-to-r from-blue-50/90 via-white to-white rounded-2xl border-2 border-blue-500 ring-4 ring-blue-500/15 shadow-md p-3.5 transition-all'
+          : `bg-white rounded-xl border border-slate-200/80 p-3 transition-all ${isPast ? 'opacity-85' : ''}`;
+
+        return `
+          <div class="${cardClasses}">
             <div class="flex items-center justify-between">
               <div class="flex items-center gap-3">
-                <div class="w-11 h-11 rounded-xl ${isToday ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-700'} flex flex-col items-center justify-center font-bold leading-none shadow-2xs">
+                <div class="w-11 h-11 rounded-xl ${isToday ? 'bg-blue-600 text-white shadow-sm shadow-blue-500/30' : 'bg-slate-100 text-slate-700'} flex flex-col items-center justify-center font-bold leading-none shadow-2xs">
                   <span class="text-sm font-extrabold">${day}</span>
                   <span class="text-[9px] uppercase tracking-wider opacity-80 mt-0.5">${WEEKDAYS_SHORT[dayOfWeekIndex]}</span>
                 </div>
-                ${isToday ? '<span class="px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 text-[10px] font-bold">Hoje</span>' : ''}
+                ${isToday ? '<span class="px-2.5 py-1 rounded-full bg-blue-600 text-white text-[10px] font-extrabold uppercase tracking-wider shadow-xs">Hoje</span>' : ''}
                 ${avisosArray && avisosArray.length > 0 ? `
                   <button onclick="showAvisoModal('${currentMonth}', ${day})" class="h-8 px-2.5 rounded-full bg-blue-50 text-blue-700 hover:bg-blue-100 flex items-center gap-1.5 animate-bounce shadow-sm transition-colors border border-blue-200 shrink-0 font-bold text-xs" title="Ver Avisos (${avisosArray.length})">
                     <i class="fa-solid fa-bullhorn text-xs"></i>
@@ -2595,7 +2986,7 @@
               </div>
             </div>
             ${holiday ? `
-              <div class="mt-2.5 pt-2 border-t border-amber-200/80 flex items-center gap-2 text-amber-900 bg-amber-50/70 -mx-3 -mb-3 p-2.5 rounded-b-xl">
+              <div class="mt-2.5 pt-2 border-t border-amber-200/80 flex items-center gap-2 text-amber-900 bg-amber-50/70 ${isToday ? '-mx-3.5 -mb-3.5 rounded-b-2xl' : '-mx-3 -mb-3 rounded-b-xl'} p-2.5">
                 <div class="text-xs">
                   <span class="font-bold">⭐ ${holiday.name}</span>
                   <span class="text-[10px] text-amber-700 block">${holiday.type}</span>
@@ -2604,7 +2995,52 @@
             ` : ''}
           </div>
         `;
+      };
+
+      let html = '';
+
+      // Se houver dias anteriores no mês atual, exibe o botão de expandir/ocultar no topo
+      if (hasPastDays) {
+        const pastCount = currentRealDay - 1;
+        html += `
+          <button onclick="togglePastDaysInList()" class="w-full py-2.5 px-4 rounded-xl bg-white hover:bg-slate-50 active:scale-[0.99] border border-slate-200/90 text-slate-600 text-xs font-bold flex items-center justify-between transition shadow-2xs">
+            <span class="flex items-center gap-2">
+              <i class="fa-solid fa-clock-rotate-left text-blue-600"></i>
+              <span>${showPastDaysInList ? 'Ocultar dias anteriores' : `Mostrar dias anteriores (1 a ${pastCount})`}</span>
+            </span>
+            <span class="inline-flex items-center gap-1.5 text-[11px] font-semibold text-slate-500 bg-slate-100 px-2.5 py-0.5 rounded-full">
+              <span>${pastCount} dia${pastCount !== 1 ? 's' : ''}</span>
+              <i class="fa-solid ${showPastDaysInList ? 'fa-chevron-up' : 'fa-chevron-down'} text-[10px]"></i>
+            </span>
+          </button>
+        `;
+
+        if (showPastDaysInList) {
+          html += `<div class="space-y-2 pb-1">`;
+          for (let day = 1; day < currentRealDay; day++) {
+            const dateObj = new Date(curYear, monthIndex, day);
+            if (day === 1 || dateObj.getDay() === 1) {
+              html += renderWeekHeader(dateObj);
+            }
+            html += renderDayCard(day, true);
+          }
+          html += `</div>`;
+        }
       }
+
+      // Renderiza a partir do dia atual (ou do dia 1 se for outro mês)
+      const startDay = hasPastDays ? currentRealDay : 1;
+      for (let day = startDay; day <= monthDaysCount; day++) {
+        const dateObj = new Date(curYear, monthIndex, day);
+        const isMonday = dateObj.getDay() === 1;
+        const shouldShowWeekHeader = isMonday || day === 1 || (hasPastDays && day === currentRealDay && !showPastDaysInList);
+
+        if (shouldShowWeekHeader) {
+          html += renderWeekHeader(dateObj);
+        }
+        html += renderDayCard(day, false);
+      }
+
       container.innerHTML = html;
     }
 
@@ -2854,6 +3290,7 @@
         if (shiftLegend) shiftLegend.classList.add('hidden');
         if (monthSelectorContainer) monthSelectorContainer.classList.add('hidden');
       }
+      window.renderExclusiveProfileBlocks();
       updateMonthSelectorVisibility();
       window.updateHeaderSubtitle();
     }
@@ -2861,6 +3298,7 @@
     function changeCurrentMonth(month) {
       currentMonth = month;
       selectedSummaryDay = null;
+      showPastDaysInList = false;
       applyMonth();
     }
 
