@@ -123,9 +123,6 @@
                 </div>
 
                 <div class="flex items-center gap-2">
-                    <button id="adminAuditBtn" onclick="openAuditModal()" class="hidden px-3 py-2 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold text-xs border border-indigo-200 transition flex items-center gap-1.5" title="Painel de Auditoria">
-                        <i class="fa-solid fa-shield-halved"></i> <span class="hidden sm:inline">Auditoria</span>
-                    </button>
                     <button onclick="openAuthModal()" class="px-3 py-2 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold text-xs border border-rose-200 transition flex items-center gap-1.5" title="Sair da Conta">
                         <i class="fa-solid fa-right-from-bracket"></i> <span class="hidden sm:inline">Sair</span>
                     </button>
@@ -456,6 +453,18 @@
           </a>
         </div>
         <p id="avisoModalContent" class="text-slate-700 text-sm whitespace-pre-line leading-relaxed font-medium"></p>
+
+        <!-- Curtidas no Modal de Aviso -->
+        <div class="pt-2 border-t border-slate-100 space-y-2">
+          <div class="flex items-center justify-between gap-2">
+            <button type="button" id="avisoModalLikeBtn" onclick="toggleCurrentModalAvisoLike()" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-200 bg-slate-50 hover:bg-rose-50 hover:border-rose-200 hover:text-rose-600 text-slate-600 text-xs font-bold transition active:scale-95">
+              <i id="avisoModalLikeIcon" class="fa-regular fa-heart"></i>
+              <span id="avisoModalLikeLabel">Curtir</span>
+              <span id="avisoModalLikeCount" class="px-1.5 py-0.5 rounded-full bg-white text-[10px] font-extrabold border border-slate-200">0</span>
+            </button>
+          </div>
+          <div id="avisoModalLikesList" class="hidden text-[11px] text-slate-600 bg-slate-50 rounded-xl px-3 py-2 border border-slate-100 leading-relaxed"></div>
+        </div>
       </div>
 
       <div class="p-3.5 bg-slate-50 border-t border-slate-100 flex items-center justify-between">
@@ -746,45 +755,6 @@
       </div>
   </div>
 
-  <!-- Modal de Auditoria e Manutenção -->
-  <div id="auditModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
-      <div class="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-7 shadow-2xl border border-slate-100 space-y-5 max-h-[90vh] overflow-y-auto animate-in fade-in zoom-in duration-200">
-          <div class="flex items-center justify-between pb-3 border-b border-slate-100">
-              <div class="flex items-center gap-3">
-                  <div class="w-10 h-10 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center shadow-inner">
-                      <i class="fa-solid fa-shield-halved text-sm"></i>
-                  </div>
-                  <div>
-                      <h3 class="font-bold text-slate-900 text-base">Painel de Auditoria & Manutenção</h3>
-                      <p class="text-xs text-slate-500">Área protegida por superadmin</p>
-                  </div>
-              </div>
-              <button onclick="closeAuditModal()" class="w-9 h-9 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 flex items-center justify-center transition active:scale-95">
-                  <i class="fa-solid fa-xmark text-sm"></i>
-              </button>
-          </div>
-
-          <div id="auditContent" class="space-y-5">
-              <div class="bg-gradient-to-br from-slate-50 to-blue-50/40 rounded-2xl p-4 border border-slate-200/80 flex items-center justify-between shadow-2xs">
-                  <div>
-                      <span class="text-[11px] font-bold uppercase tracking-wider text-slate-500 block">Sessões Totais Registradas</span>
-                      <span id="statTotalSessions" class="text-3xl font-black text-blue-600 mt-0.5 block">--</span>
-                  </div>
-                  <div class="w-14 h-14 rounded-2xl bg-blue-600 text-white flex items-center justify-center text-2xl shadow-md shadow-blue-500/20">
-                      <i class="fa-solid fa-users"></i>
-                  </div>
-              </div>
-
-              <div>
-                  <h4 class="text-xs font-bold uppercase tracking-wider text-slate-600 mb-2.5 flex items-center gap-1.5">
-                      <i class="fa-solid fa-clock-rotate-left text-indigo-600"></i> Logs Recentes de Acesso
-                  </h4>
-                  <div id="auditLogsList" class="space-y-2 max-h-60 overflow-y-auto pr-1"></div>
-              </div>
-          </div>
-      </div>
-  </div>
-
   <!-- Modal de Mensagem / Alerta Customizado -->
   <div id="customModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
       <div class="bg-white rounded-3xl max-w-sm w-full p-6 text-center shadow-2xl border border-slate-100 space-y-4 animate-in fade-in zoom-in duration-200">
@@ -806,7 +776,7 @@
   <!-- Script Principal de Lógica, Planilha e Firebase -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-    import { getFirestore, collection, addDoc, doc, setDoc, updateDoc, deleteDoc, onSnapshot, increment, getDoc, getDocs, arrayUnion, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+    import { getFirestore, collection, addDoc, doc, setDoc, updateDoc, deleteDoc, onSnapshot, increment, getDoc, getDocs, arrayUnion, arrayRemove, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyCyMUs5rD_nmf-nPR6hzMg_KcrZKZIU4A0",
@@ -827,6 +797,19 @@
     window.cachedColaboradores = [];
     window.verifiedProfileCollabIds = new Set();
     window.verifiedProfileDocs = {};
+    window.latestNoticesList = [];
+    let unsubscribeNotices = null;
+
+    window.getLoggedInUserName = function() {
+        let activeName = window.currentAdminUser || window.loggedInProfileName || null;
+        if (!activeName && window.verifiedProfileCollabIds && window.verifiedProfileCollabIds.size > 0) {
+            const verifiedIds = Array.from(window.verifiedProfileCollabIds);
+            const lastCollab = (window.collaborators || []).find(c => c.id === verifiedIds[verifiedIds.length - 1]);
+            if (lastCollab) activeName = lastCollab.name;
+        }
+        if (!activeName) return null;
+        return String(activeName).trim().split(/\s+/).slice(0, 2).join(' ');
+    };
 
     async function loadColaboradoresData() {
         try {
@@ -1020,7 +1003,6 @@
         const publishSec = document.getElementById('publishSection');
         const loginPrompt = document.getElementById('loginPromptCard');
         const activeAuthorName = document.getElementById('activeAuthorName');
-        const adminAuditBtn = document.getElementById('adminAuditBtn');
 
         if (window.currentAdminUser) {
             if (publishSec) publishSec.classList.remove('hidden');
@@ -1029,18 +1011,9 @@
             const nameParts = window.currentAdminUser.trim().split(/\s+/);
             const shortName = nameParts.slice(0, 2).join(' ');
             if (activeAuthorName) activeAuthorName.textContent = shortName;
-
-            if (adminAuditBtn) {
-                if (window.isSuperAdmin) {
-                    adminAuditBtn.classList.remove('hidden');
-                } else {
-                    adminAuditBtn.classList.add('hidden');
-                }
-            }
         } else {
             if (publishSec) publishSec.classList.add('hidden');
             if (loginPrompt) loginPrompt.classList.remove('hidden');
-            if (adminAuditBtn) adminAuditBtn.classList.add('hidden');
         }
         initRealtimeNotices();
         if (typeof window.updateHeaderSubtitle === 'function') window.updateHeaderSubtitle();
@@ -1146,6 +1119,7 @@
                 if (typeof window.updateCollabSettingsGear === 'function') window.updateCollabSettingsGear();
                 if (typeof window.renderExclusiveProfileBlocks === 'function') window.renderExclusiveProfileBlocks();
                 if (typeof window.updateLoggedUserHeaderBadge === 'function') window.updateLoggedUserHeaderBadge();
+                if (typeof window.renderNoticesList === 'function') window.renderNoticesList();
                 showModal("Sessão Encerrada", "Você saiu deste perfil com sucesso.");
             });
             return;
@@ -1283,6 +1257,9 @@
             }
             if (typeof window.updateLoggedUserHeaderBadge === 'function') {
                 window.updateLoggedUserHeaderBadge();
+            }
+            if (typeof window.renderNoticesList === 'function') {
+                window.renderNoticesList();
             }
 
             closeProfileSettingsModal();
@@ -1688,6 +1665,7 @@
                 message: message,
                 mediaUrl: mediaUrl,
                 author: window.currentAdminUser,
+                likes: [],
                 createdAt: new Date().toISOString()
             });
 
@@ -1724,12 +1702,161 @@
         });
     };
 
+    window.toggleNoticeLike = async function(docId) {
+        if (!docId) return;
+        const userName = window.getLoggedInUserName();
+        if (!userName) {
+            showModal("Login Necessário", "Faça login no seu perfil da escala ou como administrador para curtir este aviso.");
+            return;
+        }
+
+        const targetNotice = (window.latestNoticesList || []).find(n => n.id === docId);
+        const currentLikes = (targetNotice && Array.isArray(targetNotice.likes)) ? targetNotice.likes : [];
+        const alreadyLiked = currentLikes.includes(userName);
+
+        try {
+            await updateDoc(doc(db, "painel_avisos", docId), {
+                likes: alreadyLiked ? arrayRemove(userName) : arrayUnion(userName)
+            });
+        } catch (err) {
+            console.error("Erro ao curtir aviso:", err);
+            showModal("Erro", "Não foi possível registrar sua curtida no momento.", true);
+        }
+    };
+
+    window.toggleLikesList = function(docId) {
+        const listEl = document.getElementById(`notice-likes-list-${docId}`);
+        if (listEl) listEl.classList.toggle('hidden');
+    };
+
+    window.renderNoticesList = function() {
+        const container = document.getElementById('noticesContainer');
+        const badge = document.getElementById('noticeCountBadge');
+        if (!container || !badge) return;
+
+        const notices = window.latestNoticesList || [];
+        const loggedUserName = window.getLoggedInUserName();
+
+        badge.textContent = `${notices.length} aviso${notices.length !== 1 ? 's' : ''}`;
+
+        if (notices.length === 0) {
+            container.innerHTML = `
+                <div class="bg-white rounded-3xl border border-slate-200/80 p-8 text-center text-slate-400 text-sm shadow-sm">
+                    Nenhum aviso cadastrado no momento. Faça login como administrador para publicar.
+                </div>
+            `;
+            return;
+        }
+
+        container.innerHTML = notices.map(item => {
+            const formattedDate = item.date ? item.date.split('-').reverse().join('/') : 'Data não informada';
+            
+            const rawAuthor = item.author || 'Administrador';
+            const authorParts = rawAuthor.trim().split(/\s+/);
+            const authorName = authorParts.slice(0, 2).join(' ');
+            const likes = Array.isArray(item.likes) ? item.likes : [];
+            const hasLiked = loggedUserName ? likes.includes(loggedUserName) : false;
+            
+            let mediaHtml = '';
+            if (item.mediaUrl) {
+                if (item.mediaUrl.startsWith('data:image') || item.mediaUrl.match(/\.(jpeg|jpg|gif|png)$/i) || item.mediaUrl.includes('base64') || item.mediaUrl.includes('googleusercontent.com')) {
+                    mediaHtml = `
+                        <div class="mt-4 rounded-2xl overflow-hidden border border-slate-200/80 bg-slate-50 max-h-80 flex justify-center shadow-inner cursor-pointer" onclick="openImageViewer('${formatDriveUrl(item.mediaUrl)}')">
+                            <img src="${formatDriveUrl(item.mediaUrl)}" alt="Mídia do aviso" class="object-contain max-h-80 rounded-xl hover:scale-105 transition duration-300" onerror="this.src='https://placehold.co/400x200/1e293b/ffffff?text=Erro+ao+carregar+imagem'">
+                        </div>
+                    `;
+                } else {
+                    mediaHtml = `
+                        <div class="mt-4 p-4 rounded-2xl bg-blue-50/60 border border-blue-100 text-xs flex flex-col sm:flex-row items-center justify-between gap-3 text-center sm:text-left">
+                            <span class="font-bold text-slate-700 flex items-center gap-2 justify-center mx-auto sm:mx-0">
+                                <i class="fa-solid fa-file-lines text-blue-600 text-base"></i> Documento ou Anexo anexado
+                            </span>
+                            <div class="w-full sm:w-auto flex justify-center">
+                                <a href="${item.mediaUrl}" target="_blank" rel="noopener noreferrer" class="px-5 py-2.5 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 transition shadow-xs flex items-center justify-center gap-2">
+                                    <i class="fa-solid fa-external-link-alt text-xs"></i> Abrir documento
+                                </a>
+                            </div>
+                        </div>
+                    `;
+                }
+            }
+
+            const deleteBtnHtml = window.currentAdminUser ? `
+                <button onclick="deleteNotice('${item.id}')" title="Excluir aviso do banco" class="w-9 h-9 rounded-xl bg-slate-100 hover:bg-rose-50 text-slate-400 hover:text-rose-600 transition flex items-center justify-center active:scale-95 shadow-2xs">
+                    <i class="fa-solid fa-trash-can text-xs"></i>
+                </button>
+            ` : '';
+
+            const likeBtnClasses = hasLiked
+                ? 'bg-rose-50 text-rose-600 border-rose-200 hover:bg-rose-100'
+                : 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-rose-50 hover:text-rose-600 hover:border-rose-200';
+
+            const likesListHtml = likes.length > 0 ? `
+                <div id="notice-likes-list-${item.id}" class="mt-2.5 bg-slate-50/90 rounded-2xl p-3 border border-slate-200/70">
+                    <p class="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1.5 flex items-center gap-1.5">
+                        <i class="fa-solid fa-heart text-rose-500"></i> Quem curtiu (${likes.length})
+                    </p>
+                    <div class="flex flex-wrap gap-1.5">
+                        ${likes.map(name => `
+                            <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold ${loggedUserName === name ? 'bg-rose-100 text-rose-700 border border-rose-200' : 'bg-white text-slate-700 border border-slate-200/80'}">
+                                <i class="fa-solid fa-user text-[9px] opacity-70"></i> ${name}
+                            </span>
+                        `).join('')}
+                    </div>
+                </div>
+            ` : '';
+
+            return `
+                <div id="notice-card-${item.id}" class="bg-white rounded-3xl border border-slate-200/90 p-5 sm:p-6 shadow-sm space-y-3.5 relative group hover:shadow-md transition">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-2 flex-wrap">
+                            <span class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-blue-50 text-blue-700 text-xs font-bold border border-blue-100">
+                                <i class="fa-regular fa-calendar-days text-blue-500"></i> ${formattedDate}
+                            </span>
+                            <span class="text-[11px] font-semibold text-slate-500 bg-slate-100 px-3 py-1.5 rounded-full">
+                                Por: <strong class="text-slate-700">${authorName}</strong>
+                            </span>
+                        </div>
+                        ${deleteBtnHtml}
+                    </div>
+
+                    <p class="text-slate-700 text-sm sm:text-base whitespace-pre-line leading-relaxed font-medium">${item.message}</p>
+
+                    ${mediaHtml}
+
+                    <div class="pt-3 border-t border-slate-100">
+                        <div class="flex items-center justify-between gap-2 flex-wrap">
+                            <button type="button" onclick="toggleNoticeLike('${item.id}')" class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl border text-xs font-bold transition active:scale-95 ${likeBtnClasses}">
+                                <i class="${hasLiked ? 'fa-solid' : 'fa-regular'} fa-heart"></i>
+                                <span>${hasLiked ? 'Curtido' : 'Curtir'}</span>
+                                <span class="px-1.5 py-0.5 rounded-full bg-white/90 text-[10px] font-extrabold border border-current/15">${likes.length}</span>
+                            </button>
+                            ${likes.length > 0 ? `
+                                <button type="button" onclick="toggleLikesList('${item.id}')" class="text-[11px] font-semibold text-slate-500 hover:text-blue-600 transition">
+                                    Ocultar / ver nomes
+                                </button>
+                            ` : `
+                                <span class="text-[11px] text-slate-400">Seja o primeiro a curtir</span>
+                            `}
+                        </div>
+                        ${likesListHtml}
+                    </div>
+                </div>
+            `;
+        }).join('');
+    };
+
     function initRealtimeNotices() {
         const container = document.getElementById('noticesContainer');
         const badge = document.getElementById('noticeCountBadge');
         if (!container || !badge) return;
 
-        onSnapshot(collection(db, "painel_avisos"), (snapshot) => {
+        if (unsubscribeNotices) {
+            unsubscribeNotices();
+            unsubscribeNotices = null;
+        }
+
+        unsubscribeNotices = onSnapshot(collection(db, "painel_avisos"), (snapshot) => {
             const notices = [];
             const parsedAvisosFirebase = {};
 
@@ -1753,19 +1880,14 @@
                                     text: itemData.message || '',
                                     image: itemData.mediaUrl || '',
                                     author: itemData.author || 'Administrador',
-                                    date: itemData.date
+                                    date: itemData.date,
+                                    likes: Array.isArray(itemData.likes) ? itemData.likes : []
                                 });
                             }
                         }
                     }
                 }
             });
-
-            window.avisosData = parsedAvisosFirebase;
-
-            if (typeof window.refreshCurrentScheduleDisplay === 'function') {
-                window.refreshCurrentScheduleDisplay();
-            }
 
             notices.sort((a, b) => {
                 const createdA = new Date(a.createdAt || '1970-01-01');
@@ -1778,91 +1900,21 @@
                 return dateB - dateA;
             });
 
-            badge.textContent = `${notices.length} aviso${notices.length !== 1 ? 's' : ''}`;
+            window.latestNoticesList = notices;
+            window.avisosData = parsedAvisosFirebase;
 
-            if (notices.length === 0) {
-                container.innerHTML = `
-                    <div class="bg-white rounded-3xl border border-slate-200/80 p-8 text-center text-slate-400 text-sm shadow-sm">
-                        Nenhum aviso cadastrado no momento. Faça login como administrador para publicar.
-                    </div>
-                `;
-                return;
+            if (typeof window.refreshCurrentScheduleDisplay === 'function') {
+                window.refreshCurrentScheduleDisplay();
+            }
+            if (typeof window.refreshOpenAvisoModal === 'function') {
+                window.refreshOpenAvisoModal();
             }
 
-            container.innerHTML = notices.map(item => {
-                const formattedDate = item.date ? item.date.split('-').reverse().join('/') : 'Data não informada';
-                
-                const rawAuthor = item.author || 'Administrador';
-                const authorParts = rawAuthor.trim().split(/\s+/);
-                const authorName = authorParts.slice(0, 2).join(' ');
-                
-                let mediaHtml = '';
-                if (item.mediaUrl) {
-                    if (item.mediaUrl.startsWith('data:image') || item.mediaUrl.match(/\.(jpeg|jpg|gif|png)$/i) || item.mediaUrl.includes('base64') || item.mediaUrl.includes('googleusercontent.com')) {
-                        mediaHtml = `
-                            <div class="mt-4 rounded-2xl overflow-hidden border border-slate-200/80 bg-slate-50 max-h-80 flex justify-center shadow-inner cursor-pointer" onclick="openImageViewer('${formatDriveUrl(item.mediaUrl)}')">
-                                <img src="${formatDriveUrl(item.mediaUrl)}" alt="Mídia do aviso" class="object-contain max-h-80 rounded-xl hover:scale-105 transition duration-300" onerror="this.src='https://placehold.co/400x200/1e293b/ffffff?text=Erro+ao+carregar+imagem'">
-                            </div>
-                        `;
-                    } else {
-                        mediaHtml = `
-                            <div class="mt-4 p-4 rounded-2xl bg-blue-50/60 border border-blue-100 text-xs flex flex-col sm:flex-row items-center justify-between gap-3 text-center sm:text-left">
-                                <span class="font-bold text-slate-700 flex items-center gap-2 justify-center mx-auto sm:mx-0">
-                                    <i class="fa-solid fa-file-lines text-blue-600 text-base"></i> Documento ou Anexo anexado
-                                </span>
-                                <div class="w-full sm:w-auto flex justify-center">
-                                    <a href="${item.mediaUrl}" target="_blank" rel="noopener noreferrer" class="px-5 py-2.5 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 transition shadow-xs flex items-center justify-center gap-2">
-                                        <i class="fa-solid fa-external-link-alt text-xs"></i> Abrir documento
-                                    </a>
-                                </div>
-                            </div>
-                        `;
-                    }
-                }
-
-                const deleteBtnHtml = window.currentAdminUser ? `
-                    <button onclick="deleteNotice('${item.id}')" title="Excluir aviso do banco" class="w-9 h-9 rounded-xl bg-slate-100 hover:bg-rose-50 text-slate-400 hover:text-rose-600 transition flex items-center justify-center active:scale-95 shadow-2xs">
-                        <i class="fa-solid fa-trash-can text-xs"></i>
-                    </button>
-                ` : '';
-
-                return `
-                    <div id="notice-card-${item.id}" class="bg-white rounded-3xl border border-slate-200/90 p-5 sm:p-6 shadow-sm space-y-3.5 relative group hover:shadow-md transition">
-                        <div class="flex items-center justify-between">
-                            <div class="flex items-center gap-2">
-                                <span class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-blue-50 text-blue-700 text-xs font-bold border border-blue-100">
-                                    <i class="fa-regular fa-calendar-days text-blue-500"></i> ${formattedDate}
-                                </span>
-                                <span class="text-[11px] font-semibold text-slate-500 bg-slate-100 px-3 py-1.5 rounded-full">
-                                    Por: <strong class="text-slate-700">${authorName}</strong>
-                                </span>
-                            </div>
-                            ${deleteBtnHtml}
-                        </div>
-
-                        <p class="text-slate-700 text-sm sm:text-base whitespace-pre-line leading-relaxed font-medium">${item.message}</p>
-
-                        ${mediaHtml}
-                    </div>
-                `;
-            }).join('');
+            window.renderNoticesList();
         }, (error) => {
             console.error("Erro no listener de avisos:", error);
         });
     }
-
-    window.openAuditModal = function() {
-        if (!window.isSuperAdmin) {
-            showModal("Acesso Negado", "Apenas superadministradores podem acessar a auditoria.", true);
-            return;
-        }
-        document.getElementById('auditModal').classList.remove('hidden');
-        loadAuditData();
-    };
-
-    window.closeAuditModal = function() {
-        document.getElementById('auditModal').classList.add('hidden');
-    };
 
     window.openImageViewer = function(url) {
         let modal = document.getElementById('imageViewerModal');
@@ -1882,53 +1934,6 @@
         }
         document.getElementById('modalZoomImg').src = url;
     };
-
-    async function loadAuditData() {
-        try {
-            const acessoSnap = await getDoc(doc(db, "acessos_site", "contador_geral"));
-            if (acessoSnap.exists()) {
-                document.getElementById('statTotalSessions').textContent = acessoSnap.data().sessoes || 0;
-            }
-
-            const logsSnap = await getDocs(collection(db, "logs_acesso"));
-            const logsListDiv = document.getElementById('auditLogsList');
-            let logsArray = [];
-
-            logsSnap.forEach(docSnap => {
-                logsArray.push({ id: docSnap.id, ...docSnap.data() });
-            });
-
-            logsArray.sort((a, b) => {
-                const timeA = new Date(a.ultimoAcessoLocal || a.ultimoAcesso || a.timestamp || '1970-01-01').getTime();
-                const timeB = new Date(b.ultimoAcessoLocal || b.ultimoAcesso || b.timestamp || '1970-01-01').getTime();
-                return timeB - timeA;
-            });
-
-            let logsHtml = '';
-            logsArray.forEach(data => {
-                const cliques = data.cliques || [];
-                const disp = (data.dispositivo || '').trim();
-                const isMobilePhone = disp === 'Celular - Android' || disp === 'Celular - iOS';
-                const deviceIcon = isMobilePhone ? '<i class="fa-solid fa-mobile-screen mr-1 text-blue-600"></i>' : '<i class="fa-solid fa-desktop mr-1 text-indigo-600"></i>';
-
-                logsHtml += `
-                    <div class="bg-slate-50 rounded-2xl p-3 border border-slate-200/80 text-xs space-y-1">
-                        <div class="font-bold text-slate-800 flex justify-between">
-                            <span>${deviceIcon} ${disp || 'Dispositivo'}</span>
-                            <span class="text-[10px] text-slate-500">Último: ${data.ultimoAcessoLocal || data.ultimoAcesso || '-'}</span>
-                        </div>
-                        <div class="text-slate-600 font-medium pl-4 border-l-2 border-blue-500 mt-1">
-                            ${cliques.slice().reverse().map(c => `<div>• ${c}</div>`).join('')}
-                        </div>
-                    </div>
-                `;
-            });
-
-            logsListDiv.innerHTML = logsHtml || '<p class="text-xs text-slate-400">Nenhum log registrado ainda.</p>';
-        } catch (e) {
-            console.error("Erro ao carregar auditoria:", e);
-        }
-    }
 
     function initTodayDate() {
         const today = new Date();
@@ -3447,15 +3452,39 @@
 
     let currentAvisosModalList = [];
     let currentAvisoIndex = 0;
+    let currentAvisoModalContext = null;
 
     window.showAvisoModal = function(month, day) {
       const avisos = (window.avisosData && window.avisosData[month]) ? window.avisosData[month][day] : null;
       if (!avisos || avisos.length === 0) return;
 
+      currentAvisoModalContext = { month, day };
       currentAvisosModalList = avisos;
       currentAvisoIndex = 0;
       renderCurrentModalAvisoSlide();
       document.getElementById('avisoModal').classList.remove('hidden');
+    };
+
+    window.refreshOpenAvisoModal = function() {
+      const modal = document.getElementById('avisoModal');
+      if (!modal || modal.classList.contains('hidden') || !currentAvisoModalContext) return;
+      const { month, day } = currentAvisoModalContext;
+      const updated = (window.avisosData && window.avisosData[month]) ? window.avisosData[month][day] : null;
+      if (!updated || updated.length === 0) {
+        closeAvisoModal();
+        return;
+      }
+      currentAvisosModalList = updated;
+      if (currentAvisoIndex >= updated.length) currentAvisoIndex = updated.length - 1;
+      renderCurrentModalAvisoSlide();
+    };
+
+    window.toggleCurrentModalAvisoLike = function() {
+      const aviso = currentAvisosModalList[currentAvisoIndex];
+      if (!aviso || !aviso.id) return;
+      if (typeof window.toggleNoticeLike === 'function') {
+        window.toggleNoticeLike(aviso.id);
+      }
     };
 
     function renderCurrentModalAvisoSlide() {
@@ -3506,6 +3535,36 @@
         const shortAuthor = authorParts.slice(0, 2).join(' ');
         authorEl.textContent = `Publicado por: ${shortAuthor}`;
       }
+
+      const likeBtn = document.getElementById('avisoModalLikeBtn');
+      const likeIcon = document.getElementById('avisoModalLikeIcon');
+      const likeLabel = document.getElementById('avisoModalLikeLabel');
+      const likeCount = document.getElementById('avisoModalLikeCount');
+      const likesListEl = document.getElementById('avisoModalLikesList');
+      const likes = Array.isArray(aviso.likes) ? aviso.likes : [];
+      const loggedUserName = typeof window.getLoggedInUserName === 'function' ? window.getLoggedInUserName() : null;
+      const hasLiked = loggedUserName ? likes.includes(loggedUserName) : false;
+
+      if (likeBtn) {
+        likeBtn.className = `inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-bold transition active:scale-95 ${
+          hasLiked
+            ? 'bg-rose-50 text-rose-600 border-rose-200 hover:bg-rose-100'
+            : 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-rose-50 hover:text-rose-600 hover:border-rose-200'
+        }`;
+      }
+      if (likeIcon) likeIcon.className = `${hasLiked ? 'fa-solid' : 'fa-regular'} fa-heart`;
+      if (likeLabel) likeLabel.textContent = hasLiked ? 'Curtido' : 'Curtir';
+      if (likeCount) likeCount.textContent = String(likes.length);
+
+      if (likesListEl) {
+        if (likes.length > 0) {
+          likesListEl.innerHTML = `<span class="font-bold text-slate-700"><i class="fa-solid fa-heart text-rose-500 mr-1"></i>Curtido por:</span> ${likes.join(', ')}`;
+          likesListEl.classList.remove('hidden');
+        } else {
+          likesListEl.innerHTML = '';
+          likesListEl.classList.add('hidden');
+        }
+      }
     }
 
     window.navigateAvisoCarousel = function(direction) {
@@ -3523,6 +3582,7 @@
       document.getElementById('avisoModal').classList.add('hidden');
       currentAvisosModalList = [];
       currentAvisoIndex = 0;
+      currentAvisoModalContext = null;
     };
 
     window.updateLoggedUserHeaderBadge = function() {
