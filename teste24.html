@@ -317,12 +317,12 @@
         <div class="flex items-center gap-1.5 flex-shrink-0">
           <span id="sharedClosingBadge" class="px-2.5 py-1 rounded-full bg-sky-100 text-sky-800 text-[11px] font-bold border border-sky-200 whitespace-nowrap">0 dias</span>
           <button type="button" onclick="toggleExclusiveCard('sharedClosing')" class="px-2.5 py-1 rounded-xl bg-white hover:bg-sky-50 text-slate-600 hover:text-sky-700 text-[11px] font-bold border border-sky-200/80 transition flex items-center gap-1 active:scale-95" title="Ocultar ou mostrar bloco">
-            <span id="labelToggleSharedClosing">Ocultar</span>
-            <i id="iconToggleSharedClosing" class="fa-solid fa-chevron-up text-[10px]"></i>
+            <span id="labelToggleSharedClosing">Mostrar</span>
+            <i id="iconToggleSharedClosing" class="fa-solid fa-chevron-down text-[10px]"></i>
           </button>
         </div>
       </div>
-      <div id="sharedClosingBody" class="mt-3 pt-2.5 border-t border-sky-200/60">
+      <div id="sharedClosingBody" class="hidden mt-3 pt-2.5 border-t border-sky-200/60">
         <div id="sharedClosingList" class="space-y-2"></div>
       </div>
     </div>
@@ -342,12 +342,12 @@
         <div class="flex items-center gap-1.5 flex-shrink-0">
           <span id="silviaTurnAlertBadge" class="px-2.5 py-1 rounded-full bg-amber-100 text-amber-800 text-[11px] font-bold border border-amber-200 whitespace-nowrap">0 dias</span>
           <button type="button" onclick="toggleExclusiveCard('silviaTurn')" class="px-2.5 py-1 rounded-xl bg-white hover:bg-amber-50 text-slate-600 hover:text-amber-700 text-[11px] font-bold border border-amber-200/80 transition flex items-center gap-1 active:scale-95" title="Ocultar ou mostrar bloco">
-            <span id="labelToggleSilviaTurn">Ocultar</span>
-            <i id="iconToggleSilviaTurn" class="fa-solid fa-chevron-up text-[10px]"></i>
+            <span id="labelToggleSilviaTurn">Mostrar</span>
+            <i id="iconToggleSilviaTurn" class="fa-solid fa-chevron-down text-[10px]"></i>
           </button>
         </div>
       </div>
-      <div id="silviaTurnAlertBody" class="mt-3 pt-2.5 border-t border-amber-200/60">
+      <div id="silviaTurnAlertBody" class="hidden mt-3 pt-2.5 border-t border-amber-200/60">
         <div id="silviaTurnAlertList" class="space-y-2"></div>
       </div>
     </div>
@@ -2414,8 +2414,8 @@
     };
 
     const exclusiveCardsCollapsed = {
-      sharedClosing: false,
-      silviaTurn: false
+      sharedClosing: true,
+      silviaTurn: true
     };
 
     window.toggleExclusiveCard = function(cardKey) {
