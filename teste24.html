@@ -868,6 +868,36 @@
         return parts.slice(0, 2).join(' ');
     };
 
+    window.isWhatysonLoggedIn = function() {
+        const loggedName = normalizeText(window.loggedInProfileName || window.currentAdminUser || '');
+        return loggedName.includes('whatyson');
+    };
+
+    function findCachedColaboradorDoc(collab) {
+        if (!collab) return null;
+        const firstName = normalizeText((collab.name || '').split(' ')[0]);
+        const mat = normalizeText(collab.matricula || '');
+        const cid = normalizeText(collab.id || '');
+        const dbCollabs = window.cachedColaboradores || [];
+
+        return dbCollabs.find(d => {
+            const possibleMatches = [
+                d.matricula,
+                d.mat,
+                d.id,
+                d.username,
+                d.usuario,
+                d.user,
+                d.nomeCompleto ? d.nomeCompleto.split(' ')[0] : '',
+                d.name ? d.name.split(' ')[0] : ''
+            ].filter(Boolean).map(v => normalizeText(v));
+
+            return (mat && mat !== '-' && possibleMatches.includes(mat)) ||
+                   (cid && possibleMatches.includes(cid)) ||
+                   (firstName && possibleMatches.includes(firstName));
+        }) || null;
+    }
+
     async function loadColaboradoresData() {
         try {
             const collabsSnap = await getDocs(collection(db, "colaboradores"));
@@ -1266,16 +1296,30 @@
 
         const isVerified = window.verifiedProfileCollabIds && window.verifiedProfileCollabIds.has(collab.id);
         const verifiedInfo = window.verifiedProfileDocs ? window.verifiedProfileDocs[collab.id] : null;
+        const canManageAsWhatyson = window.isWhatysonLoggedIn();
 
-        if (!isVerified || !verifiedInfo) {
+        let targetDocId = null;
+        let targetData = null;
+
+        if (isVerified && verifiedInfo) {
+            targetDocId = verifiedInfo.docId;
+            targetData = (window.cachedColaboradores || []).find(c => c.id === verifiedInfo.docId) || verifiedInfo.data || {};
+        } else if (canManageAsWhatyson) {
+            const foundDoc = findCachedColaboradorDoc(collab);
+            if (!foundDoc) {
+                showModal("Perfil não encontrado", "Este colaborador ainda não está cadastrado na collection colaboradores.", true);
+                return;
+            }
+            targetDocId = foundDoc.id;
+            targetData = foundDoc;
+        } else {
             openProfileLoginStep(collab);
             return;
         }
 
-        activeSettingsDocId = verifiedInfo.docId;
-        const cached = (window.cachedColaboradores || []).find(c => c.id === verifiedInfo.docId) || verifiedInfo.data || {};
-        draftProfilePhoto = cached.fotoPerfil || '';
-        draftProfileBgColor = cached.corPerfil || '#ffffff';
+        activeSettingsDocId = targetDocId;
+        draftProfilePhoto = targetData.fotoPerfil || '';
+        draftProfileBgColor = targetData.corPerfil || '#ffffff';
 
         const titleEl = document.getElementById('settingsModalTitle');
         if (titleEl) titleEl.textContent = 'Configurações do Perfil';
@@ -1626,6 +1670,13 @@
                 senha: newPass,
                 updatedAt: new Date().toISOString()
             });
+
+            // Atualiza o cache local imediatamente
+            const cachedIdx = (window.cachedColaboradores || []).findIndex(c => c.id === activeSettingsDocId);
+            if (cachedIdx !== -1) {
+                window.cachedColaboradores[cachedIdx].password = newPass;
+                window.cachedColaboradores[cachedIdx].senha = newPass;
+            }
 
             document.getElementById('settingsNewPass').value = '';
             document.getElementById('settingsConfirmPass').value = '';
@@ -2694,14 +2745,21 @@
         });
 
         const hasCredentials = found && (found.admin === true || found.password !== undefined || found.senha !== undefined);
-        if (!hasCredentials) {
+        const canManageAsWhatyson = typeof window.isWhatysonLoggedIn === 'function' && window.isWhatysonLoggedIn();
+
+        if (!hasCredentials && !(canManageAsWhatyson && found)) {
             gearBtn.classList.add('hidden');
             loginBtn.classList.add('hidden');
             return;
         }
 
         const isVerified = window.verifiedProfileCollabIds && window.verifiedProfileCollabIds.has(collab.id);
-        loginBtn.classList.remove('hidden');
+
+        if (hasCredentials) {
+            loginBtn.classList.remove('hidden');
+        } else {
+            loginBtn.classList.add('hidden');
+        }
 
         if (isVerified) {
             gearBtn.classList.remove('hidden');
@@ -2709,7 +2767,7 @@
             loginBtn.className = 'w-10 h-10 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-600 transition flex items-center justify-center active:scale-95 border border-rose-200/80 shadow-2xs';
             if (loginIcon) loginIcon.className = 'fa-solid fa-right-from-bracket text-base';
         } else {
-            gearBtn.classList.add('hidden');
+            gearBtn.classList.toggle('hidden', !canManageAsWhatyson);
             loginBtn.title = 'Fazer login neste perfil';
             loginBtn.className = 'w-10 h-10 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-600 transition flex items-center justify-center active:scale-95 border border-blue-200/80 shadow-2xs';
             if (loginIcon) loginIcon.className = 'fa-solid fa-right-to-bracket text-base';
