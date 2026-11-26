@@ -34,6 +34,10 @@
             <span id="syncPulse" class="inline-block w-2 h-2 rounded-full bg-amber-400 animate-pulse flex-shrink-0"></span>
             <span id="syncStatusText" class="truncate">Conectando à planilha...</span>
           </p>
+          <div id="headerLoggedUserBadge" class="hidden inline-flex items-center gap-1.5 mt-1 px-2 py-0.5 rounded-full bg-white/15 border border-white/25 text-[10px] sm:text-[11px] font-semibold text-white max-w-full">
+            <i class="fa-solid fa-user-check text-[10px] text-emerald-300 flex-shrink-0"></i>
+            <span id="headerLoggedUserName" class="truncate">-</span>
+          </div>
         </div>
       </div>
       
@@ -48,13 +52,10 @@
           </button>
         </div>
 
-        <!-- Grupo com Lista, Mês e Avisos -->
+        <!-- Grupo com Escala e Avisos -->
         <div id="headerViewControls" class="hidden flex items-center bg-black/25 p-1 rounded-xl backdrop-blur-sm border border-white/15 text-xs">
-          <button id="btnViewList" onclick="switchView('list')" class="px-2.5 sm:px-3 py-1.5 rounded-lg font-medium transition flex items-center gap-1 bg-white text-slate-900 shadow-sm">
-            <span>Lista</span>
-          </button>
-          <button id="btnViewCal" onclick="switchView('calendar')" class="px-2.5 sm:px-3 py-1.5 rounded-lg font-medium transition flex items-center gap-1 text-white/80 hover:text-white">
-            <span>Mês</span>
+          <button id="btnViewEscala" onclick="switchView(currentCollaboratorId ? lastScheduleView : 'list')" class="px-2.5 sm:px-3 py-1.5 rounded-lg font-medium transition flex items-center gap-1 bg-white text-slate-900 shadow-sm">
+            <span>Escala</span>
           </button>
           <button id="btnViewAvisos" onclick="switchView('avisos')" class="px-2.5 sm:px-3 py-1.5 rounded-lg font-medium transition flex items-center gap-1 text-white/80 hover:text-white">
             <span>Avisos</span>
@@ -122,9 +123,6 @@
                 </div>
 
                 <div class="flex items-center gap-2">
-                    <button id="adminAuditBtn" onclick="openAuditModal()" class="hidden px-3 py-2 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold text-xs border border-indigo-200 transition flex items-center gap-1.5" title="Painel de Auditoria">
-                        <i class="fa-solid fa-shield-halved"></i> <span class="hidden sm:inline">Auditoria</span>
-                    </button>
                     <button onclick="openAuthModal()" class="px-3 py-2 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold text-xs border border-rose-200 transition flex items-center gap-1.5" title="Sair da Conta">
                         <i class="fa-solid fa-right-from-bracket"></i> <span class="hidden sm:inline">Sair</span>
                     </button>
@@ -183,9 +181,9 @@
                 <i class="fa-solid fa-lock"></i>
             </div>
             <h3 class="font-bold text-slate-900 text-base">Área de Publicação Restrita</h3>
-            <p class="text-xs text-slate-600 mt-1 max-w-md mx-auto">Para publicar ou excluir avisos, entre com sua conta de colaborador com permissão de administrador na collection <code>colaboradores</code>.</p>
+            <p class="text-xs text-slate-600 mt-1 max-w-md mx-auto">Para publicar ou excluir avisos, entre com sua conta autorizada (<strong>Gerente</strong>, <strong>Pleno</strong>, <strong>Sênior</strong> ou <strong>Sabrinna</strong>).</p>
             <button onclick="openAuthModal()" class="mt-4 px-6 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 active:scale-95 text-white text-xs font-bold shadow-md transition">
-                Fazer Login de Administrador
+                Fazer Login para Publicar
             </button>
         </div>
 
@@ -224,21 +222,19 @@
     </div>
 
     <!-- Perfil do Colaborador Selecionado com Engrenagem Condicional (Apenas Admin) -->
-    <div id="userProfileCard" class="hidden bg-white rounded-2xl shadow-sm border border-slate-200/80 p-4 transition-all">
+    <div id="userProfileCard" class="hidden relative bg-white rounded-2xl shadow-sm border border-slate-200/80 p-4 transition-all">
       <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-        <div class="flex items-center space-x-3.5 min-w-0">
+        <div class="flex items-center space-x-3.5 min-w-0 pr-24 lg:pr-0">
           <div id="userAvatar" class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-600 text-white font-black text-xl flex items-center justify-center shadow-md shadow-blue-500/20 flex-shrink-0">
             -
           </div>
           <div class="min-w-0">
             <div class="flex items-center gap-2">
               <h2 id="userName" class="text-base font-bold text-slate-900 leading-tight truncate">Carregando...</h2>
-              <button id="btnCollabSettings" onclick="openChangePasswordModal()" title="Alterar senha deste administrador" class="hidden w-7 h-7 rounded-lg bg-slate-100 hover:bg-blue-50 hover:text-blue-600 text-slate-400 transition flex items-center justify-center active:scale-95 border border-slate-200/60">
-                <i class="fa-solid fa-gear text-xs"></i>
-              </button>
             </div>
             <p id="userRole" class="text-xs font-medium text-slate-500 mt-1 flex flex-wrap items-center gap-1.5">
               <span id="userSectorText" class="font-semibold text-blue-700 bg-blue-50 px-2 py-0.5 rounded-md truncate max-w-[200px] sm:max-w-none">-</span>
+              <span id="userCargoText" class="hidden font-semibold text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded-md truncate max-w-[220px] sm:max-w-none"></span>
               <span class="text-slate-300">•</span>
               <span id="userMatricula" class="text-slate-500 whitespace-nowrap">Mat: -</span>
             </p>
@@ -286,6 +282,80 @@
             <span id="statVG" class="text-sm sm:text-base font-extrabold text-cyan-600 leading-tight mt-0.5">0</span>
           </div>
         </div>
+
+        <div class="absolute top-3.5 right-3.5 lg:static lg:self-start flex items-center gap-1.5 flex-shrink-0">
+          <button id="btnCollabLogin" onclick="handleProfileLoginButtonClick()" title="Fazer login neste perfil" class="hidden w-10 h-10 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-600 transition flex items-center justify-center active:scale-95 border border-blue-200/80 shadow-2xs">
+            <i id="iconCollabLogin" class="fa-solid fa-right-to-bracket text-base"></i>
+          </button>
+          <button id="btnCollabSettings" onclick="openProfileSettingsModal()" title="Configurações do perfil" class="hidden w-10 h-10 rounded-xl bg-slate-100 hover:bg-blue-50 hover:text-blue-600 text-slate-500 transition flex items-center justify-center active:scale-95 border border-slate-200/80 shadow-2xs">
+            <i class="fa-solid fa-gear text-lg"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Seletor Lista / Mês dentro do bloco do colaborador -->
+      <div class="mt-3.5 pt-3 border-t border-slate-100/80 flex items-center justify-between gap-2">
+        <span id="userVisualLabel" class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Visualização</span>
+        <div class="inline-flex items-center bg-slate-100 p-1 rounded-xl border border-slate-200/80 text-xs">
+          <button id="btnViewList" onclick="switchView('list')" class="px-3.5 py-1.5 rounded-lg font-semibold transition flex items-center gap-1.5 bg-blue-600 text-white shadow-xs">
+            <i class="fa-solid fa-list text-[11px]"></i>
+            <span>Lista</span>
+          </button>
+          <button id="btnViewCal" onclick="switchView('calendar')" class="px-3.5 py-1.5 rounded-lg font-semibold transition flex items-center gap-1.5 text-slate-600 hover:text-slate-900">
+            <i class="fa-regular fa-calendar-days text-[11px]"></i>
+            <span>Mês</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bloco Exclusivo (Whatyson & Sabrinna após verificação): Fechamentos Juntos -->
+    <div id="sharedClosingCard" class="hidden bg-gradient-to-br from-sky-50 via-white to-indigo-50 rounded-2xl shadow-sm border border-sky-200/80 p-4 transition-all">
+      <div class="flex items-start justify-between gap-2">
+        <div class="flex items-center gap-2.5 min-w-0">
+          <div class="w-9 h-9 rounded-xl bg-sky-100 text-sky-700 flex items-center justify-center flex-shrink-0 shadow-2xs border border-sky-200/70">
+            <i class="fa-solid fa-moon text-sm"></i>
+          </div>
+          <div class="min-w-0">
+            <h3 class="text-sm font-bold text-slate-900 leading-tight">Whatyson & Sabrinna • Fechamentos Juntos</h3>
+            <p class="text-[11px] text-slate-500 mt-0.5">Dias em que os dois estão escalados no fechamento (F ou PF)</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-1.5 flex-shrink-0">
+          <span id="sharedClosingBadge" class="px-2.5 py-1 rounded-full bg-sky-100 text-sky-800 text-[11px] font-bold border border-sky-200 whitespace-nowrap">0 dias</span>
+          <button type="button" onclick="toggleExclusiveCard('sharedClosing')" class="px-2.5 py-1 rounded-xl bg-white hover:bg-sky-50 text-slate-600 hover:text-sky-700 text-[11px] font-bold border border-sky-200/80 transition flex items-center gap-1 active:scale-95" title="Ocultar ou mostrar bloco">
+            <span id="labelToggleSharedClosing">Mostrar</span>
+            <i id="iconToggleSharedClosing" class="fa-solid fa-chevron-down text-[10px]"></i>
+          </button>
+        </div>
+      </div>
+      <div id="sharedClosingBody" class="hidden mt-3 pt-2.5 border-t border-sky-200/60">
+        <div id="sharedClosingList" class="space-y-2"></div>
+      </div>
+    </div>
+
+    <!-- Bloco Exclusivo (Whatyson & Silvia Nascimento após verificação): Fechamento/Intermediário seguido de Abertura -->
+    <div id="silviaTurnAlertCard" class="hidden bg-gradient-to-br from-amber-50 via-white to-sky-50 rounded-2xl shadow-sm border border-amber-200/80 p-4 transition-all">
+      <div class="flex items-start justify-between gap-2">
+        <div class="flex items-center gap-2.5 min-w-0">
+          <div class="w-9 h-9 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center flex-shrink-0 shadow-2xs border border-amber-200/70">
+            <i class="fa-solid fa-clock-rotate-left text-sm"></i>
+          </div>
+          <div class="min-w-0">
+            <h3 class="text-sm font-bold text-slate-900 leading-tight">Silvia Nascimento • Fech./Interm. → Abertura</h3>
+            <p class="text-[11px] text-slate-500 mt-0.5">Dias em que Silvia faz fechamento ou intermediário e abre no dia seguinte</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-1.5 flex-shrink-0">
+          <span id="silviaTurnAlertBadge" class="px-2.5 py-1 rounded-full bg-amber-100 text-amber-800 text-[11px] font-bold border border-amber-200 whitespace-nowrap">0 dias</span>
+          <button type="button" onclick="toggleExclusiveCard('silviaTurn')" class="px-2.5 py-1 rounded-xl bg-white hover:bg-amber-50 text-slate-600 hover:text-amber-700 text-[11px] font-bold border border-amber-200/80 transition flex items-center gap-1 active:scale-95" title="Ocultar ou mostrar bloco">
+            <span id="labelToggleSilviaTurn">Mostrar</span>
+            <i id="iconToggleSilviaTurn" class="fa-solid fa-chevron-down text-[10px]"></i>
+          </button>
+        </div>
+      </div>
+      <div id="silviaTurnAlertBody" class="hidden mt-3 pt-2.5 border-t border-amber-200/60">
+        <div id="silviaTurnAlertList" class="space-y-2"></div>
       </div>
     </div>
 
@@ -384,6 +454,18 @@
           </a>
         </div>
         <p id="avisoModalContent" class="text-slate-700 text-sm whitespace-pre-line leading-relaxed font-medium"></p>
+
+        <!-- Curtidas no Modal de Aviso -->
+        <div class="pt-2 border-t border-slate-100 space-y-2">
+          <div class="flex items-center justify-between gap-2">
+            <button type="button" id="avisoModalLikeBtn" onclick="toggleCurrentModalAvisoLike()" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-200 bg-slate-50 hover:bg-rose-50 hover:border-rose-200 hover:text-rose-600 text-slate-600 text-xs font-bold transition active:scale-95">
+              <i id="avisoModalLikeIcon" class="fa-regular fa-heart"></i>
+              <span id="avisoModalLikeLabel">Curtir</span>
+              <span id="avisoModalLikeCount" class="px-1.5 py-0.5 rounded-full bg-white text-[10px] font-extrabold border border-slate-200">0</span>
+            </button>
+          </div>
+          <div id="avisoModalLikesList" class="hidden text-[11px] text-slate-600 bg-slate-50 rounded-xl px-3 py-2 border border-slate-100 leading-relaxed"></div>
+        </div>
       </div>
 
       <div class="p-3.5 bg-slate-50 border-t border-slate-100 flex items-center justify-between">
@@ -395,58 +477,238 @@
     </div>
   </div>
 
-  <!-- Modal de Alteração de Senha -->
-  <div id="changePasswordModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
-    <div class="bg-white rounded-3xl max-w-sm w-full p-6 sm:p-7 shadow-2xl border border-slate-100 space-y-4 animate-in fade-in zoom-in duration-200">
+  <!-- Modal de Configurações do Perfil (Login + Foto, Cor de Fundo e Senha) -->
+  <div id="profileSettingsModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-white rounded-3xl max-w-md w-full p-6 sm:p-7 shadow-2xl border border-slate-100 space-y-5 max-h-[90vh] overflow-y-auto animate-in fade-in zoom-in duration-200">
       <div class="flex items-center justify-between pb-3 border-b border-slate-100">
         <div class="flex items-center gap-3">
           <div class="w-10 h-10 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center shadow-inner">
-            <i class="fa-solid fa-key text-sm"></i>
+            <i class="fa-solid fa-sliders text-sm"></i>
           </div>
           <div>
-            <h3 class="font-bold text-slate-900 text-base leading-tight">Alterar Senha</h3>
-            <p id="changePassCollabName" class="text-xs text-slate-500 truncate max-w-[170px]">-</p>
+            <h3 id="settingsModalTitle" class="font-bold text-slate-900 text-base leading-tight">Configurações do Perfil</h3>
+            <p id="settingsCollabName" class="text-xs text-slate-500 truncate max-w-[200px]">-</p>
           </div>
         </div>
-        <button onclick="closeChangePasswordModal()" class="w-9 h-9 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 flex items-center justify-center transition active:scale-95">
+        <button onclick="closeProfileSettingsModal()" class="w-9 h-9 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 flex items-center justify-center transition active:scale-95">
           <i class="fa-solid fa-xmark text-sm"></i>
         </button>
       </div>
 
-      <form id="changePasswordForm" onsubmit="handleChangePasswordSubmit(event)" class="space-y-3.5">
-        <div>
-          <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">Senha Atual</label>
-          <div class="relative">
-            <input type="password" id="currentPasswordInput" required placeholder="Digite sua senha atual..."
-                   class="w-full pl-4 pr-11 py-2.5 rounded-2xl border border-slate-200 text-sm focus:outline-none focus:ring-4 focus:ring-blue-500/15 focus:border-blue-600 bg-slate-50/50 font-medium">
-            <button type="button" onclick="toggleInputVisibility('currentPasswordInput', 'iconEyeCurrent')" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-blue-600 transition p-1">
-              <i id="iconEyeCurrent" class="fa-regular fa-eye"></i>
-            </button>
-          </div>
-        </div>
-
-        <div>
-          <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">Nova Senha</label>
-          <div class="relative">
-            <input type="password" id="newPasswordInput" required minlength="4" placeholder="Nova senha (mínimo 4 caracteres)..."
-                   class="w-full pl-4 pr-11 py-2.5 rounded-2xl border border-slate-200 text-sm focus:outline-none focus:ring-4 focus:ring-blue-500/15 focus:border-blue-600 bg-slate-50/50 font-medium">
-            <button type="button" onclick="toggleInputVisibility('newPasswordInput', 'iconEyeNew')" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-blue-600 transition p-1">
-              <i id="iconEyeNew" class="fa-regular fa-eye"></i>
-            </button>
-          </div>
-        </div>
-
-        <p id="changePassErrorMsg" class="text-xs text-rose-500 font-bold hidden flex items-center gap-1.5">
-          <i class="fa-solid fa-circle-exclamation"></i> Senha atual incorreta ou usuário não encontrado.
+      <!-- Etapa 1: Login do Colaborador -->
+      <form id="settingsLoginStep" onsubmit="handleSettingsLogin(event)" class="space-y-4">
+        <p class="text-xs text-slate-500 leading-relaxed">
+          Faça login com suas credenciais para alterar sua foto de perfil, cor de fundo e senha.
         </p>
 
-        <div class="pt-2">
-          <button type="submit" id="btnSavePassword" class="w-full py-3 bg-blue-600 hover:bg-blue-700 active:scale-95 text-white font-bold rounded-2xl text-sm transition shadow-md shadow-blue-500/20 flex items-center justify-center gap-2">
-            <i class="fa-solid fa-check"></i>
-            <span>Salvar Nova Senha</span>
+        <div>
+          <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">Usuário (Matrícula ou Primeiro Nome)</label>
+          <input type="text" id="settingsLoginUser" required placeholder="Ex: 50777 ou Lucas"
+                 class="w-full px-4 py-2.5 rounded-2xl border border-slate-200 text-sm focus:outline-none focus:ring-4 focus:ring-blue-500/15 focus:border-blue-600 bg-slate-50/50 font-medium">
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">Senha</label>
+          <div class="relative">
+            <input type="password" id="settingsLoginPass" required placeholder="Digite sua senha..."
+                   class="w-full pl-4 pr-11 py-2.5 rounded-2xl border border-slate-200 text-sm focus:outline-none focus:ring-4 focus:ring-blue-500/15 focus:border-blue-600 bg-slate-50/50 font-medium">
+            <button type="button" onclick="toggleInputVisibility('settingsLoginPass', 'iconEyeSettingsLogin')" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-blue-600 transition p-1">
+              <i id="iconEyeSettingsLogin" class="fa-regular fa-eye"></i>
+            </button>
+          </div>
+        </div>
+
+        <p id="settingsLoginError" class="text-xs text-rose-500 font-bold hidden flex items-center gap-1.5">
+          <i class="fa-solid fa-circle-exclamation"></i> Usuário ou senha incorretos para este perfil.
+        </p>
+
+        <button type="submit" id="btnSettingsLoginSubmit" class="w-full py-3 bg-blue-600 hover:bg-blue-700 active:scale-95 text-white font-bold rounded-2xl text-sm transition shadow-md shadow-blue-500/20 flex items-center justify-center gap-2">
+          <i class="fa-solid fa-right-to-bracket"></i>
+          <span>Entrar</span>
+        </button>
+      </form>
+
+      <!-- Etapa 2: Opções do Perfil (Abas separadas: Foto/Cor e Trocar Senha) -->
+      <div id="settingsOptionsStep" class="hidden space-y-4">
+        <!-- Seletor de Abas -->
+        <div class="grid grid-cols-2 gap-1.5 bg-slate-100 p-1 rounded-2xl border border-slate-200/80 text-xs font-bold">
+          <button type="button" id="btnSettingsTabAppearance" onclick="switchSettingsTab('appearance')" class="py-2.5 px-3 rounded-xl bg-white text-blue-600 shadow-xs transition flex items-center justify-center gap-1.5">
+            <i class="fa-solid fa-palette"></i>
+            <span>Foto e Cor</span>
+          </button>
+          <button type="button" id="btnSettingsTabPassword" onclick="switchSettingsTab('password')" class="py-2.5 px-3 rounded-xl text-slate-600 hover:text-slate-900 transition flex items-center justify-center gap-1.5">
+            <i class="fa-solid fa-key"></i>
+            <span>Trocar Senha</span>
           </button>
         </div>
-      </form>
+
+        <!-- Aba 1: Foto do Perfil e Cor de Fundo -->
+        <div id="settingsTabAppearance" class="space-y-4">
+          <!-- Pré-visualização ao vivo -->
+          <div id="settingsPreviewCard" class="rounded-2xl border border-slate-200/80 p-3.5 flex items-center gap-3 transition-colors">
+            <div id="settingsPreviewAvatar" class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-600 text-white font-black text-xl flex items-center justify-center overflow-hidden shadow-sm flex-shrink-0">
+              -
+            </div>
+            <div class="min-w-0">
+              <p id="settingsPreviewName" class="text-sm font-bold text-slate-900 truncate">-</p>
+              <p id="settingsPreviewHint" class="text-[11px] text-slate-500">Prévia do seu cartão de perfil</p>
+            </div>
+          </div>
+
+          <!-- Seção: Foto do Perfil -->
+          <div class="space-y-2 pt-1">
+            <label class="block text-xs font-bold uppercase tracking-wider text-slate-600">
+              <i class="fa-regular fa-image text-blue-600 mr-1"></i> Foto do Perfil
+            </label>
+            <div class="flex items-center gap-2">
+              <label for="settingsPhotoInput" class="flex-1 cursor-pointer px-4 py-2.5 rounded-2xl border border-dashed border-blue-300 bg-blue-50/50 hover:bg-blue-50 text-blue-700 text-xs font-bold text-center transition flex items-center justify-center gap-2">
+                <i class="fa-solid fa-camera"></i>
+                <span>Escolher Foto</span>
+              </label>
+              <input type="file" id="settingsPhotoInput" accept="image/*" onchange="handleProfilePhotoSelect(event)" class="hidden">
+              <button type="button" id="btnRemoveProfilePhoto" onclick="removeProfilePhoto()" class="hidden px-3.5 py-2.5 rounded-2xl bg-rose-50 hover:bg-rose-100 text-rose-600 text-xs font-bold border border-rose-200 transition" title="Remover foto">
+                <i class="fa-solid fa-trash-can"></i>
+              </button>
+            </div>
+            <p class="text-[11px] text-slate-400">A imagem é recortada e comprimida automaticamente antes de salvar.</p>
+          </div>
+
+          <!-- Seção: Cor de Fundo do Perfil -->
+          <div class="space-y-2 pt-1">
+            <div class="flex items-center justify-between">
+              <label class="block text-xs font-bold uppercase tracking-wider text-slate-600">
+                <i class="fa-solid fa-palette text-blue-600 mr-1"></i> Cor de Fundo do Perfil
+              </label>
+              <button type="button" onclick="selectProfileBgColor('#ffffff')" class="text-[11px] font-semibold text-blue-600 hover:underline">
+                Restaurar padrão
+              </button>
+            </div>
+
+            <div class="flex items-center flex-wrap gap-2">
+              <button type="button" onclick="selectProfileBgColor('#ffffff')" class="w-8 h-8 rounded-xl border-2 border-slate-300 bg-white shadow-2xs hover:scale-105 transition" title="Branco (Padrão)"></button>
+              <button type="button" onclick="selectProfileBgColor('#000000')" class="w-8 h-8 rounded-xl border-2 border-slate-700 bg-black shadow-2xs hover:scale-105 transition" title="Preto"></button>
+              <button type="button" onclick="selectProfileBgColor('#dc2626')" class="w-8 h-8 rounded-xl border-2 border-red-800/30 bg-[#dc2626] shadow-2xs hover:scale-105 transition" title="Vermelho"></button>
+              <button type="button" onclick="selectProfileBgColor('#7c3aed')" class="w-8 h-8 rounded-xl border-2 border-purple-900/30 bg-[#7c3aed] shadow-2xs hover:scale-105 transition" title="Roxo"></button>
+              <button type="button" onclick="selectProfileBgColor('#16a34a')" class="w-8 h-8 rounded-xl border-2 border-green-900/30 bg-[#16a34a] shadow-2xs hover:scale-105 transition" title="Verde"></button>
+              <button type="button" onclick="selectProfileBgColor('#2563eb')" class="w-8 h-8 rounded-xl border-2 border-blue-900/30 bg-[#2563eb] shadow-2xs hover:scale-105 transition" title="Azul"></button>
+              <button type="button" onclick="selectProfileBgColor('#ea580c')" class="w-8 h-8 rounded-xl border-2 border-orange-900/30 bg-[#ea580c] shadow-2xs hover:scale-105 transition" title="Laranja"></button>
+              <button type="button" onclick="selectProfileBgColor('#facc15')" class="w-8 h-8 rounded-xl border-2 border-yellow-600/30 bg-[#facc15] shadow-2xs hover:scale-105 transition" title="Amarelo"></button>
+              <button type="button" onclick="selectProfileBgColor('#db2777')" class="w-8 h-8 rounded-xl border-2 border-pink-900/30 bg-[#db2777] shadow-2xs hover:scale-105 transition" title="Rosa"></button>
+              <label class="w-8 h-8 rounded-xl border-2 border-slate-200 bg-slate-50 flex items-center justify-center cursor-pointer hover:border-blue-400 transition overflow-hidden" title="Cor personalizada">
+                <input type="color" id="settingsBgColorPicker" value="#ffffff" oninput="selectProfileBgColor(this.value)" class="w-10 h-10 border-0 p-0 cursor-pointer bg-transparent">
+              </label>
+            </div>
+          </div>
+
+          <button type="button" id="btnSaveAppearance" onclick="saveProfileAppearance()" class="w-full py-3 bg-blue-600 hover:bg-blue-700 active:scale-95 text-white font-bold rounded-2xl text-sm transition shadow-md shadow-blue-500/20 flex items-center justify-center gap-2">
+            <i class="fa-solid fa-floppy-disk"></i>
+            <span>Salvar Foto e Cor do Perfil</span>
+          </button>
+        </div>
+
+        <!-- Aba 2: Alterar Senha (Separada) -->
+        <form id="settingsPasswordForm" onsubmit="handleSettingsPasswordChange(event)" class="hidden space-y-3.5 pt-1">
+          <p class="text-xs text-slate-500 leading-relaxed">
+            Digite e confirme sua nova senha abaixo. Esta alteração não afeta sua foto ou cor de perfil.
+          </p>
+
+          <div>
+            <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">Nova Senha</label>
+            <div class="relative">
+              <input type="password" id="settingsNewPass" required minlength="4" placeholder="Nova senha (mínimo 4 caracteres)"
+                     class="w-full pl-4 pr-11 py-2.5 rounded-2xl border border-slate-200 text-sm focus:outline-none focus:ring-4 focus:ring-blue-500/15 focus:border-blue-600 bg-slate-50/50 font-medium">
+              <button type="button" onclick="toggleInputVisibility('settingsNewPass', 'iconEyeSettingsNew')" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-blue-600 transition p-1">
+                <i id="iconEyeSettingsNew" class="fa-regular fa-eye"></i>
+              </button>
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">Confirmar Nova Senha</label>
+            <div class="relative">
+              <input type="password" id="settingsConfirmPass" required minlength="4" placeholder="Repita a nova senha"
+                     class="w-full pl-4 pr-11 py-2.5 rounded-2xl border border-slate-200 text-sm focus:outline-none focus:ring-4 focus:ring-blue-500/15 focus:border-blue-600 bg-slate-50/50 font-medium">
+              <button type="button" onclick="toggleInputVisibility('settingsConfirmPass', 'iconEyeSettingsConfirm')" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-blue-600 transition p-1">
+                <i id="iconEyeSettingsConfirm" class="fa-regular fa-eye"></i>
+              </button>
+            </div>
+          </div>
+
+          <p id="settingsPassError" class="text-xs text-rose-500 font-bold hidden flex items-center gap-1.5">
+            <i class="fa-solid fa-circle-exclamation"></i> As senhas não coincidem.
+          </p>
+
+          <button type="submit" id="btnSavePassword" class="w-full py-3 bg-slate-800 hover:bg-slate-900 active:scale-95 text-white font-bold rounded-2xl text-sm transition shadow-md flex items-center justify-center gap-2">
+            <i class="fa-solid fa-check"></i>
+            <span>Atualizar Senha</span>
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de Recorte Interativo da Foto de Perfil -->
+  <div id="photoCropModal" class="fixed inset-0 bg-slate-950/75 backdrop-blur-md z-[60] flex items-center justify-center p-4 hidden">
+    <div class="bg-white rounded-3xl max-w-sm w-full p-5 sm:p-6 shadow-2xl border border-slate-100 space-y-4 animate-in fade-in zoom-in duration-200">
+      <div class="flex items-center justify-between pb-2.5 border-b border-slate-100">
+        <div class="flex items-center gap-2.5">
+          <div class="w-9 h-9 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center shadow-inner">
+            <i class="fa-solid fa-crop-simple text-sm"></i>
+          </div>
+          <div>
+            <h3 class="font-bold text-slate-900 text-sm sm:text-base leading-tight">Recortar Foto</h3>
+            <p class="text-[11px] text-slate-500">Arraste e ajuste o zoom para enquadrar</p>
+          </div>
+        </div>
+        <button type="button" onclick="closePhotoCropModal()" class="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 flex items-center justify-center transition active:scale-95">
+          <i class="fa-solid fa-xmark text-xs"></i>
+        </button>
+      </div>
+
+      <!-- Área Interativa de Recorte -->
+      <div class="flex flex-col items-center space-y-3">
+        <div id="cropStageContainer" class="relative w-64 h-64 sm:w-72 sm:h-72 rounded-2xl overflow-hidden bg-slate-900 border-2 border-blue-500/80 shadow-inner touch-none cursor-grab active:cursor-grabbing select-none">
+          <canvas id="photoCropCanvas" class="w-full h-full block"></canvas>
+          <!-- Grade de enquadramento -->
+          <div class="pointer-events-none absolute inset-0 grid grid-cols-3 grid-rows-3">
+            <div class="border-r border-b border-white/25"></div>
+            <div class="border-r border-b border-white/25"></div>
+            <div class="border-b border-white/25"></div>
+            <div class="border-r border-b border-white/25"></div>
+            <div class="border-r border-b border-white/25"></div>
+            <div class="border-b border-white/25"></div>
+            <div class="border-r border-white/25"></div>
+            <div class="border-r border-white/25"></div>
+            <div></div>
+          </div>
+          <!-- Borda guia interna -->
+          <div class="pointer-events-none absolute inset-0 rounded-2xl ring-2 ring-inset ring-white/50"></div>
+        </div>
+
+        <!-- Controle de Zoom -->
+        <div class="w-full flex items-center gap-2.5 px-1">
+          <button type="button" onclick="adjustCropZoom(-0.15)" class="w-8 h-8 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center justify-center transition active:scale-95 text-xs" title="Diminuir zoom">
+            <i class="fa-solid fa-magnifying-glass-minus"></i>
+          </button>
+          <input type="range" id="cropZoomSlider" min="1" max="3" step="0.01" value="1" oninput="handleCropZoomInput(this.value)" class="flex-1 accent-blue-600 cursor-pointer h-2 bg-slate-200 rounded-lg">
+          <button type="button" onclick="adjustCropZoom(0.15)" class="w-8 h-8 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center justify-center transition active:scale-95 text-xs" title="Aumentar zoom">
+            <i class="fa-solid fa-magnifying-glass-plus"></i>
+          </button>
+          <button type="button" onclick="resetCropPosition()" class="px-2.5 h-8 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 text-[11px] font-bold transition active:scale-95" title="Centralizar imagem">
+            Reset
+          </button>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2 pt-1">
+        <button type="button" onclick="closePhotoCropModal()" class="flex-1 py-2.5 rounded-2xl bg-slate-100 hover:bg-slate-200 active:scale-95 text-slate-700 font-bold text-xs transition">
+          Cancelar
+        </button>
+        <button type="button" onclick="confirmPhotoCrop()" class="flex-1 py-2.5 rounded-2xl bg-blue-600 hover:bg-blue-700 active:scale-95 text-white font-bold text-xs shadow-md shadow-blue-500/20 transition flex items-center justify-center gap-1.5">
+          <i class="fa-solid fa-check"></i>
+          <span>Usar Recorte</span>
+        </button>
+      </div>
     </div>
   </div>
 
@@ -485,51 +747,12 @@
                   </div>
               </div>
               <p id="loginErrorMsg" class="text-xs text-rose-500 font-bold hidden flex items-center gap-1.5">
-                  <i class="fa-solid fa-circle-exclamation"></i> Usuário incorreto, senha inválida ou sem permissão de admin.
+                  <i class="fa-solid fa-circle-exclamation"></i> Usuário incorreto, senha inválida ou sem permissão para publicar avisos.
               </p>
               <button type="submit" class="w-full py-3 bg-blue-600 hover:bg-blue-700 active:scale-95 text-white font-bold rounded-2xl text-sm transition shadow-md shadow-blue-500/20">
                   Entrar no Sistema
               </button>
           </form>
-      </div>
-  </div>
-
-  <!-- Modal de Auditoria e Manutenção -->
-  <div id="auditModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
-      <div class="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-7 shadow-2xl border border-slate-100 space-y-5 max-h-[90vh] overflow-y-auto animate-in fade-in zoom-in duration-200">
-          <div class="flex items-center justify-between pb-3 border-b border-slate-100">
-              <div class="flex items-center gap-3">
-                  <div class="w-10 h-10 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center shadow-inner">
-                      <i class="fa-solid fa-shield-halved text-sm"></i>
-                  </div>
-                  <div>
-                      <h3 class="font-bold text-slate-900 text-base">Painel de Auditoria & Manutenção</h3>
-                      <p class="text-xs text-slate-500">Área protegida por superadmin</p>
-                  </div>
-              </div>
-              <button onclick="closeAuditModal()" class="w-9 h-9 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 flex items-center justify-center transition active:scale-95">
-                  <i class="fa-solid fa-xmark text-sm"></i>
-              </button>
-          </div>
-
-          <div id="auditContent" class="space-y-5">
-              <div class="bg-gradient-to-br from-slate-50 to-blue-50/40 rounded-2xl p-4 border border-slate-200/80 flex items-center justify-between shadow-2xs">
-                  <div>
-                      <span class="text-[11px] font-bold uppercase tracking-wider text-slate-500 block">Sessões Totais Registradas</span>
-                      <span id="statTotalSessions" class="text-3xl font-black text-blue-600 mt-0.5 block">--</span>
-                  </div>
-                  <div class="w-14 h-14 rounded-2xl bg-blue-600 text-white flex items-center justify-center text-2xl shadow-md shadow-blue-500/20">
-                      <i class="fa-solid fa-users"></i>
-                  </div>
-              </div>
-
-              <div>
-                  <h4 class="text-xs font-bold uppercase tracking-wider text-slate-600 mb-2.5 flex items-center gap-1.5">
-                      <i class="fa-solid fa-clock-rotate-left text-indigo-600"></i> Logs Recentes de Acesso
-                  </h4>
-                  <div id="auditLogsList" class="space-y-2 max-h-60 overflow-y-auto pr-1"></div>
-              </div>
-          </div>
       </div>
   </div>
 
@@ -554,7 +777,7 @@
   <!-- Script Principal de Lógica, Planilha e Firebase -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-    import { getFirestore, collection, addDoc, doc, setDoc, updateDoc, deleteDoc, onSnapshot, increment, getDoc, getDocs, arrayUnion, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+    import { getFirestore, collection, addDoc, doc, setDoc, updateDoc, deleteDoc, onSnapshot, increment, getDoc, getDocs, arrayUnion, arrayRemove, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyCyMUs5rD_nmf-nPR6hzMg_KcrZKZIU4A0",
@@ -571,18 +794,143 @@
 
     window.currentAdminUser = null;
     window.isSuperAdmin = false;
+    window.loggedInProfileName = null;
     window.cachedColaboradores = [];
+    window.verifiedProfileCollabIds = new Set();
+    window.verifiedProfileDocs = {};
+    window.latestNoticesList = [];
+    const expandedLikesSet = new Set();
+    let unsubscribeNotices = null;
+
+    function normalizeText(str) {
+        return String(str || '')
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '')
+            .trim()
+            .toLowerCase();
+    }
+
+    // Determina o cargo padrão conforme a regra definida
+    function resolveCargoByName(fullName) {
+        const norm = normalizeText(fullName);
+        const firstName = norm.split(/\s+/)[0] || '';
+
+        if (['vitoria', 'higor'].includes(firstName)) {
+            return 'Gerente';
+        }
+        if (['jivanildo', 'whatyson'].includes(firstName)) {
+            return 'Vendedor Técnico Pleno';
+        }
+        if (['felipe', 'marcos', 'joao', 'viviane', 'flavio'].includes(firstName)) {
+            return 'Vendedor Técnico Sênior';
+        }
+        return 'Vendedor Técnico Junior';
+    }
+
+    // Regra de permissão para publicar/excluir avisos: Gerente, Pleno, Sênior e Sabrinna
+    window.canUserPostNotices = function(docData = {}, fallbackName = '') {
+        const namesToCheck = [
+            docData.nomeCompleto,
+            docData.name,
+            docData.username,
+            docData.usuario,
+            fallbackName
+        ].filter(Boolean).map(normalizeText);
+
+        // Exceção explícita para Sabrinna
+        if (namesToCheck.some(n => n.includes('sabrinna') || n.includes('sabrina'))) {
+            return true;
+        }
+
+        // Verifica o cargo salvo no Firestore
+        const cargoNorm = normalizeText(docData.cargo);
+        if (cargoNorm) {
+            return cargoNorm.includes('gerente') || cargoNorm.includes('pleno') || cargoNorm.includes('senior');
+        }
+
+        // Fallback caso o documento ainda não possua o campo cargo preenchido
+        const allowedFirstNames = [
+            'vitoria', 'higor',
+            'jivanildo', 'whatyson',
+            'felipe', 'marcos', 'joao', 'viviane', 'flavio',
+            'sabrinna', 'sabrina'
+        ];
+        return namesToCheck.some(n => {
+            const first = n.split(/\s+/)[0];
+            return allowedFirstNames.includes(first);
+        });
+    };
+
+    window.getLoggedInUserName = function() {
+        const raw = window.loggedInProfileName || window.currentAdminUser || '';
+        if (!raw) return '';
+        const parts = raw.trim().split(/\s+/);
+        return parts.slice(0, 2).join(' ');
+    };
+
+    window.isWhatysonLoggedIn = function() {
+        const loggedName = normalizeText(window.loggedInProfileName || window.currentAdminUser || '');
+        return loggedName.includes('whatyson');
+    };
+
+    function findCachedColaboradorDoc(collab) {
+        if (!collab) return null;
+        const firstName = normalizeText((collab.name || '').split(' ')[0]);
+        const mat = normalizeText(collab.matricula || '');
+        const cid = normalizeText(collab.id || '');
+        const dbCollabs = window.cachedColaboradores || [];
+
+        return dbCollabs.find(d => {
+            const possibleMatches = [
+                d.matricula,
+                d.mat,
+                d.id,
+                d.username,
+                d.usuario,
+                d.user,
+                d.nomeCompleto ? d.nomeCompleto.split(' ')[0] : '',
+                d.name ? d.name.split(' ')[0] : ''
+            ].filter(Boolean).map(v => normalizeText(v));
+
+            return (mat && mat !== '-' && possibleMatches.includes(mat)) ||
+                   (cid && possibleMatches.includes(cid)) ||
+                   (firstName && possibleMatches.includes(firstName));
+        }) || null;
+    }
 
     async function loadColaboradoresData() {
         try {
             const collabsSnap = await getDocs(collection(db, "colaboradores"));
             const list = [];
+            const updatePromises = [];
+
             collabsSnap.forEach(docSnap => {
-                list.push({ id: docSnap.id, ...docSnap.data() });
+                const data = docSnap.data();
+                const displayName = data.nomeCompleto || data.name || data.username || data.usuario || docSnap.id;
+                const expectedCargo = resolveCargoByName(displayName);
+
+                if (data.cargo !== expectedCargo) {
+                    data.cargo = expectedCargo;
+                    updatePromises.push(
+                        updateDoc(doc(db, "colaboradores", docSnap.id), { cargo: expectedCargo }).catch(err => {
+                            console.warn("Não foi possível atualizar cargo de", docSnap.id, err);
+                        })
+                    );
+                }
+                list.push({ id: docSnap.id, ...data });
             });
+
+            if (updatePromises.length > 0) {
+                await Promise.allSettled(updatePromises);
+            }
+
             window.cachedColaboradores = list;
             if (typeof window.updateCollabSettingsGear === 'function') {
                 window.updateCollabSettingsGear();
+            }
+            if (typeof window.applyCollabProfileAppearance === 'function' && window.currentCollaboratorId) {
+                const active = (window.collaborators || []).find(c => c.id === window.currentCollaboratorId);
+                if (active) window.applyCollabProfileAppearance(active);
             }
         } catch (e) {
             console.error("Erro ao carregar colaboradores do Firestore:", e);
@@ -609,7 +957,7 @@
                     Cancelar
                 </button>
                 <button id="modalConfirmBtn" class="flex-1 py-3 rounded-2xl bg-rose-600 hover:bg-rose-700 active:scale-95 text-white font-bold text-xs shadow-md shadow-rose-500/20 transition">
-                    Confirmar Exclusão
+                    Confirmar
                 </button>
             `;
             document.getElementById('modalConfirmBtn').onclick = () => {
@@ -661,11 +1009,16 @@
 
     window.openAuthModal = function() {
         if (window.currentAdminUser) {
-            showModal("Encerrar Sessão", "Deseja sair da sua conta administrativa?", false, () => {
+            showModal("Encerrar Sessão", "Deseja sair da sua conta?", false, () => {
                 window.currentAdminUser = null;
                 window.isSuperAdmin = false;
+                window.loggedInProfileName = null;
+                if (window.verifiedProfileCollabIds) window.verifiedProfileCollabIds.clear();
+                window.verifiedProfileDocs = {};
                 updateAuthUI();
-                showModal("Sessão Encerrada", "Você saiu da conta administrativa com sucesso.");
+                if (typeof window.renderExclusiveProfileBlocks === 'function') window.renderExclusiveProfileBlocks();
+                if (typeof window.updateLoggedUserHeaderBadge === 'function') window.updateLoggedUserHeaderBadge();
+                showModal("Sessão Encerrada", "Você saiu da sua conta com sucesso.");
             });
             return;
         }
@@ -695,6 +1048,8 @@
             const collabsSnap = await getDocs(collection(db, "colaboradores"));
             let foundAdminName = null;
             let foundSuperAdmin = false;
+            let foundDocId = null;
+            let foundDocData = null;
 
             collabsSnap.forEach(docSnap => {
                 const data = docSnap.data();
@@ -712,31 +1067,50 @@
                 ].filter(Boolean).map(v => String(v).trim().toLowerCase());
 
                 const dbPass = (data.password !== undefined ? data.password : data.senha) || '';
-                const isAdmin = data.admin === true;
+                const candidateName = data.nomeCompleto || data.name || data.username || usernameInput;
+                const hasNoticePermission = window.canUserPostNotices(data, candidateName);
 
                 const loginMatches = possibleLogins.includes(usernameInput);
 
-                if (loginMatches && String(dbPass).trim() === passwordInput && isAdmin) {
-                    foundAdminName = data.nomeCompleto || data.name || data.username || usernameInput;
+                if (loginMatches && String(dbPass).trim() === passwordInput && hasNoticePermission) {
+                    foundAdminName = candidateName;
                     foundSuperAdmin = data.superadmin === true || data.superAdmin === true;
+                    foundDocId = docSnap.id;
+                    foundDocData = data;
                 }
             });
 
             if (foundAdminName) {
                 window.currentAdminUser = foundAdminName;
                 window.isSuperAdmin = foundSuperAdmin;
+                window.loggedInProfileName = foundAdminName;
+                const matchedCollab = (window.collaborators || []).find(c =>
+                    c.name.toLowerCase().includes(foundAdminName.split(' ')[0].toLowerCase())
+                );
+                if (matchedCollab && window.verifiedProfileCollabIds) {
+                    window.verifiedProfileCollabIds.add(matchedCollab.id);
+                    if (foundDocId && foundDocData) {
+                        window.verifiedProfileDocs[matchedCollab.id] = { docId: foundDocId, data: foundDocData };
+                    }
+                }
                 closeAuthModal();
                 updateAuthUI();
+                if (typeof window.renderExclusiveProfileBlocks === 'function') {
+                    window.renderExclusiveProfileBlocks();
+                }
+                if (typeof window.updateLoggedUserHeaderBadge === 'function') {
+                    window.updateLoggedUserHeaderBadge();
+                }
                 
                 const nameParts = window.currentAdminUser.trim().split(/\s+/);
                 const shortName = nameParts.slice(0, 2).join(' ');
 
-                showModal("Bem-vindo", `Logado com sucesso como Administrador: ${shortName}!`);
+                showModal("Bem-vindo", `Logado com sucesso como: ${shortName}!`);
             } else {
                 errorMsg.classList.remove('hidden');
             }
         } catch (err) {
-            console.error("Erro ao validar login de administrador:", err);
+            console.error("Erro ao validar login:", err);
             errorMsg.classList.remove('hidden');
         }
     };
@@ -745,7 +1119,6 @@
         const publishSec = document.getElementById('publishSection');
         const loginPrompt = document.getElementById('loginPromptCard');
         const activeAuthorName = document.getElementById('activeAuthorName');
-        const adminAuditBtn = document.getElementById('adminAuditBtn');
 
         if (window.currentAdminUser) {
             if (publishSec) publishSec.classList.remove('hidden');
@@ -754,50 +1127,228 @@
             const nameParts = window.currentAdminUser.trim().split(/\s+/);
             const shortName = nameParts.slice(0, 2).join(' ');
             if (activeAuthorName) activeAuthorName.textContent = shortName;
-
-            if (adminAuditBtn) {
-                if (window.isSuperAdmin) {
-                    adminAuditBtn.classList.remove('hidden');
-                } else {
-                    adminAuditBtn.classList.add('hidden');
-                }
-            }
         } else {
             if (publishSec) publishSec.classList.add('hidden');
             if (loginPrompt) loginPrompt.classList.remove('hidden');
-            if (adminAuditBtn) adminAuditBtn.classList.add('hidden');
         }
-        initRealtimeNotices();
+        if (typeof window.renderNoticesList === 'function') window.renderNoticesList();
         if (typeof window.updateHeaderSubtitle === 'function') window.updateHeaderSubtitle();
+        if (typeof window.updateLoggedUserHeaderBadge === 'function') window.updateLoggedUserHeaderBadge();
         if (typeof renderLinks === 'function') renderLinks();
         if (typeof window.updateCollabSettingsGear === 'function') window.updateCollabSettingsGear();
     }
+    window.updateAuthUI = updateAuthUI;
 
-    // Modal de Troca de Senha
-    window.openChangePasswordModal = function() {
+    // Estado temporário do Modal de Configurações do Perfil
+    let activeSettingsDocId = null;
+    let draftProfilePhoto = '';
+    let draftProfileBgColor = '#ffffff';
+
+    function isDarkHexColor(hex) {
+        if (!hex || typeof hex !== 'string') return false;
+        const clean = hex.replace('#', '');
+        if (clean.length !== 6) return false;
+        const r = parseInt(clean.substring(0, 2), 16);
+        const g = parseInt(clean.substring(2, 4), 16);
+        const b = parseInt(clean.substring(4, 6), 16);
+        const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+        return luminance < 0.5;
+    }
+
+    function updateSettingsPreview() {
+        const collab = (window.collaborators || []).find(c => c.id === window.currentCollaboratorId);
+        const previewCard = document.getElementById('settingsPreviewCard');
+        const previewAvatar = document.getElementById('settingsPreviewAvatar');
+        const previewName = document.getElementById('settingsPreviewName');
+        const previewHint = document.getElementById('settingsPreviewHint');
+        const btnRemove = document.getElementById('btnRemoveProfilePhoto');
+        const picker = document.getElementById('settingsBgColorPicker');
+
+        const bgColor = draftProfileBgColor || '#ffffff';
+        const isDark = isDarkHexColor(bgColor);
+
+        if (previewCard) {
+            previewCard.style.backgroundColor = bgColor;
+        }
+        if (previewName) {
+            previewName.textContent = collab ? collab.name : '-';
+            previewName.classList.toggle('text-white', isDark);
+            previewName.classList.toggle('text-slate-900', !isDark);
+        }
+        if (previewHint) {
+            previewHint.classList.toggle('text-slate-300', isDark);
+            previewHint.classList.toggle('text-slate-500', !isDark);
+        }
+        if (previewAvatar) {
+            if (draftProfilePhoto) {
+                previewAvatar.innerHTML = `<img src="${draftProfilePhoto}" alt="Foto de perfil" class="w-full h-full object-cover rounded-2xl">`;
+                previewAvatar.classList.add('overflow-hidden');
+            } else {
+                previewAvatar.textContent = collab ? collab.name.charAt(0) : '-';
+                previewAvatar.classList.remove('overflow-hidden');
+            }
+        }
+        if (btnRemove) {
+            btnRemove.classList.toggle('hidden', !draftProfilePhoto);
+        }
+        if (picker && /^#[0-9a-fA-F]{6}$/.test(bgColor)) {
+            picker.value = bgColor;
+        }
+    }
+
+    window.switchSettingsTab = function(tab) {
+        const appearanceTab = document.getElementById('settingsTabAppearance');
+        const passwordTab = document.getElementById('settingsPasswordForm');
+        const btnAppearance = document.getElementById('btnSettingsTabAppearance');
+        const btnPassword = document.getElementById('btnSettingsTabPassword');
+
+        const activeClasses = 'py-2.5 px-3 rounded-xl bg-white text-blue-600 shadow-xs transition flex items-center justify-center gap-1.5';
+        const inactiveClasses = 'py-2.5 px-3 rounded-xl text-slate-600 hover:text-slate-900 transition flex items-center justify-center gap-1.5';
+
+        if (tab === 'password') {
+            if (appearanceTab) appearanceTab.classList.add('hidden');
+            if (passwordTab) passwordTab.classList.remove('hidden');
+            if (btnAppearance) btnAppearance.className = inactiveClasses;
+            if (btnPassword) btnPassword.className = activeClasses;
+        } else {
+            if (appearanceTab) appearanceTab.classList.remove('hidden');
+            if (passwordTab) passwordTab.classList.add('hidden');
+            if (btnAppearance) btnAppearance.className = activeClasses;
+            if (btnPassword) btnPassword.className = inactiveClasses;
+        }
+    };
+
+    window.handleProfileLoginButtonClick = function() {
         const collab = (window.collaborators || []).find(c => c.id === window.currentCollaboratorId);
         if (!collab) return;
 
-        document.getElementById('changePassCollabName').textContent = collab.name;
-        document.getElementById('currentPasswordInput').value = '';
-        document.getElementById('newPasswordInput').value = '';
-        document.getElementById('changePassErrorMsg').classList.add('hidden');
-        document.getElementById('changePasswordModal').classList.remove('hidden');
+        const isVerified = window.verifiedProfileCollabIds && window.verifiedProfileCollabIds.has(collab.id);
+        if (isVerified) {
+            showModal("Sair do Perfil", `Deseja encerrar o login de ${collab.name.split(' ')[0]}?`, false, () => {
+                window.verifiedProfileCollabIds.delete(collab.id);
+                delete window.verifiedProfileDocs[collab.id];
+                const remainingIds = Array.from(window.verifiedProfileCollabIds);
+                const nextCollab = remainingIds.length > 0
+                    ? (window.collaborators || []).find(c => c.id === remainingIds[remainingIds.length - 1])
+                    : null;
+                window.loggedInProfileName = nextCollab ? nextCollab.name : null;
+
+                // Sincroniza a permissão de publicação de avisos ao sair do perfil
+                if (nextCollab && window.verifiedProfileDocs[nextCollab.id]) {
+                    const nextData = window.verifiedProfileDocs[nextCollab.id].data || {};
+                    if (window.canUserPostNotices(nextData, nextCollab.name)) {
+                        window.currentAdminUser = nextData.nomeCompleto || nextData.name || nextCollab.name;
+                        window.isSuperAdmin = nextData.superadmin === true || nextData.superAdmin === true;
+                    } else {
+                        window.currentAdminUser = null;
+                        window.isSuperAdmin = false;
+                    }
+                } else {
+                    window.currentAdminUser = null;
+                    window.isSuperAdmin = false;
+                }
+
+                updateAuthUI();
+                if (typeof window.renderExclusiveProfileBlocks === 'function') window.renderExclusiveProfileBlocks();
+                if (typeof window.updateLoggedUserHeaderBadge === 'function') window.updateLoggedUserHeaderBadge();
+                showModal("Sessão Encerrada", "Você saiu deste perfil com sucesso.");
+            });
+            return;
+        }
+
+        openProfileLoginStep(collab);
     };
 
-    window.closeChangePasswordModal = function() {
-        document.getElementById('changePasswordModal').classList.add('hidden');
+    function openProfileLoginStep(collab) {
+        activeSettingsDocId = null;
+        draftProfilePhoto = '';
+        draftProfileBgColor = '#ffffff';
+
+        const titleEl = document.getElementById('settingsModalTitle');
+        if (titleEl) titleEl.textContent = 'Login do Perfil';
+        document.getElementById('settingsCollabName').textContent = collab.name;
+
+        // Preenche automaticamente a matrícula caso o colaborador possua matrícula válida
+        const hasValidMatricula = collab.matricula && String(collab.matricula).trim() !== '' && String(collab.matricula).trim() !== '-';
+        document.getElementById('settingsLoginUser').value = hasValidMatricula
+            ? String(collab.matricula).trim()
+            : collab.name.split(' ')[0];
+
+        const passInput = document.getElementById('settingsLoginPass');
+        passInput.value = '';
+        passInput.type = 'password';
+        const loginEye = document.getElementById('iconEyeSettingsLogin');
+        if (loginEye) loginEye.className = 'fa-regular fa-eye';
+
+        document.getElementById('settingsLoginError').classList.add('hidden');
+        document.getElementById('settingsPassError').classList.add('hidden');
+        document.getElementById('settingsNewPass').value = '';
+        document.getElementById('settingsConfirmPass').value = '';
+
+        document.getElementById('settingsLoginStep').classList.remove('hidden');
+        document.getElementById('settingsOptionsStep').classList.add('hidden');
+        document.getElementById('profileSettingsModal').classList.remove('hidden');
+    }
+
+    window.openProfileSettingsModal = function() {
+        const collab = (window.collaborators || []).find(c => c.id === window.currentCollaboratorId);
+        if (!collab) return;
+
+        const isVerified = window.verifiedProfileCollabIds && window.verifiedProfileCollabIds.has(collab.id);
+        const verifiedInfo = window.verifiedProfileDocs ? window.verifiedProfileDocs[collab.id] : null;
+        const canManageAsWhatyson = window.isWhatysonLoggedIn();
+
+        let targetDocId = null;
+        let targetData = null;
+
+        if (isVerified && verifiedInfo) {
+            targetDocId = verifiedInfo.docId;
+            targetData = (window.cachedColaboradores || []).find(c => c.id === verifiedInfo.docId) || verifiedInfo.data || {};
+        } else if (canManageAsWhatyson) {
+            const foundDoc = findCachedColaboradorDoc(collab);
+            if (!foundDoc) {
+                showModal("Perfil não encontrado", "Este colaborador ainda não está cadastrado na collection colaboradores.", true);
+                return;
+            }
+            targetDocId = foundDoc.id;
+            targetData = foundDoc;
+        } else {
+            openProfileLoginStep(collab);
+            return;
+        }
+
+        activeSettingsDocId = targetDocId;
+        draftProfilePhoto = targetData.fotoPerfil || '';
+        draftProfileBgColor = targetData.corPerfil || '#ffffff';
+
+        const titleEl = document.getElementById('settingsModalTitle');
+        if (titleEl) titleEl.textContent = 'Configurações do Perfil';
+        document.getElementById('settingsCollabName').textContent = collab.name;
+        document.getElementById('settingsPassError').classList.add('hidden');
+        document.getElementById('settingsNewPass').value = '';
+        document.getElementById('settingsConfirmPass').value = '';
+
+        document.getElementById('settingsLoginStep').classList.add('hidden');
+        document.getElementById('settingsOptionsStep').classList.remove('hidden');
+        window.switchSettingsTab('appearance');
+        updateSettingsPreview();
+        document.getElementById('profileSettingsModal').classList.remove('hidden');
     };
 
-    window.handleChangePasswordSubmit = async function(e) {
+    window.closeProfileSettingsModal = function() {
+        activeSettingsDocId = null;
+        document.getElementById('profileSettingsModal').classList.add('hidden');
+    };
+
+    window.handleSettingsLogin = async function(e) {
         e.preventDefault();
         const collab = (window.collaborators || []).find(c => c.id === window.currentCollaboratorId);
         if (!collab) return;
 
-        const currentPass = document.getElementById('currentPasswordInput').value.trim();
-        const newPass = document.getElementById('newPasswordInput').value.trim();
-        const errorMsg = document.getElementById('changePassErrorMsg');
-        const btn = document.getElementById('btnSavePassword');
+        const userInput = document.getElementById('settingsLoginUser').value.trim().toLowerCase();
+        const passInput = document.getElementById('settingsLoginPass').value.trim();
+        const errorMsg = document.getElementById('settingsLoginError');
+        const btn = document.getElementById('btnSettingsLoginSubmit');
 
         errorMsg.classList.add('hidden');
 
@@ -807,11 +1358,11 @@
 
         try {
             btn.disabled = true;
-            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Validando...';
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Verificando...';
 
             const collabsSnap = await getDocs(collection(db, "colaboradores"));
-            let targetDocRef = null;
-            let currentPasswordValid = false;
+            let matchedDocId = null;
+            let matchedData = null;
 
             collabsSnap.forEach(docSnap => {
                 const data = docSnap.data();
@@ -827,38 +1378,316 @@
                     data.name ? data.name.split(' ')[0] : ''
                 ].filter(Boolean).map(v => String(v).trim().toLowerCase());
 
-                const isThisCollab = possibleMatches.includes(mat) || possibleMatches.includes(cid) || possibleMatches.includes(firstName);
+                const isSelectedCollab = possibleMatches.includes(mat) || possibleMatches.includes(cid) || possibleMatches.includes(firstName);
+                const userMatches = possibleMatches.includes(userInput);
+                const dbPass = String((data.password !== undefined ? data.password : data.senha) || '').trim();
 
-                if (isThisCollab) {
-                    const dbPass = String((data.password !== undefined ? data.password : data.senha) || '').trim();
-                    if (dbPass === currentPass) {
-                        currentPasswordValid = true;
-                        targetDocRef = doc(db, "colaboradores", docSnap.id);
-                    }
+                if (isSelectedCollab && userMatches && dbPass === passInput) {
+                    matchedDocId = docSnap.id;
+                    matchedData = data;
                 }
             });
 
-            if (!currentPasswordValid || !targetDocRef) {
+            if (!matchedDocId || !matchedData) {
                 errorMsg.classList.remove('hidden');
                 return;
             }
 
+            // Marca este colaborador como verificado na sessão atual e libera o botão de configurações
+            window.verifiedProfileCollabIds.add(collab.id);
+            window.verifiedProfileDocs[collab.id] = { docId: matchedDocId, data: matchedData };
+            window.loggedInProfileName = collab.name;
+
+            // Libera automaticamente a área de publicação de avisos se o usuário tiver permissão
+            if (window.canUserPostNotices(matchedData, collab.name)) {
+                window.currentAdminUser = matchedData.nomeCompleto || matchedData.name || collab.name;
+                window.isSuperAdmin = matchedData.superadmin === true || matchedData.superAdmin === true;
+            } else {
+                window.currentAdminUser = null;
+                window.isSuperAdmin = false;
+            }
+
+            updateAuthUI();
+            if (typeof window.renderExclusiveProfileBlocks === 'function') {
+                window.renderExclusiveProfileBlocks();
+            }
+            if (typeof window.updateLoggedUserHeaderBadge === 'function') {
+                window.updateLoggedUserHeaderBadge();
+            }
+
+            closeProfileSettingsModal();
+            showModal("Login Realizado", `Bem-vindo, ${collab.name.split(' ')[0]}! O botão de configurações foi liberado.`);
+        } catch (err) {
+            console.error("Erro ao validar login nas configurações:", err);
+            errorMsg.classList.remove('hidden');
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fa-solid fa-right-to-bracket"></i><span>Entrar</span>';
+        }
+    };
+
+    // Estado e lógica do recorte interativo da foto de perfil
+    const cropState = {
+        img: null,
+        zoom: 1,
+        offsetX: 0,
+        offsetY: 0,
+        isDragging: false,
+        startX: 0,
+        startY: 0,
+        canvasSize: 288
+    };
+
+    function clampCropOffsets() {
+        if (!cropState.img) return;
+        const size = cropState.canvasSize;
+        const baseScale = Math.max(size / cropState.img.width, size / cropState.img.height);
+        const drawW = cropState.img.width * baseScale * cropState.zoom;
+        const drawH = cropState.img.height * baseScale * cropState.zoom;
+        const maxOffsetX = Math.max(0, (drawW - size) / 2);
+        const maxOffsetY = Math.max(0, (drawH - size) / 2);
+        cropState.offsetX = Math.max(-maxOffsetX, Math.min(maxOffsetX, cropState.offsetX));
+        cropState.offsetY = Math.max(-maxOffsetY, Math.min(maxOffsetY, cropState.offsetY));
+    }
+
+    function drawCropCanvas() {
+        const canvas = document.getElementById('photoCropCanvas');
+        if (!canvas || !cropState.img) return;
+        const size = cropState.canvasSize;
+        if (canvas.width !== size || canvas.height !== size) {
+            canvas.width = size;
+            canvas.height = size;
+        }
+        const ctx = canvas.getContext('2d');
+        ctx.clearRect(0, 0, size, size);
+        ctx.fillStyle = '#0f172a';
+        ctx.fillRect(0, 0, size, size);
+
+        clampCropOffsets();
+        const baseScale = Math.max(size / cropState.img.width, size / cropState.img.height);
+        const drawW = cropState.img.width * baseScale * cropState.zoom;
+        const drawH = cropState.img.height * baseScale * cropState.zoom;
+        const dx = (size - drawW) / 2 + cropState.offsetX;
+        const dy = (size - drawH) / 2 + cropState.offsetY;
+
+        ctx.drawImage(cropState.img, dx, dy, drawW, drawH);
+    }
+
+    function initCropStageEvents() {
+        const stage = document.getElementById('cropStageContainer');
+        if (!stage || stage.dataset.bound === '1') return;
+        stage.dataset.bound = '1';
+
+        const getPoint = (ev) => {
+            if (ev.touches && ev.touches.length > 0) {
+                return { x: ev.touches[0].clientX, y: ev.touches[0].clientY };
+            }
+            return { x: ev.clientX, y: ev.clientY };
+        };
+
+        const onStart = (ev) => {
+            if (!cropState.img) return;
+            const pt = getPoint(ev);
+            cropState.isDragging = true;
+            cropState.startX = pt.x - cropState.offsetX;
+            cropState.startY = pt.y - cropState.offsetY;
+        };
+
+        const onMove = (ev) => {
+            if (!cropState.isDragging || !cropState.img) return;
+            if (ev.cancelable) ev.preventDefault();
+            const pt = getPoint(ev);
+            const rect = stage.getBoundingClientRect();
+            const scaleRatio = rect.width ? (cropState.canvasSize / rect.width) : 1;
+            cropState.offsetX = (pt.x - cropState.startX) * scaleRatio;
+            cropState.offsetY = (pt.y - cropState.startY) * scaleRatio;
+            drawCropCanvas();
+        };
+
+        const onEnd = () => {
+            cropState.isDragging = false;
+        };
+
+        stage.addEventListener('mousedown', onStart);
+        window.addEventListener('mousemove', onMove);
+        window.addEventListener('mouseup', onEnd);
+
+        stage.addEventListener('touchstart', onStart, { passive: true });
+        window.addEventListener('touchmove', onMove, { passive: false });
+        window.addEventListener('touchend', onEnd);
+    }
+
+    window.handleProfilePhotoSelect = function(event) {
+        const file = event.target.files && event.target.files[0];
+        if (!file || !file.type.startsWith('image/')) return;
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const img = new Image();
+            img.onload = () => {
+                cropState.img = img;
+                cropState.zoom = 1;
+                cropState.offsetX = 0;
+                cropState.offsetY = 0;
+                const slider = document.getElementById('cropZoomSlider');
+                if (slider) slider.value = '1';
+                initCropStageEvents();
+                document.getElementById('photoCropModal').classList.remove('hidden');
+                drawCropCanvas();
+            };
+            img.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+        event.target.value = '';
+    };
+
+    window.handleCropZoomInput = function(val) {
+        const parsed = parseFloat(val);
+        if (!isNaN(parsed)) {
+            cropState.zoom = Math.max(1, Math.min(3, parsed));
+            drawCropCanvas();
+        }
+    };
+
+    window.adjustCropZoom = function(delta) {
+        const next = Math.max(1, Math.min(3, cropState.zoom + delta));
+        cropState.zoom = next;
+        const slider = document.getElementById('cropZoomSlider');
+        if (slider) slider.value = String(next);
+        drawCropCanvas();
+    };
+
+    window.resetCropPosition = function() {
+        cropState.zoom = 1;
+        cropState.offsetX = 0;
+        cropState.offsetY = 0;
+        const slider = document.getElementById('cropZoomSlider');
+        if (slider) slider.value = '1';
+        drawCropCanvas();
+    };
+
+    window.closePhotoCropModal = function() {
+        cropState.img = null;
+        cropState.isDragging = false;
+        document.getElementById('photoCropModal').classList.add('hidden');
+    };
+
+    window.confirmPhotoCrop = function() {
+        if (!cropState.img) return;
+        const OUT_SIZE = 256;
+        const outCanvas = document.createElement('canvas');
+        outCanvas.width = OUT_SIZE;
+        outCanvas.height = OUT_SIZE;
+        const outCtx = outCanvas.getContext('2d');
+
+        const stageSize = cropState.canvasSize;
+        const ratio = OUT_SIZE / stageSize;
+        const baseScale = Math.max(stageSize / cropState.img.width, stageSize / cropState.img.height);
+        const drawW = cropState.img.width * baseScale * cropState.zoom * ratio;
+        const drawH = cropState.img.height * baseScale * cropState.zoom * ratio;
+        const dx = (OUT_SIZE - drawW) / 2 + cropState.offsetX * ratio;
+        const dy = (OUT_SIZE - drawH) / 2 + cropState.offsetY * ratio;
+
+        outCtx.fillStyle = '#ffffff';
+        outCtx.fillRect(0, 0, OUT_SIZE, OUT_SIZE);
+        outCtx.drawImage(cropState.img, dx, dy, drawW, drawH);
+
+        draftProfilePhoto = outCanvas.toDataURL('image/jpeg', 0.78);
+        updateSettingsPreview();
+        closePhotoCropModal();
+    };
+
+    window.removeProfilePhoto = function() {
+        draftProfilePhoto = '';
+        updateSettingsPreview();
+    };
+
+    window.selectProfileBgColor = function(hexColor) {
+        draftProfileBgColor = hexColor || '#ffffff';
+        updateSettingsPreview();
+    };
+
+    window.saveProfileAppearance = async function() {
+        if (!activeSettingsDocId) return;
+        const btn = document.getElementById('btnSaveAppearance');
+
+        try {
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Salvando...';
+
+            const colorToSave = (draftProfileBgColor && draftProfileBgColor.toLowerCase() !== '#ffffff') ? draftProfileBgColor : '';
+
+            await updateDoc(doc(db, "colaboradores", activeSettingsDocId), {
+                fotoPerfil: draftProfilePhoto || '',
+                corPerfil: colorToSave,
+                updatedAt: new Date().toISOString()
+            });
+
+            // Atualiza o cache local imediatamente
+            const cachedIdx = (window.cachedColaboradores || []).findIndex(c => c.id === activeSettingsDocId);
+            if (cachedIdx !== -1) {
+                window.cachedColaboradores[cachedIdx].fotoPerfil = draftProfilePhoto || '';
+                window.cachedColaboradores[cachedIdx].corPerfil = colorToSave;
+            }
+
+            const collab = (window.collaborators || []).find(c => c.id === window.currentCollaboratorId);
+            if (collab && typeof window.applyCollabProfileAppearance === 'function') {
+                window.applyCollabProfileAppearance(collab);
+            }
+
+            closeProfileSettingsModal();
+            showModal("Perfil Atualizado", "Sua foto de perfil e cor de fundo foram salvas com sucesso!");
+        } catch (err) {
+            console.error("Erro ao salvar aparência do perfil:", err);
+            showModal("Erro", "Não foi possível salvar as alterações no Firebase.", true);
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i><span>Salvar Foto e Cor do Perfil</span>';
+        }
+    };
+
+    window.handleSettingsPasswordChange = async function(e) {
+        e.preventDefault();
+        if (!activeSettingsDocId) return;
+
+        const newPass = document.getElementById('settingsNewPass').value.trim();
+        const confirmPass = document.getElementById('settingsConfirmPass').value.trim();
+        const errorMsg = document.getElementById('settingsPassError');
+        const btn = document.getElementById('btnSavePassword');
+
+        errorMsg.classList.add('hidden');
+        if (newPass !== confirmPass) {
+            errorMsg.classList.remove('hidden');
+            return;
+        }
+
+        try {
+            btn.disabled = true;
             btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Atualizando...';
 
-            await updateDoc(targetDocRef, {
+            await updateDoc(doc(db, "colaboradores", activeSettingsDocId), {
                 password: newPass,
                 senha: newPass,
                 updatedAt: new Date().toISOString()
             });
 
-            closeChangePasswordModal();
-            showModal("Senha Atualizada", `A senha de ${collab.name.split(' ')[0]} foi alterada com sucesso!`);
+            // Atualiza o cache local imediatamente
+            const cachedIdx = (window.cachedColaboradores || []).findIndex(c => c.id === activeSettingsDocId);
+            if (cachedIdx !== -1) {
+                window.cachedColaboradores[cachedIdx].password = newPass;
+                window.cachedColaboradores[cachedIdx].senha = newPass;
+            }
+
+            document.getElementById('settingsNewPass').value = '';
+            document.getElementById('settingsConfirmPass').value = '';
+            closeProfileSettingsModal();
+            showModal("Senha Atualizada", "Sua nova senha foi salva com sucesso!");
         } catch (err) {
             console.error("Erro ao atualizar senha:", err);
             showModal("Erro", "Ocorreu um erro ao atualizar a senha no banco de dados.", true);
         } finally {
             btn.disabled = false;
-            btn.innerHTML = '<i class="fa-solid fa-check"></i><span>Salvar Nova Senha</span>';
+            btn.innerHTML = '<i class="fa-solid fa-check"></i><span>Atualizar Senha</span>';
         }
     };
 
@@ -896,7 +1725,7 @@
     window.submitNotice = async function(e) {
         e.preventDefault();
         if (!window.currentAdminUser) {
-            showModal("Acesso Negado", "Você precisa fazer login como administrador para publicar avisos.", true);
+            showModal("Acesso Negado", "Você precisa fazer login com uma conta autorizada para publicar avisos.", true);
             return;
         }
 
@@ -966,6 +1795,7 @@
                 message: message,
                 mediaUrl: mediaUrl,
                 author: window.currentAdminUser,
+                likes: [],
                 createdAt: new Date().toISOString()
             });
 
@@ -985,7 +1815,7 @@
 
     window.deleteNotice = async function(docId) {
         if (!window.currentAdminUser) {
-            showModal("Acesso Negado", "Apenas administradores logados podem excluir avisos.", true);
+            showModal("Acesso Negado", "Apenas usuários autorizados podem excluir avisos.", true);
             return;
         }
         showModal("Confirmar Exclusão", "Tem certeza que deseja excluir permanentemente este aviso do banco de dados?", true, async () => {
@@ -1002,12 +1832,149 @@
         });
     };
 
-    function initRealtimeNotices() {
+    window.toggleNoticeLike = async function(docId) {
+        const loggedName = window.getLoggedInUserName();
+        if (!loggedName) {
+            showModal("Login Necessário", "Faça login no seu perfil ou na aba Avisos para curtir este comunicado.", false);
+            return;
+        }
+
+        const notice = (window.latestNoticesList || []).find(n => n.id === docId);
+        const currentLikes = Array.isArray(notice && notice.likes) ? notice.likes : [];
+        const hasLiked = currentLikes.includes(loggedName);
+
+        try {
+            await updateDoc(doc(db, "painel_avisos", docId), {
+                likes: hasLiked ? arrayRemove(loggedName) : arrayUnion(loggedName)
+            });
+        } catch (err) {
+            console.error("Erro ao atualizar curtida:", err);
+            showModal("Erro", "Não foi possível registrar sua curtida no momento.", true);
+        }
+    };
+
+    window.toggleLikesList = function(docId) {
+        if (expandedLikesSet.has(docId)) {
+            expandedLikesSet.delete(docId);
+        } else {
+            expandedLikesSet.add(docId);
+        }
+        window.renderNoticesList();
+    };
+
+    window.renderNoticesList = function() {
         const container = document.getElementById('noticesContainer');
         const badge = document.getElementById('noticeCountBadge');
         if (!container || !badge) return;
 
-        onSnapshot(collection(db, "painel_avisos"), (snapshot) => {
+        const notices = window.latestNoticesList || [];
+        const loggedName = window.getLoggedInUserName();
+
+        badge.textContent = `${notices.length} aviso${notices.length !== 1 ? 's' : ''}`;
+
+        if (notices.length === 0) {
+            container.innerHTML = `
+                <div class="bg-white rounded-3xl border border-slate-200/80 p-8 text-center text-slate-400 text-sm shadow-sm">
+                    Nenhum aviso cadastrado no momento.
+                </div>
+            `;
+            return;
+        }
+
+        container.innerHTML = notices.map(item => {
+            const formattedDate = item.date ? item.date.split('-').reverse().join('/') : 'Data não informada';
+            const rawAuthor = item.author || 'Administrador';
+            const authorParts = rawAuthor.trim().split(/\s+/);
+            const authorName = authorParts.slice(0, 2).join(' ');
+            const likes = Array.isArray(item.likes) ? item.likes : [];
+            const isLiked = loggedName && likes.includes(loggedName);
+            const isExpanded = expandedLikesSet.has(item.id);
+
+            let mediaHtml = '';
+            if (item.mediaUrl) {
+                if (item.mediaUrl.startsWith('data:image') || item.mediaUrl.match(/\.(jpeg|jpg|gif|png)$/i) || item.mediaUrl.includes('base64') || item.mediaUrl.includes('googleusercontent.com')) {
+                    mediaHtml = `
+                        <div class="mt-4 rounded-2xl overflow-hidden border border-slate-200/80 bg-slate-50 max-h-80 flex justify-center shadow-inner cursor-pointer" onclick="openImageViewer('${formatDriveUrl(item.mediaUrl)}')">
+                            <img src="${formatDriveUrl(item.mediaUrl)}" alt="Mídia do aviso" class="object-contain max-h-80 rounded-xl hover:scale-105 transition duration-300" onerror="this.src='https://placehold.co/400x200/1e293b/ffffff?text=Erro+ao+carregar+imagem'">
+                        </div>
+                    `;
+                } else {
+                    mediaHtml = `
+                        <div class="mt-4 p-4 rounded-2xl bg-blue-50/60 border border-blue-100 text-xs flex flex-col sm:flex-row items-center justify-between gap-3 text-center sm:text-left">
+                            <span class="font-bold text-slate-700 flex items-center gap-2 justify-center mx-auto sm:mx-0">
+                                <i class="fa-solid fa-file-lines text-blue-600 text-base"></i> Documento ou Anexo anexado
+                            </span>
+                            <div class="w-full sm:w-auto flex justify-center">
+                                <a href="${item.mediaUrl}" target="_blank" rel="noopener noreferrer" class="px-5 py-2.5 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 transition shadow-xs flex items-center justify-center gap-2">
+                                    <i class="fa-solid fa-external-link-alt text-xs"></i> Abrir documento
+                                </a>
+                            </div>
+                        </div>
+                    `;
+                }
+            }
+
+            const deleteBtnHtml = window.currentAdminUser ? `
+                <button onclick="deleteNotice('${item.id}')" title="Excluir aviso do banco" class="w-9 h-9 rounded-xl bg-slate-100 hover:bg-rose-50 text-slate-400 hover:text-rose-600 transition flex items-center justify-center active:scale-95 shadow-2xs">
+                    <i class="fa-solid fa-trash-can text-xs"></i>
+                </button>
+            ` : '';
+
+            const likesListHtml = likes.length > 0 ? `
+                <div class="${isExpanded ? '' : 'hidden'} mt-2 bg-slate-50 rounded-2xl px-3.5 py-2.5 border border-slate-100 text-xs text-slate-600 leading-relaxed">
+                    <span class="font-bold text-slate-700"><i class="fa-solid fa-heart text-rose-500 mr-1"></i>Curtido por:</span>
+                    <span>${likes.join(', ')}</span>
+                </div>
+            ` : '';
+
+            return `
+                <div id="notice-card-${item.id}" class="bg-white rounded-3xl border border-slate-200/90 p-5 sm:p-6 shadow-sm space-y-3.5 relative group hover:shadow-md transition">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-2 flex-wrap">
+                            <span class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-blue-50 text-blue-700 text-xs font-bold border border-blue-100">
+                                <i class="fa-regular fa-calendar-days text-blue-500"></i> ${formattedDate}
+                            </span>
+                            <span class="text-[11px] font-semibold text-slate-500 bg-slate-100 px-3 py-1.5 rounded-full">
+                                Por: <strong class="text-slate-700">${authorName}</strong>
+                            </span>
+                        </div>
+                        ${deleteBtnHtml}
+                    </div>
+
+                    <p class="text-slate-700 text-sm sm:text-base whitespace-pre-line leading-relaxed font-medium">${item.message}</p>
+
+                    ${mediaHtml}
+
+                    <div class="pt-3 border-t border-slate-100">
+                        <div class="flex items-center justify-between gap-2 flex-wrap">
+                            <button type="button" onclick="toggleNoticeLike('${item.id}')" class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl border text-xs font-bold transition active:scale-95 ${
+                                isLiked
+                                    ? 'bg-rose-50 border-rose-200 text-rose-600'
+                                    : 'bg-slate-50 border-slate-200 text-slate-600 hover:bg-rose-50 hover:border-rose-200 hover:text-rose-600'
+                            }">
+                                <i class="${isLiked ? 'fa-solid' : 'fa-regular'} fa-heart"></i>
+                                <span>${isLiked ? 'Curtido' : 'Curtir'}</span>
+                                <span class="px-1.5 py-0.5 rounded-full bg-white text-[10px] font-extrabold border ${isLiked ? 'border-rose-200 text-rose-600' : 'border-slate-200 text-slate-600'}">${likes.length}</span>
+                            </button>
+
+                            ${likes.length > 0 ? `
+                                <button type="button" onclick="toggleLikesList('${item.id}')" class="text-[11px] font-semibold text-slate-500 hover:text-blue-600 transition flex items-center gap-1">
+                                    <span>${isExpanded ? 'Ocultar quem curtiu' : `Ver quem curtiu (${likes.length})`}</span>
+                                    <i class="fa-solid ${isExpanded ? 'fa-chevron-up' : 'fa-chevron-down'} text-[10px]"></i>
+                                </button>
+                            ` : ''}
+                        </div>
+                        ${likesListHtml}
+                    </div>
+                </div>
+            `;
+        }).join('');
+    };
+
+    function initRealtimeNotices() {
+        if (unsubscribeNotices) return;
+
+        unsubscribeNotices = onSnapshot(collection(db, "painel_avisos"), (snapshot) => {
             const notices = [];
             const parsedAvisosFirebase = {};
 
@@ -1031,19 +1998,14 @@
                                     text: itemData.message || '',
                                     image: itemData.mediaUrl || '',
                                     author: itemData.author || 'Administrador',
-                                    date: itemData.date
+                                    date: itemData.date,
+                                    likes: Array.isArray(itemData.likes) ? itemData.likes : []
                                 });
                             }
                         }
                     }
                 }
             });
-
-            window.avisosData = parsedAvisosFirebase;
-
-            if (typeof window.refreshCurrentScheduleDisplay === 'function') {
-                window.refreshCurrentScheduleDisplay();
-            }
 
             notices.sort((a, b) => {
                 const createdA = new Date(a.createdAt || '1970-01-01');
@@ -1056,91 +2018,21 @@
                 return dateB - dateA;
             });
 
-            badge.textContent = `${notices.length} aviso${notices.length !== 1 ? 's' : ''}`;
+            window.latestNoticesList = notices;
+            window.avisosData = parsedAvisosFirebase;
 
-            if (notices.length === 0) {
-                container.innerHTML = `
-                    <div class="bg-white rounded-3xl border border-slate-200/80 p-8 text-center text-slate-400 text-sm shadow-sm">
-                        Nenhum aviso cadastrado no momento. Faça login como administrador para publicar.
-                    </div>
-                `;
-                return;
+            window.renderNoticesList();
+
+            if (typeof window.refreshCurrentScheduleDisplay === 'function') {
+                window.refreshCurrentScheduleDisplay();
             }
-
-            container.innerHTML = notices.map(item => {
-                const formattedDate = item.date ? item.date.split('-').reverse().join('/') : 'Data não informada';
-                
-                const rawAuthor = item.author || 'Administrador';
-                const authorParts = rawAuthor.trim().split(/\s+/);
-                const authorName = authorParts.slice(0, 2).join(' ');
-                
-                let mediaHtml = '';
-                if (item.mediaUrl) {
-                    if (item.mediaUrl.startsWith('data:image') || item.mediaUrl.match(/\.(jpeg|jpg|gif|png)$/i) || item.mediaUrl.includes('base64') || item.mediaUrl.includes('googleusercontent.com')) {
-                        mediaHtml = `
-                            <div class="mt-4 rounded-2xl overflow-hidden border border-slate-200/80 bg-slate-50 max-h-80 flex justify-center shadow-inner cursor-pointer" onclick="openImageViewer('${formatDriveUrl(item.mediaUrl)}')">
-                                <img src="${formatDriveUrl(item.mediaUrl)}" alt="Mídia do aviso" class="object-contain max-h-80 rounded-xl hover:scale-105 transition duration-300" onerror="this.src='https://placehold.co/400x200/1e293b/ffffff?text=Erro+ao+carregar+imagem'">
-                            </div>
-                        `;
-                    } else {
-                        mediaHtml = `
-                            <div class="mt-4 p-4 rounded-2xl bg-blue-50/60 border border-blue-100 text-xs flex flex-col sm:flex-row items-center justify-between gap-3 text-center sm:text-left">
-                                <span class="font-bold text-slate-700 flex items-center gap-2 justify-center mx-auto sm:mx-0">
-                                    <i class="fa-solid fa-file-lines text-blue-600 text-base"></i> Documento ou Anexo anexado
-                                </span>
-                                <div class="w-full sm:w-auto flex justify-center">
-                                    <a href="${item.mediaUrl}" target="_blank" rel="noopener noreferrer" class="px-5 py-2.5 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 transition shadow-xs flex items-center justify-center gap-2">
-                                        <i class="fa-solid fa-external-link-alt text-xs"></i> Abrir documento
-                                    </a>
-                                </div>
-                            </div>
-                        `;
-                    }
-                }
-
-                const deleteBtnHtml = window.currentAdminUser ? `
-                    <button onclick="deleteNotice('${item.id}')" title="Excluir aviso do banco" class="w-9 h-9 rounded-xl bg-slate-100 hover:bg-rose-50 text-slate-400 hover:text-rose-600 transition flex items-center justify-center active:scale-95 shadow-2xs">
-                        <i class="fa-solid fa-trash-can text-xs"></i>
-                    </button>
-                ` : '';
-
-                return `
-                    <div id="notice-card-${item.id}" class="bg-white rounded-3xl border border-slate-200/90 p-5 sm:p-6 shadow-sm space-y-3.5 relative group hover:shadow-md transition">
-                        <div class="flex items-center justify-between">
-                            <div class="flex items-center gap-2">
-                                <span class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-blue-50 text-blue-700 text-xs font-bold border border-blue-100">
-                                    <i class="fa-regular fa-calendar-days text-blue-500"></i> ${formattedDate}
-                                </span>
-                                <span class="text-[11px] font-semibold text-slate-500 bg-slate-100 px-3 py-1.5 rounded-full">
-                                    Por: <strong class="text-slate-700">${authorName}</strong>
-                                </span>
-                            </div>
-                            ${deleteBtnHtml}
-                        </div>
-
-                        <p class="text-slate-700 text-sm sm:text-base whitespace-pre-line leading-relaxed font-medium">${item.message}</p>
-
-                        ${mediaHtml}
-                    </div>
-                `;
-            }).join('');
+            if (typeof window.syncOpenAvisoModalLikes === 'function') {
+                window.syncOpenAvisoModalLikes();
+            }
         }, (error) => {
             console.error("Erro no listener de avisos:", error);
         });
     }
-
-    window.openAuditModal = function() {
-        if (!window.isSuperAdmin) {
-            showModal("Acesso Negado", "Apenas superadministradores podem acessar a auditoria.", true);
-            return;
-        }
-        document.getElementById('auditModal').classList.remove('hidden');
-        loadAuditData();
-    };
-
-    window.closeAuditModal = function() {
-        document.getElementById('auditModal').classList.add('hidden');
-    };
 
     window.openImageViewer = function(url) {
         let modal = document.getElementById('imageViewerModal');
@@ -1160,53 +2052,6 @@
         }
         document.getElementById('modalZoomImg').src = url;
     };
-
-    async function loadAuditData() {
-        try {
-            const acessoSnap = await getDoc(doc(db, "acessos_site", "contador_geral"));
-            if (acessoSnap.exists()) {
-                document.getElementById('statTotalSessions').textContent = acessoSnap.data().sessoes || 0;
-            }
-
-            const logsSnap = await getDocs(collection(db, "logs_acesso"));
-            const logsListDiv = document.getElementById('auditLogsList');
-            let logsArray = [];
-
-            logsSnap.forEach(docSnap => {
-                logsArray.push({ id: docSnap.id, ...docSnap.data() });
-            });
-
-            logsArray.sort((a, b) => {
-                const timeA = new Date(a.ultimoAcessoLocal || a.ultimoAcesso || a.timestamp || '1970-01-01').getTime();
-                const timeB = new Date(b.ultimoAcessoLocal || b.ultimoAcesso || b.timestamp || '1970-01-01').getTime();
-                return timeB - timeA;
-            });
-
-            let logsHtml = '';
-            logsArray.forEach(data => {
-                const cliques = data.cliques || [];
-                const disp = (data.dispositivo || '').trim();
-                const isMobilePhone = disp === 'Celular - Android' || disp === 'Celular - iOS';
-                const deviceIcon = isMobilePhone ? '<i class="fa-solid fa-mobile-screen mr-1 text-blue-600"></i>' : '<i class="fa-solid fa-desktop mr-1 text-indigo-600"></i>';
-
-                logsHtml += `
-                    <div class="bg-slate-50 rounded-2xl p-3 border border-slate-200/80 text-xs space-y-1">
-                        <div class="font-bold text-slate-800 flex justify-between">
-                            <span>${deviceIcon} ${disp || 'Dispositivo'}</span>
-                            <span class="text-[10px] text-slate-500">Último: ${data.ultimoAcessoLocal || data.ultimoAcesso || '-'}</span>
-                        </div>
-                        <div class="text-slate-600 font-medium pl-4 border-l-2 border-blue-500 mt-1">
-                            ${cliques.slice().reverse().map(c => `<div>• ${c}</div>`).join('')}
-                        </div>
-                    </div>
-                `;
-            });
-
-            logsListDiv.innerHTML = logsHtml || '<p class="text-xs text-slate-400">Nenhum log registrado ainda.</p>';
-        } catch (e) {
-            console.error("Erro ao carregar auditoria:", e);
-        }
-    }
 
     function initTodayDate() {
         const today = new Date();
@@ -1229,7 +2074,7 @@
 
   <!-- Lógica da Escala e Rotinas Existentes -->
   <script>
-    const SPREADSHEET_ID = '1EsxzUJ42gEu4Gz_5tX3ybAUtAy71BoiCrbOfwRdrGnM';
+    const SPREADSHEET_ID = '1iIKhxwRci_G48hLU4idDUJVp7_0ecPD9KjmUe7eqKpw';
     const SHEET_TAB = 'Backup Atualizado';
     const REFRESH_MS = 60000;
 
@@ -1259,7 +2104,33 @@
       const month = now.getMonth();
       const todayDay = now.getDate();
       const lastDayOfMonth = new Date(year, month + 1, 0).getDate();
-      return (lastDayOfMonth - todayDay) < 7;
+      return (lastDayOfMonth - todayDay) <= 7;
+    }
+
+    function updateMonthSelectorVisibility() {
+      const monthSelectorContainer = document.getElementById('monthSelectorContainer');
+      if (!monthSelectorContainer) return;
+
+      if (isMaintenanceMode || currentView === 'avisos' || !currentCollaboratorId) {
+        monthSelectorContainer.classList.add('hidden');
+        return;
+      }
+
+      const activeCollab = collaborators.find(c => c.id === currentCollaboratorId);
+      if (!activeCollab) {
+        monthSelectorContainer.classList.add('hidden');
+        return;
+      }
+
+      const isWhatyson = activeCollab.name.toLowerCase().includes('whatyson');
+      const showByLast7Days = isLastWeekOfMonth();
+
+      if (showByLast7Days || isWhatyson) {
+        monthSelectorContainer.classList.remove('hidden');
+        renderMonthButtons();
+      } else {
+        monthSelectorContainer.classList.add('hidden');
+      }
     }
 
     let ALLOWED_TWO_MONTHS = getAllowedMonths();
@@ -1327,7 +2198,10 @@
     window.currentCollaboratorId = null;
     let currentCollaboratorId = window.currentCollaboratorId;
     let currentView = 'list';
+    let lastScheduleView = 'list';
     let activeSector = 'Todos';
+    let selectedSummaryDay = null;
+    let showPastDaysInList = false;
     let allData = null;
     let isMaintenanceMode = false;
     window.avisosData = {};
@@ -1344,6 +2218,8 @@
         'viewAvisos',
         'escalaFiltersCard',
         'userProfileCard',
+        'sharedClosingCard',
+        'silviaTurnAlertCard',
         'shiftLegend',
         'viewList',
         'viewCalendar',
@@ -1378,7 +2254,6 @@
       return Math.ceil((((date - yearStart) / 86400000) + 1) / 7);
     }
 
-    // Parser CSV completo que respeita quebras de linha dentro de células com aspas
     function parseCSV(text) {
       const rows = [];
       let row = [];
@@ -1421,14 +2296,12 @@
       const raw = (cellValue || '').replace(/\s+/g, ' ').trim();
       if (!raw) return null;
 
-      // Verifica se a célula está no formato data DD/MM ou DD/MM/AAAA
       const brDate = raw.match(/^\d{1,2}[\/\-](\d{1,2})(?:[\/\-]\d{2,4})?$/);
       if (brDate) {
         const mIdx = parseInt(brDate[1], 10) - 1;
         if (mIdx >= 0 && mIdx < 12) return MONTH_NAMES[mIdx];
       }
 
-      // Verifica se a célula está no formato ISO AAAA-MM-DD
       const isoDate = raw.match(/^\d{4}-(\d{1,2})-\d{1,2}$/);
       if (isoDate) {
         const mIdx = parseInt(isoDate[1], 10) - 1;
@@ -1455,27 +2328,23 @@
       const s = (cellValue || '').replace(/\s+/g, ' ').trim();
       if (!s) return null;
 
-      // Número puro (ex: "1", "01", "31")
       if (/^\d{1,2}$/.test(s)) {
         const n = parseInt(s, 10);
         return (n >= 1 && n <= 31) ? n : null;
       }
 
-      // Data DD/MM ou DD/MM/AAAA
       const brDate = s.match(/^(\d{1,2})[\/\-](\d{1,2})(?:[\/\-]\d{2,4})?$/);
       if (brDate) {
         const n = parseInt(brDate[1], 10);
         return (n >= 1 && n <= 31) ? n : null;
       }
 
-      // Data ISO AAAA-MM-DD
       const isoDate = s.match(/^\d{4}-(\d{1,2})-(\d{1,2})$/);
       if (isoDate) {
         const n = parseInt(isoDate[2], 10);
         return (n >= 1 && n <= 31) ? n : null;
       }
 
-      // Cabeçalho mesclado pelo Google Sheets (ex: "NOVEMBRO 1", "SEG 01", "1 DOM")
       const tokens = s.split(/[\s\-\/]+/);
       for (const tok of tokens) {
         if (/^\d{1,2}$/.test(tok)) {
@@ -1511,7 +2380,6 @@
         if (dateRow !== -1) break;
       }
 
-      // Fallback caso o dia 1 tenha sido mesclado/omitido, mas existam 2, 3, 4 em sequência
       if (dateRow === -1) {
         for (let r = 0; r < scanLimit; r++) {
           for (let c = 1; c < rows[r].length - 2; c++) {
@@ -1573,7 +2441,6 @@
         const row = rows[r];
         if (!row || row.length === 0) continue;
 
-        // Procura o nome do colaborador preferindo a coluna B (índice 1) e depois demais colunas antes dos dias
         let name = normName(row[1]);
         if (!name || /^\d+$/.test(name)) {
           name = '';
@@ -1600,7 +2467,6 @@
           }
         });
 
-        // Linha sem turnos: verifica se é cabeçalho de setor
         if (!hasShift) {
           if (
             upper.includes('GERENTE') || upper.includes('GERENCIA') ||
@@ -1614,7 +2480,6 @@
           continue;
         }
 
-        // Ignora eventuais linhas de cabeçalho/resumo repetidas
         if (upper === 'NOME' || upper === 'COLABORADOR' || upper.startsWith('TOTAL')) continue;
 
         let matricula = (row[3] || '').trim();
@@ -1670,9 +2535,12 @@
       ALLOWED_TWO_MONTHS = getAllowedMonths();
       currentMonth = ALLOWED_TWO_MONTHS[0];
       activeSector = 'Todos';
+      selectedSummaryDay = null;
+      showPastDaysInList = false;
       currentCollaboratorId = null;
       window.currentCollaboratorId = null;
       currentView = 'list';
+      lastScheduleView = 'list';
       closeMenu();
       window.scrollTo({ top: 0, behavior: 'smooth' });
       await fetchLiveScheduleData();
@@ -1686,7 +2554,6 @@
 
       ALLOWED_TWO_MONTHS = getAllowedMonths();
 
-      // Tenta primeiro no modo padrão do Google Sheets (preserva números dos dias) e depois com headers=0
       const urlsToTry = [
         `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(SHEET_TAB)}&t=${Date.now()}`,
         `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?tqx=out:csv&headers=0&sheet=${encodeURIComponent(SHEET_TAB)}&t=${Date.now()}`
@@ -1766,6 +2633,7 @@
         if (currentCollaboratorId && scheduleData[currentCollaboratorId]) {
             renderListView(scheduleData[currentCollaboratorId]);
             renderCalendarView(scheduleData[currentCollaboratorId]);
+            window.renderExclusiveProfileBlocks();
         }
     };
 
@@ -1838,17 +2706,21 @@
     function selectCollaborator(id) {
       currentCollaboratorId = id;
       window.currentCollaboratorId = id;
+      showPastDaysInList = false;
       renderCollaboratorChips();
       displayScheduleFor(id);
     }
 
     window.updateCollabSettingsGear = function() {
         const gearBtn = document.getElementById('btnCollabSettings');
-        if (!gearBtn) return;
+        const loginBtn = document.getElementById('btnCollabLogin');
+        const loginIcon = document.getElementById('iconCollabLogin');
+        if (!gearBtn || !loginBtn) return;
 
         const collab = (window.collaborators || []).find(c => c.id === window.currentCollaboratorId);
         if (!collab) {
             gearBtn.classList.add('hidden');
+            loginBtn.classList.add('hidden');
             return;
         }
 
@@ -1872,11 +2744,432 @@
             return possibleMatches.includes(mat) || possibleMatches.includes(cid) || possibleMatches.includes(firstName);
         });
 
-        if (found && found.admin === true) {
-            gearBtn.classList.remove('hidden');
-        } else {
+        const hasCredentials = found && (found.admin === true || found.password !== undefined || found.senha !== undefined);
+        const canManageAsWhatyson = typeof window.isWhatysonLoggedIn === 'function' && window.isWhatysonLoggedIn();
+
+        if (!hasCredentials && !(canManageAsWhatyson && found)) {
             gearBtn.classList.add('hidden');
+            loginBtn.classList.add('hidden');
+            return;
         }
+
+        const isVerified = window.verifiedProfileCollabIds && window.verifiedProfileCollabIds.has(collab.id);
+
+        if (hasCredentials) {
+            loginBtn.classList.remove('hidden');
+        } else {
+            loginBtn.classList.add('hidden');
+        }
+
+        if (isVerified) {
+            gearBtn.classList.remove('hidden');
+            loginBtn.title = 'Sair deste perfil';
+            loginBtn.className = 'w-10 h-10 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-600 transition flex items-center justify-center active:scale-95 border border-rose-200/80 shadow-2xs';
+            if (loginIcon) loginIcon.className = 'fa-solid fa-right-from-bracket text-base';
+        } else {
+            gearBtn.classList.toggle('hidden', !canManageAsWhatyson);
+            loginBtn.title = 'Fazer login neste perfil';
+            loginBtn.className = 'w-10 h-10 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-600 transition flex items-center justify-center active:scale-95 border border-blue-200/80 shadow-2xs';
+            if (loginIcon) loginIcon.className = 'fa-solid fa-right-to-bracket text-base';
+        }
+    };
+
+    window.applyCollabProfileAppearance = function(collab) {
+        if (!collab) return;
+        const profileCard = document.getElementById('userProfileCard');
+        const avatarEl = document.getElementById('userAvatar');
+        const userNameEl = document.getElementById('userName');
+        const userMatEl = document.getElementById('userMatricula');
+        const userCargoEl = document.getElementById('userCargoText');
+        const visualLabel = document.getElementById('userVisualLabel');
+
+        const firstName = collab.name.split(' ')[0].toLowerCase();
+        const mat = String(collab.matricula || '').trim().toLowerCase();
+        const cid = String(collab.id || '').trim().toLowerCase();
+
+        const dbCollabs = window.cachedColaboradores || [];
+        const found = dbCollabs.find(d => {
+            const possibleMatches = [
+                d.matricula,
+                d.mat,
+                d.id,
+                d.username,
+                d.usuario,
+                d.user,
+                d.nomeCompleto ? d.nomeCompleto.split(' ')[0] : '',
+                d.name ? d.name.split(' ')[0] : ''
+            ].filter(Boolean).map(v => String(v).trim().toLowerCase());
+
+            return possibleMatches.includes(mat) || possibleMatches.includes(cid) || possibleMatches.includes(firstName);
+        });
+
+        // Exibe o cargo salvo (ocultando para gerentes para evitar redundância)
+        if (userCargoEl) {
+            const cargoText = (found && found.cargo) ? String(found.cargo).trim() : '';
+            const isGerente = stripAccents(cargoText.toLowerCase()).includes('gerente') ||
+                              stripAccents((collab.sector || '').toLowerCase()).includes('gerenc') ||
+                              stripAccents((collab.role || '').toLowerCase()).includes('gerent');
+            if (cargoText && !isGerente) {
+                userCargoEl.textContent = cargoText;
+                userCargoEl.classList.remove('hidden');
+            } else {
+                userCargoEl.textContent = '';
+                userCargoEl.classList.add('hidden');
+            }
+        }
+
+        // Aplica foto de perfil salva ou inicial padrão
+        if (avatarEl) {
+            if (found && found.fotoPerfil) {
+                avatarEl.innerHTML = `<img src="${found.fotoPerfil}" alt="${collab.name}" class="w-full h-full object-cover rounded-2xl">`;
+                avatarEl.classList.add('overflow-hidden');
+            } else {
+                avatarEl.textContent = collab.name.charAt(0);
+                avatarEl.classList.remove('overflow-hidden');
+            }
+        }
+
+        // Aplica cor de fundo salva e ajusta contraste do texto
+        const bgColor = (found && found.corPerfil) ? found.corPerfil : '';
+        if (profileCard) {
+            profileCard.style.backgroundColor = bgColor;
+        }
+
+        let isDark = false;
+        if (bgColor && /^#[0-9a-fA-F]{6}$/.test(bgColor)) {
+            const r = parseInt(bgColor.substring(1, 3), 16);
+            const g = parseInt(bgColor.substring(3, 5), 16);
+            const b = parseInt(bgColor.substring(5, 7), 16);
+            isDark = ((0.299 * r + 0.587 * g + 0.114 * b) / 255) < 0.5;
+        }
+
+        if (userNameEl) {
+            userNameEl.classList.toggle('text-white', isDark);
+            userNameEl.classList.toggle('text-slate-900', !isDark);
+        }
+        if (userMatEl) {
+            userMatEl.classList.toggle('text-slate-300', isDark);
+            userMatEl.classList.toggle('text-slate-500', !isDark);
+        }
+        if (visualLabel) {
+            visualLabel.classList.toggle('text-slate-300', isDark);
+            visualLabel.classList.toggle('text-slate-400', !isDark);
+        }
+    };
+
+    function getEffectiveSummaryDay() {
+      const monthIndex = MONTH_INDEXES[currentMonth] ?? (new Date().getMonth());
+      const today = new Date();
+      const defaultDay = (today.getMonth() === monthIndex) ? today.getDate() : 1;
+      if (selectedSummaryDay !== null && selectedSummaryDay >= 1 && selectedSummaryDay <= monthDaysCount) {
+        return selectedSummaryDay;
+      }
+      return Math.min(defaultDay, monthDaysCount);
+    }
+
+    window.changeSummaryDay = function(delta) {
+      const current = getEffectiveSummaryDay();
+      const next = Math.max(1, Math.min(monthDaysCount, current + delta));
+      if (next !== current) {
+        selectedSummaryDay = next;
+        displayScheduleFor(null);
+      }
+    };
+
+    window.selectSummaryDay = function(dayValue) {
+      const parsed = parseInt(dayValue, 10);
+      if (!isNaN(parsed) && parsed >= 1 && parsed <= monthDaysCount) {
+        selectedSummaryDay = parsed;
+        displayScheduleFor(null);
+      }
+    };
+
+    window.resetSummaryDayToToday = function() {
+      selectedSummaryDay = null;
+      displayScheduleFor(null);
+    };
+
+    const exclusiveCardsCollapsed = {
+      sharedClosing: true,
+      silviaTurn: true
+    };
+
+    window.toggleExclusiveCard = function(cardKey) {
+      exclusiveCardsCollapsed[cardKey] = !exclusiveCardsCollapsed[cardKey];
+      applyExclusiveCardToggleUI(cardKey);
+    };
+
+    function applyExclusiveCardToggleUI(cardKey) {
+      const isCollapsed = !!exclusiveCardsCollapsed[cardKey];
+      const map = {
+        sharedClosing: {
+          body: 'sharedClosingBody',
+          label: 'labelToggleSharedClosing',
+          icon: 'iconToggleSharedClosing'
+        },
+        silviaTurn: {
+          body: 'silviaTurnAlertBody',
+          label: 'labelToggleSilviaTurn',
+          icon: 'iconToggleSilviaTurn'
+        }
+      };
+      const ids = map[cardKey];
+      if (!ids) return;
+
+      const bodyEl = document.getElementById(ids.body);
+      const labelEl = document.getElementById(ids.label);
+      const iconEl = document.getElementById(ids.icon);
+
+      if (bodyEl) bodyEl.classList.toggle('hidden', isCollapsed);
+      if (labelEl) labelEl.textContent = isCollapsed ? 'Mostrar' : 'Ocultar';
+      if (iconEl) iconEl.className = `fa-solid ${isCollapsed ? 'fa-chevron-down' : 'fa-chevron-up'} text-[10px]`;
+    }
+
+    function isWhatysonProfile(collab) {
+      if (!collab || !collab.name) return false;
+      return stripAccents(collab.name.toLowerCase()).includes('whatyson');
+    }
+
+    function isSabrinnaProfile(collab) {
+      if (!collab || !collab.name) return false;
+      const norm = stripAccents(collab.name.toLowerCase());
+      return norm.includes('sabrinna') || norm.includes('sabrina');
+    }
+
+    function isWhatysonOrSilviaProfile(collab) {
+      if (!collab || !collab.name) return false;
+      const norm = stripAccents(collab.name.toLowerCase());
+      return norm.includes('whatyson') || (norm.includes('silvia') && norm.includes('nascimento')) || norm.startsWith('silvia ');
+    }
+
+    function findWhatysonCollab() {
+      return collaborators.find(c => isWhatysonProfile(c)) || null;
+    }
+
+    function findSabrinnaCollab() {
+      return collaborators.find(c => isSabrinnaProfile(c)) || null;
+    }
+
+    function findSilviaNascimentoCollab() {
+      const exact = collaborators.find(c => {
+        const norm = stripAccents((c.name || '').toLowerCase());
+        return norm.includes('silvia') && norm.includes('nascimento');
+      });
+      if (exact) return exact;
+      return collaborators.find(c => stripAccents((c.name || '').toLowerCase()).includes('silvia')) || null;
+    }
+
+    window.renderSharedClosingCard = function() {
+      const card = document.getElementById('sharedClosingCard');
+      const listEl = document.getElementById('sharedClosingList');
+      const badgeEl = document.getElementById('sharedClosingBadge');
+      if (!card || !listEl || !badgeEl) return;
+
+      if (isMaintenanceMode || currentView === 'avisos' || !currentCollaboratorId) {
+        card.classList.add('hidden');
+        return;
+      }
+
+      const activeCollab = collaborators.find(c => c.id === currentCollaboratorId);
+      const isVerified = window.verifiedProfileCollabIds && window.verifiedProfileCollabIds.has(currentCollaboratorId);
+
+      if (!activeCollab || (!isWhatysonProfile(activeCollab) && !isSabrinnaProfile(activeCollab)) || !isVerified) {
+        card.classList.add('hidden');
+        return;
+      }
+
+      const whatyson = findWhatysonCollab();
+      const sabrinna = findSabrinnaCollab();
+      if (!whatyson || !sabrinna) {
+        card.classList.add('hidden');
+        return;
+      }
+
+      const wSched = scheduleData[whatyson.id] || [];
+      const sSched = scheduleData[sabrinna.id] || [];
+      const monthIndex = MONTH_INDEXES[currentMonth] ?? (new Date().getMonth());
+      const now = new Date();
+      const curYear = now.getFullYear();
+      const isCurrentRealMonth = (now.getMonth() === monthIndex);
+      const currentRealDay = isCurrentRealMonth ? now.getDate() : -1;
+      const monthDisplay = currentMonth.charAt(0) + currentMonth.slice(1).toLowerCase();
+
+      const closingShifts = ['F', 'PF'];
+      const matches = [];
+
+      for (let day = 1; day <= monthDaysCount; day++) {
+        const wShift = wSched[day - 1] || '-';
+        const sShift = sSched[day - 1] || '-';
+        if (closingShifts.includes(wShift) && closingShifts.includes(sShift)) {
+          matches.push({ day, wShift, sShift });
+        }
+      }
+
+      badgeEl.textContent = `${matches.length} dia${matches.length !== 1 ? 's' : ''}`;
+
+      if (matches.length === 0) {
+        listEl.innerHTML = `
+          <div class="bg-white/80 rounded-xl border border-slate-200/70 p-3 text-xs text-slate-500 text-center font-medium">
+            Nenhum dia encontrado em <strong>${monthDisplay}</strong> com Whatyson e Sabrinna fechando juntos.
+          </div>
+        `;
+      } else {
+        listEl.innerHTML = matches.map(m => {
+          const dateObj = new Date(curYear, monthIndex, m.day);
+          const wd = WEEKDAYS_SHORT[dateObj.getDay()];
+          const isToday = (m.day === currentRealDay);
+          const wStyle = SHIFT_STYLES[m.wShift] || SHIFT_STYLES['F'];
+          const sStyle = SHIFT_STYLES[m.sShift] || SHIFT_STYLES['F'];
+
+          return `
+            <div class="bg-white rounded-xl border ${isToday ? 'border-blue-500 ring-2 ring-blue-500/20' : 'border-sky-200/70'} px-3 py-2.5 flex flex-wrap items-center justify-between gap-2 shadow-2xs">
+              <div class="flex items-center gap-2 flex-wrap">
+                <span class="px-2.5 py-1 rounded-lg ${isToday ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-800'} text-xs font-extrabold">
+                  Dia ${String(m.day).padStart(2, '0')} (${wd})
+                </span>
+                ${isToday ? '<span class="px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 text-[10px] font-bold">Hoje</span>' : ''}
+              </div>
+              <div class="flex items-center gap-1.5 flex-wrap">
+                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-bold ${wStyle.badge}">
+                  Whatyson (${m.wShift})
+                </span>
+                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-bold ${sStyle.badge}">
+                  Sabrinna (${m.sShift})
+                </span>
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
+
+      applyExclusiveCardToggleUI('sharedClosing');
+      card.classList.remove('hidden');
+    };
+
+    window.renderSilviaTurnAlertCard = function() {
+      const card = document.getElementById('silviaTurnAlertCard');
+      const listEl = document.getElementById('silviaTurnAlertList');
+      const badgeEl = document.getElementById('silviaTurnAlertBadge');
+      if (!card || !listEl || !badgeEl) return;
+
+      if (isMaintenanceMode || currentView === 'avisos' || !currentCollaboratorId) {
+        card.classList.add('hidden');
+        return;
+      }
+
+      const activeCollab = collaborators.find(c => c.id === currentCollaboratorId);
+      const isVerified = window.verifiedProfileCollabIds && window.verifiedProfileCollabIds.has(currentCollaboratorId);
+
+      if (!activeCollab || !isWhatysonOrSilviaProfile(activeCollab) || !isVerified) {
+        card.classList.add('hidden');
+        return;
+      }
+
+      const silvia = findSilviaNascimentoCollab();
+      if (!silvia) {
+        card.classList.add('hidden');
+        return;
+      }
+
+      const silviaSched = scheduleData[silvia.id] || [];
+      const monthIndex = MONTH_INDEXES[currentMonth] ?? (new Date().getMonth());
+      const now = new Date();
+      const curYear = now.getFullYear();
+      const isCurrentRealMonth = (now.getMonth() === monthIndex);
+      const currentRealDay = isCurrentRealMonth ? now.getDate() : -1;
+      const monthDisplay = currentMonth.charAt(0) + currentMonth.slice(1).toLowerCase();
+
+      const lateShifts = ['F', 'PF', 'I'];
+      const openShifts = ['A', 'A1', 'A2', 'PA'];
+      const matches = [];
+
+      for (let day = 1; day < monthDaysCount; day++) {
+        const shiftToday = silviaSched[day - 1] || '-';
+        const shiftTomorrow = silviaSched[day] || '-';
+        if (lateShifts.includes(shiftToday) && openShifts.includes(shiftTomorrow)) {
+          matches.push({
+            day,
+            nextDay: day + 1,
+            nextMonthName: currentMonth,
+            shiftToday,
+            shiftTomorrow
+          });
+        }
+      }
+
+      if (monthDaysCount >= 28 && allData && allData.sched) {
+        const nextMonthIdx = (monthIndex + 1) % 12;
+        const nextMonthName = MONTH_NAMES[nextMonthIdx];
+        const nextMonthSched = allData.sched[nextMonthName] && allData.sched[nextMonthName][silvia.id];
+        if (nextMonthSched && nextMonthSched.length > 0) {
+          const shiftLastDay = silviaSched[monthDaysCount - 1] || '-';
+          const shiftNextFirst = nextMonthSched[0] || '-';
+          if (lateShifts.includes(shiftLastDay) && openShifts.includes(shiftNextFirst)) {
+            matches.push({
+              day: monthDaysCount,
+              nextDay: 1,
+              nextMonthName,
+              shiftToday: shiftLastDay,
+              shiftTomorrow: shiftNextFirst
+            });
+          }
+        }
+      }
+
+      badgeEl.textContent = `${matches.length} dia${matches.length !== 1 ? 's' : ''}`;
+
+      if (matches.length === 0) {
+        listEl.innerHTML = `
+          <div class="bg-white/80 rounded-xl border border-slate-200/70 p-3 text-xs text-slate-500 text-center font-medium">
+            Nenhum dia encontrado em <strong>${monthDisplay}</strong> com Fechamento ou Intermediário seguido de Abertura para Silvia Nascimento.
+          </div>
+        `;
+      } else {
+        listEl.innerHTML = matches.map(m => {
+          const dateToday = new Date(curYear, monthIndex, m.day);
+          const nextMonthIdx = MONTH_INDEXES[m.nextMonthName] ?? monthIndex;
+          const nextYear = (m.nextMonthName !== currentMonth && nextMonthIdx === 0) ? curYear + 1 : curYear;
+          const dateTomorrow = new Date(nextYear, nextMonthIdx, m.nextDay);
+
+          const wdToday = WEEKDAYS_SHORT[dateToday.getDay()];
+          const wdTomorrow = WEEKDAYS_SHORT[dateTomorrow.getDay()];
+          const styleToday = SHIFT_STYLES[m.shiftToday] || SHIFT_STYLES['-'];
+          const styleTomorrow = SHIFT_STYLES[m.shiftTomorrow] || SHIFT_STYLES['-'];
+          const isToday = (m.day === currentRealDay);
+          const nextMonthShort = m.nextMonthName !== currentMonth ? `/${m.nextMonthName.slice(0, 3)}` : '';
+
+          return `
+            <div class="bg-white rounded-xl border ${isToday ? 'border-blue-500 ring-2 ring-blue-500/20' : 'border-amber-200/70'} px-3 py-2.5 flex flex-wrap items-center justify-between gap-2 shadow-2xs">
+              <div class="flex items-center gap-2 flex-wrap">
+                <span class="px-2.5 py-1 rounded-lg ${isToday ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-800'} text-xs font-extrabold">
+                  Dia ${String(m.day).padStart(2, '0')} (${wdToday})
+                </span>
+                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-bold ${styleToday.badge}">
+                  ${SHIFT_EMOJI[m.shiftToday] || ''} ${styleToday.label} (${m.shiftToday})
+                </span>
+              </div>
+
+              <div class="flex items-center gap-2 flex-wrap">
+                <i class="fa-solid fa-arrow-right text-amber-500 text-xs"></i>
+                <span class="px-2 py-0.5 rounded-lg bg-slate-100 text-slate-700 text-xs font-bold">
+                  Dia ${String(m.nextDay).padStart(2, '0')}${nextMonthShort} (${wdTomorrow})
+                </span>
+                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-bold ${styleTomorrow.badge}">
+                  ${SHIFT_EMOJI[m.shiftTomorrow] || ''} ${styleTomorrow.label} (${m.shiftTomorrow})
+                </span>
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
+
+      applyExclusiveCardToggleUI('silviaTurn');
+      card.classList.remove('hidden');
+    };
+
+    window.renderExclusiveProfileBlocks = function() {
+      window.renderSharedClosingCard();
+      window.renderSilviaTurnAlertCard();
     };
 
     function displayScheduleFor(id) {
@@ -1889,10 +3182,10 @@
 
       if (!id) {
         if (profileCard) profileCard.classList.add('hidden');
-        if (monthSelectorContainer) monthSelectorContainer.classList.add('hidden');
+        window.renderExclusiveProfileBlocks();
+        updateMonthSelectorVisibility();
         renderLinks();
 
-        // Oculta o grid do calendário e mostra o aviso amigável quando nenhum colaborador estiver selecionado
         if (calHeaderBar) calHeaderBar.classList.add('hidden');
         if (calWeekdaysRow) calWeekdaysRow.classList.add('hidden');
         if (calDaysGrid) calDaysGrid.classList.add('hidden');
@@ -1900,7 +3193,14 @@
 
         const monthIndex = MONTH_INDEXES[currentMonth] ?? (new Date().getMonth());
         const today = new Date();
-        const targetDay = (today.getMonth() === monthIndex) ? today.getDate() : 1;
+        const curYear = today.getFullYear();
+        const targetDay = getEffectiveSummaryDay();
+        const isCurrentRealMonth = (today.getMonth() === monthIndex);
+        const isTargetToday = isCurrentRealMonth && (targetDay === today.getDate());
+        const targetDateObj = new Date(curYear, monthIndex, targetDay);
+        const targetWeekday = WEEKDAYS_SHORT[targetDateObj.getDay()];
+        const targetHoliday = (HOLIDAYS[currentMonth] || {})[targetDay];
+        const monthDisplay = currentMonth.charAt(0) + currentMonth.slice(1).toLowerCase();
 
         const groups = {
           'Abertura (A, PA)': [],
@@ -1951,12 +3251,54 @@
           `;
         };
 
+        let dayOptionsHtml = '';
+        for (let d = 1; d <= monthDaysCount; d++) {
+          const dObj = new Date(curYear, monthIndex, d);
+          const wd = WEEKDAYS_SHORT[dObj.getDay()];
+          const dayPadded = String(d).padStart(2, '0');
+          const todayTag = (isCurrentRealMonth && d === today.getDate()) ? ' • Hoje' : '';
+          dayOptionsHtml += `<option value="${d}" ${d === targetDay ? 'selected' : ''}>Dia ${dayPadded} (${wd})${todayTag}</option>`;
+        }
+
         let summaryHtml = `
           <div class="mt-4 bg-white rounded-2xl border border-slate-200/80 p-4 shadow-sm animate-fade-in">
-            <div class="flex items-center gap-2 mb-3 border-b border-slate-100 pb-2">
-              <span class="text-base">👥</span>
-              <h3 class="text-sm font-bold text-slate-800">Equipe no dia ${targetDay} de ${currentMonth.charAt(0) + currentMonth.slice(1).toLowerCase()}</h3>
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 mb-3 border-b border-slate-100 pb-3">
+              <div class="flex items-center gap-2 flex-wrap">
+                <span class="text-base">👥</span>
+                <h3 class="text-sm font-bold text-slate-800">Equipe no dia ${targetDay} de ${monthDisplay}</h3>
+                <span class="px-2 py-0.5 rounded-md bg-slate-100 text-slate-600 text-[10px] font-bold uppercase">${targetWeekday}</span>
+                ${isTargetToday ? '<span class="px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 text-[10px] font-bold">Hoje</span>' : ''}
+              </div>
+
+              <div class="flex items-center gap-1.5 self-start sm:self-auto">
+                <button onclick="changeSummaryDay(-1)" ${targetDay <= 1 ? 'disabled' : ''} title="Dia anterior"
+                        class="w-8 h-8 rounded-xl bg-slate-100 hover:bg-slate-200 active:scale-95 disabled:opacity-40 disabled:pointer-events-none text-slate-700 flex items-center justify-center transition text-xs border border-slate-200/80">
+                  <i class="fa-solid fa-chevron-left"></i>
+                </button>
+                <select onchange="selectSummaryDay(this.value)" aria-label="Escolher dia da escala da equipe"
+                        class="h-8 px-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition cursor-pointer">
+                  ${dayOptionsHtml}
+                </select>
+                <button onclick="changeSummaryDay(1)" ${targetDay >= monthDaysCount ? 'disabled' : ''} title="Próximo dia"
+                        class="w-8 h-8 rounded-xl bg-slate-100 hover:bg-slate-200 active:scale-95 disabled:opacity-40 disabled:pointer-events-none text-slate-700 flex items-center justify-center transition text-xs border border-slate-200/80">
+                  <i class="fa-solid fa-chevron-right"></i>
+                </button>
+                ${isCurrentRealMonth && !isTargetToday ? `
+                  <button onclick="resetSummaryDayToToday()" title="Voltar para hoje"
+                          class="h-8 px-2.5 rounded-xl bg-blue-50 hover:bg-blue-100 active:scale-95 text-blue-700 text-xs font-bold border border-blue-200 transition">
+                    Hoje
+                  </button>
+                ` : ''}
+              </div>
             </div>
+
+            ${targetHoliday ? `
+              <div class="mb-3 px-3 py-2 rounded-xl bg-amber-50 border border-amber-200/80 text-amber-900 text-xs flex items-center gap-2">
+                <span>⭐</span>
+                <span><strong>${targetHoliday.name}</strong> <span class="text-amber-700">(${targetHoliday.type})</span></span>
+              </div>
+            ` : ''}
+
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
               ${renderGroup('Abertura (A, PA)', groups['Abertura (A, PA)'], 'text-amber-600')}
               ${renderGroup('Intermediário (I)', groups['Intermediário (I)'], 'text-purple-600')}
@@ -1982,7 +3324,6 @@
       const collab = collaborators.find(c => c.id === id);
       if (!collab) return;
 
-      // Se a view atual for a de Avisos, nunca mostra o perfil do colaborador
       if (currentView === 'avisos') {
         if (profileCard) profileCard.classList.add('hidden');
         if (monthSelectorContainer) monthSelectorContainer.classList.add('hidden');
@@ -1991,27 +3332,20 @@
 
       if (profileCard) profileCard.classList.remove('hidden');
       document.getElementById('userName').textContent = collab.name;
-      document.getElementById('userSectorText').textContent = collab.role;
+      const formattedRole = String(collab.role || '').replace(/\bGerentes\b/gi, 'Gerente');
+      document.getElementById('userSectorText').textContent = formattedRole;
       document.getElementById('userMatricula').textContent = `Mat: ${collab.matricula}`;
-      document.getElementById('userAvatar').textContent = collab.name.charAt(0);
 
+      window.applyCollabProfileAppearance(collab);
       window.updateCollabSettingsGear();
+      window.renderExclusiveProfileBlocks();
 
-      // Mostra o calendário e esconde o prompt quando um colaborador for selecionado
       if (calHeaderBar) calHeaderBar.classList.remove('hidden');
       if (calWeekdaysRow) calWeekdaysRow.classList.remove('hidden');
       if (calDaysGrid) calDaysGrid.classList.remove('hidden');
       if (calNoCollabPrompt) calNoCollabPrompt.classList.add('hidden');
 
-      const isWhatyson = collab.name.toLowerCase().includes('whatyson');
-      const showForAll = isLastWeekOfMonth();
-
-      if (isWhatyson || showForAll) {
-        if (monthSelectorContainer) monthSelectorContainer.classList.remove('hidden');
-        renderMonthButtons();
-      } else {
-        if (monthSelectorContainer) monthSelectorContainer.classList.add('hidden');
-      }
+      updateMonthSelectorVisibility();
 
       const schedule = scheduleData[id] || Array(monthDaysCount).fill('-');
       let workCount = 0, offCount = 0, vacCount = 0, openCount = 0, closeCount = 0, intCount = 0, paCount = 0, pfCount = 0, vgCount = 0;
@@ -2038,6 +3372,7 @@
       document.getElementById('statInt').textContent = intCount;
       document.getElementById('statPA').textContent = paCount;
       document.getElementById('statPF').textContent = pfCount;
+      document.getElementById('statVG').textContent = vgCount;
 
       const intBox = document.getElementById('statIntBox');
       if (intBox) intBox.classList.toggle('hidden', intCount === 0);
@@ -2055,6 +3390,13 @@
       renderCalendarView(schedule);
     }
 
+    window.togglePastDaysInList = function() {
+      showPastDaysInList = !showPastDaysInList;
+      if (currentCollaboratorId && scheduleData[currentCollaboratorId]) {
+        renderListView(scheduleData[currentCollaboratorId]);
+      }
+    };
+
     function renderListView(schedule) {
       const container = document.getElementById('viewList');
       const holidaysOfMonth = HOLIDAYS[currentMonth] || {};
@@ -2063,42 +3405,42 @@
       const isCurrentMonthReal = (now.getMonth() === monthIndex);
       const currentRealDay = isCurrentMonthReal ? now.getDate() : -1;
       const curYear = now.getFullYear();
+      const hasPastDays = isCurrentMonthReal && currentRealDay > 1 && currentRealDay <= monthDaysCount;
 
-      let html = '';
+      const renderWeekHeader = (dateObj) => {
+        const weekNum = getISOWeekNumber(dateObj);
+        return `
+          <div class="pt-3 pb-1 flex items-center gap-2">
+            <span class="text-[11px] font-extrabold uppercase tracking-wider text-slate-500 bg-slate-200/80 px-2 py-0.5 rounded-md flex items-center gap-1.5">
+              Semana ${weekNum}
+            </span>
+            <div class="h-px bg-slate-200 flex-1"></div>
+          </div>
+        `;
+      };
 
-      for (let day = 1; day <= monthDaysCount; day++) {
+      const renderDayCard = (day, isPast = false) => {
         const dateObj = new Date(curYear, monthIndex, day);
         const dayOfWeekIndex = dateObj.getDay();
-        const isMonday = dayOfWeekIndex === 1;
-        const isFirstDay = day === 1;
-
-        if (isMonday || isFirstDay) {
-          const weekNum = getISOWeekNumber(dateObj);
-          html += `
-            <div class="pt-3 pb-1 flex items-center gap-2">
-              <span class="text-[11px] font-extrabold uppercase tracking-wider text-slate-500 bg-slate-200/80 px-2 py-0.5 rounded-md flex items-center gap-1.5">
-                Semana ${weekNum}
-              </span>
-              <div class="h-px bg-slate-200 flex-1"></div>
-            </div>
-          `;
-        }
-
         const shiftCode = schedule[day - 1] || '-';
         const style = (SHIFT_STYLES[shiftCode] || { ...SHIFT_STYLES['-'], label: shiftCode });
         const holiday = holidaysOfMonth[day];
         const isToday = (day === currentRealDay);
         const avisosArray = (window.avisosData && window.avisosData[currentMonth]) ? window.avisosData[currentMonth][day] : null;
 
-        html += `
-          <div class="bg-white rounded-xl border ${isToday ? 'border-blue-500 ring-2 ring-blue-500/20 shadow-sm' : 'border-slate-200/80'} p-3 transition-all">
+        const cardClasses = isToday
+          ? 'bg-gradient-to-r from-blue-50/90 via-white to-white rounded-2xl border-2 border-blue-500 ring-4 ring-blue-500/15 shadow-md p-3.5 transition-all'
+          : `bg-white rounded-xl border border-slate-200/80 p-3 transition-all ${isPast ? 'opacity-85' : ''}`;
+
+        return `
+          <div class="${cardClasses}">
             <div class="flex items-center justify-between">
               <div class="flex items-center gap-3">
-                <div class="w-11 h-11 rounded-xl ${isToday ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-700'} flex flex-col items-center justify-center font-bold leading-none shadow-2xs">
+                <div class="w-11 h-11 rounded-xl ${isToday ? 'bg-blue-600 text-white shadow-sm shadow-blue-500/30' : 'bg-slate-100 text-slate-700'} flex flex-col items-center justify-center font-bold leading-none shadow-2xs">
                   <span class="text-sm font-extrabold">${day}</span>
                   <span class="text-[9px] uppercase tracking-wider opacity-80 mt-0.5">${WEEKDAYS_SHORT[dayOfWeekIndex]}</span>
                 </div>
-                ${isToday ? '<span class="px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 text-[10px] font-bold">Hoje</span>' : ''}
+                ${isToday ? '<span class="px-2.5 py-1 rounded-full bg-blue-600 text-white text-[10px] font-extrabold uppercase tracking-wider shadow-xs">Hoje</span>' : ''}
                 ${avisosArray && avisosArray.length > 0 ? `
                   <button onclick="showAvisoModal('${currentMonth}', ${day})" class="h-8 px-2.5 rounded-full bg-blue-50 text-blue-700 hover:bg-blue-100 flex items-center gap-1.5 animate-bounce shadow-sm transition-colors border border-blue-200 shrink-0 font-bold text-xs" title="Ver Avisos (${avisosArray.length})">
                     <i class="fa-solid fa-bullhorn text-xs"></i>
@@ -2112,7 +3454,7 @@
               </div>
             </div>
             ${holiday ? `
-              <div class="mt-2.5 pt-2 border-t border-amber-200/80 flex items-center gap-2 text-amber-900 bg-amber-50/70 -mx-3 -mb-3 p-2.5 rounded-b-xl">
+              <div class="mt-2.5 pt-2 border-t border-amber-200/80 flex items-center gap-2 text-amber-900 bg-amber-50/70 ${isToday ? '-mx-3.5 -mb-3.5 rounded-b-2xl' : '-mx-3 -mb-3 rounded-b-xl'} p-2.5">
                 <div class="text-xs">
                   <span class="font-bold">⭐ ${holiday.name}</span>
                   <span class="text-[10px] text-amber-700 block">${holiday.type}</span>
@@ -2121,7 +3463,50 @@
             ` : ''}
           </div>
         `;
+      };
+
+      let html = '';
+
+      if (hasPastDays) {
+        const pastCount = currentRealDay - 1;
+        html += `
+          <button onclick="togglePastDaysInList()" class="w-full py-2.5 px-4 rounded-xl bg-white hover:bg-slate-50 active:scale-[0.99] border border-slate-200/90 text-slate-600 text-xs font-bold flex items-center justify-between transition shadow-2xs">
+            <span class="flex items-center gap-2">
+              <i class="fa-solid fa-clock-rotate-left text-blue-600"></i>
+              <span>${showPastDaysInList ? 'Ocultar dias anteriores' : `Mostrar dias anteriores (1 a ${pastCount})`}</span>
+            </span>
+            <span class="inline-flex items-center gap-1.5 text-[11px] font-semibold text-slate-500 bg-slate-100 px-2.5 py-0.5 rounded-full">
+              <span>${pastCount} dia${pastCount !== 1 ? 's' : ''}</span>
+              <i class="fa-solid ${showPastDaysInList ? 'fa-chevron-up' : 'fa-chevron-down'} text-[10px]"></i>
+            </span>
+          </button>
+        `;
+
+        if (showPastDaysInList) {
+          html += `<div class="space-y-2 pb-1">`;
+          for (let day = 1; day < currentRealDay; day++) {
+            const dateObj = new Date(curYear, monthIndex, day);
+            if (day === 1 || dateObj.getDay() === 1) {
+              html += renderWeekHeader(dateObj);
+            }
+            html += renderDayCard(day, true);
+          }
+          html += `</div>`;
+        }
       }
+
+      const startDay = hasPastDays ? currentRealDay : 1;
+      for (let day = startDay; day <= monthDaysCount; day++) {
+        const dateObj = new Date(curYear, monthIndex, day);
+        const isMonday = dateObj.getDay() === 1;
+        const shouldShowWeekHeader = isMonday || day === 1 || (hasPastDays && day === currentRealDay && !showPastDaysInList);
+
+        if (shouldShowWeekHeader) {
+          html += renderWeekHeader(dateObj);
+        }
+        html += renderDayCard(day, false);
+      }
+
       container.innerHTML = html;
     }
 
@@ -2139,7 +3524,7 @@
 
       const firstDayDate = new Date(curYear, monthIndex, 1);
       const firstDaySundayBased = firstDayDate.getDay();
-      const offset = (firstDaySundayBased + 6) % 7; // Seg = 0, Ter = 1, ... Dom = 6
+      const offset = (firstDaySundayBased + 6) % 7;
 
       let html = '';
       for (let i = 0; i < offset; i++) {
@@ -2244,7 +3629,56 @@
         const shortAuthor = authorParts.slice(0, 2).join(' ');
         authorEl.textContent = `Publicado por: ${shortAuthor}`;
       }
+
+      updateAvisoModalLikesUI(aviso);
     }
+
+    function updateAvisoModalLikesUI(aviso) {
+      const likeBtn = document.getElementById('avisoModalLikeBtn');
+      const likeIcon = document.getElementById('avisoModalLikeIcon');
+      const likeLabel = document.getElementById('avisoModalLikeLabel');
+      const likeCount = document.getElementById('avisoModalLikeCount');
+      const likesList = document.getElementById('avisoModalLikesList');
+      if (!likeBtn || !aviso) return;
+
+      const latest = (window.latestNoticesList || []).find(n => n.id === aviso.id);
+      const likes = Array.isArray(latest && latest.likes) ? latest.likes : (Array.isArray(aviso.likes) ? aviso.likes : []);
+      const loggedName = typeof window.getLoggedInUserName === 'function' ? window.getLoggedInUserName() : '';
+      const isLiked = loggedName && likes.includes(loggedName);
+
+      likeBtn.className = `inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-bold transition active:scale-95 ${
+        isLiked
+          ? 'bg-rose-50 border-rose-200 text-rose-600'
+          : 'border-slate-200 bg-slate-50 hover:bg-rose-50 hover:border-rose-200 hover:text-rose-600 text-slate-600'
+      }`;
+      if (likeIcon) likeIcon.className = `${isLiked ? 'fa-solid' : 'fa-regular'} fa-heart`;
+      if (likeLabel) likeLabel.textContent = isLiked ? 'Curtido' : 'Curtir';
+      if (likeCount) likeCount.textContent = String(likes.length);
+
+      if (likesList) {
+        if (likes.length > 0) {
+          likesList.innerHTML = `<span class="font-bold text-slate-700"><i class="fa-solid fa-heart text-rose-500 mr-1"></i>Curtido por:</span> ${likes.join(', ')}`;
+          likesList.classList.remove('hidden');
+        } else {
+          likesList.textContent = '';
+          likesList.classList.add('hidden');
+        }
+      }
+    }
+
+    window.syncOpenAvisoModalLikes = function() {
+      const modal = document.getElementById('avisoModal');
+      if (!modal || modal.classList.contains('hidden')) return;
+      const aviso = currentAvisosModalList[currentAvisoIndex];
+      if (aviso) updateAvisoModalLikesUI(aviso);
+    };
+
+    window.toggleCurrentModalAvisoLike = function() {
+      const aviso = currentAvisosModalList[currentAvisoIndex];
+      if (aviso && aviso.id && typeof window.toggleNoticeLike === 'function') {
+        window.toggleNoticeLike(aviso.id);
+      }
+    };
 
     window.navigateAvisoCarousel = function(direction) {
       if (!currentAvisosModalList || currentAvisosModalList.length <= 1) return;
@@ -2261,6 +3695,21 @@
       document.getElementById('avisoModal').classList.add('hidden');
       currentAvisosModalList = [];
       currentAvisoIndex = 0;
+    };
+
+    window.updateLoggedUserHeaderBadge = function() {
+      const badge = document.getElementById('headerLoggedUserBadge');
+      const nameEl = document.getElementById('headerLoggedUserName');
+      if (!badge || !nameEl) return;
+
+      const loggedName = typeof window.getLoggedInUserName === 'function' ? window.getLoggedInUserName() : '';
+      if (loggedName) {
+        nameEl.textContent = loggedName;
+        badge.classList.remove('hidden');
+      } else {
+        nameEl.textContent = '-';
+        badge.classList.add('hidden');
+      }
     };
 
     window.updateHeaderSubtitle = function() {
@@ -2286,6 +3735,7 @@
         if (monthBadge) monthBadge.classList.add('hidden');
         if (syncPulse) syncPulse.classList.remove('hidden');
         if (subtitleText) subtitleText.textContent = 'Em manutenção';
+        window.updateLoggedUserHeaderBadge();
         return;
       }
 
@@ -2296,7 +3746,8 @@
         
         if (subtitleText) {
           if (adminUser) {
-            subtitleText.textContent = `Administrador: ${adminUser}`;
+            const shortAdmin = adminUser.trim().split(/\s+/).slice(0, 2).join(' ');
+            subtitleText.textContent = `Publicação liberada: ${shortAdmin}`;
           } else {
             subtitleText.textContent = 'Modo Visitante';
           }
@@ -2316,12 +3767,19 @@
           }
         }
       }
+
+      window.updateLoggedUserHeaderBadge();
     };
 
     function switchView(view) {
       if (isMaintenanceMode) return;
 
       currentView = view;
+      if (view === 'list' || view === 'calendar') {
+        lastScheduleView = view;
+      }
+
+      const btnEscala = document.getElementById('btnViewEscala');
       const btnList = document.getElementById('btnViewList');
       const btnCal = document.getElementById('btnViewCal');
       const btnAvisos = document.getElementById('btnViewAvisos');
@@ -2333,12 +3791,14 @@
       const shiftLegend = document.getElementById('shiftLegend');
       const monthSelectorContainer = document.getElementById('monthSelectorContainer');
 
-      btnList.className = 'px-2.5 sm:px-3 py-1.5 rounded-lg font-medium transition flex items-center gap-1 text-white/80 hover:text-white';
-      btnCal.className = 'px-2.5 sm:px-3 py-1.5 rounded-lg font-medium transition flex items-center gap-1 text-white/80 hover:text-white';
-      btnAvisos.className = 'px-2.5 sm:px-3 py-1.5 rounded-lg font-medium transition flex items-center gap-1 text-white/80 hover:text-white';
+      if (btnEscala) btnEscala.className = 'px-2.5 sm:px-3 py-1.5 rounded-lg font-medium transition flex items-center gap-1 text-white/80 hover:text-white';
+      if (btnAvisos) btnAvisos.className = 'px-2.5 sm:px-3 py-1.5 rounded-lg font-medium transition flex items-center gap-1 text-white/80 hover:text-white';
+      if (btnList) btnList.className = 'px-3.5 py-1.5 rounded-lg font-semibold transition flex items-center gap-1.5 text-slate-600 hover:text-slate-900';
+      if (btnCal) btnCal.className = 'px-3.5 py-1.5 rounded-lg font-semibold transition flex items-center gap-1.5 text-slate-600 hover:text-slate-900';
 
       if (view === 'list') {
-        btnList.className = 'px-2.5 sm:px-3 py-1.5 rounded-lg font-medium transition flex items-center gap-1 bg-white text-slate-900 shadow-sm';
+        if (btnEscala) btnEscala.className = 'px-2.5 sm:px-3 py-1.5 rounded-lg font-medium transition flex items-center gap-1 bg-white text-slate-900 shadow-sm';
+        if (btnList) btnList.className = 'px-3.5 py-1.5 rounded-lg font-semibold transition flex items-center gap-1.5 bg-blue-600 text-white shadow-xs';
         viewList.classList.remove('hidden');
         viewCal.classList.add('hidden');
         viewAvisos.classList.add('hidden');
@@ -2346,7 +3806,8 @@
         if (currentCollaboratorId && userProfileCard) userProfileCard.classList.remove('hidden');
         if (shiftLegend) shiftLegend.classList.add('hidden');
       } else if (view === 'calendar') {
-        btnCal.className = 'px-2.5 sm:px-3 py-1.5 rounded-lg font-medium transition flex items-center gap-1 bg-white text-slate-900 shadow-sm';
+        if (btnEscala) btnEscala.className = 'px-2.5 sm:px-3 py-1.5 rounded-lg font-medium transition flex items-center gap-1 bg-white text-slate-900 shadow-sm';
+        if (btnCal) btnCal.className = 'px-3.5 py-1.5 rounded-lg font-semibold transition flex items-center gap-1.5 bg-blue-600 text-white shadow-xs';
         viewCal.classList.remove('hidden');
         viewList.classList.add('hidden');
         viewAvisos.classList.add('hidden');
@@ -2354,7 +3815,7 @@
         if (currentCollaboratorId && userProfileCard) userProfileCard.classList.remove('hidden');
         if (shiftLegend) shiftLegend.classList.remove('hidden');
       } else if (view === 'avisos') {
-        btnAvisos.className = 'px-2.5 sm:px-3 py-1.5 rounded-lg font-medium transition flex items-center gap-1 bg-white text-slate-900 shadow-sm';
+        if (btnAvisos) btnAvisos.className = 'px-2.5 sm:px-3 py-1.5 rounded-lg font-medium transition flex items-center gap-1 bg-white text-slate-900 shadow-sm';
         viewAvisos.classList.remove('hidden');
         viewList.classList.add('hidden');
         viewCal.classList.add('hidden');
@@ -2362,19 +3823,26 @@
         if (userProfileCard) userProfileCard.classList.add('hidden');
         if (shiftLegend) shiftLegend.classList.add('hidden');
         if (monthSelectorContainer) monthSelectorContainer.classList.add('hidden');
+        if (typeof window.updateAuthUI === 'function') window.updateAuthUI();
       }
+      window.renderExclusiveProfileBlocks();
+      updateMonthSelectorVisibility();
       window.updateHeaderSubtitle();
     }
 
     function changeCurrentMonth(month) {
       currentMonth = month;
+      selectedSummaryDay = null;
+      showPastDaysInList = false;
       applyMonth();
     }
 
     const GROUP1_LINKS = [
       { title: 'Decanet', url: 'https://sites.google.com/decathlon.com/decanet/home?pli=1&authuser=0' },
       { title: 'Links úteis', url: 'https://docs.google.com/spreadsheets/d/1bTOMrvGp9gTFyvWWz6YBMOwkB38sum1_7sZkHKuDywc/edit?usp=drivesdk' },
-      { title: 'NOVO l PLANNING 2026', url: 'https://docs.google.com/spreadsheets/d/1PhwTN8y8sCCy7uhzPbr7ihKgUi6TeN5YSWkqk9K6lgQ/edit?usp=sharing' }
+      { title: 'NOVO l PLANNING 2026', url: 'https://docs.google.com/spreadsheets/d/1PhwTN8y8sCCy7uhzPbr7ihKgUi6TeN5YSWkqk9K6lgQ/edit?usp=sharing' },
+      { title: 'PrintPortal', url: 'https://signeasy-portal.instore.app.dkt.cloud/' },
+      { title: 'Solicitação de Afectação', url: 'https://www.appsheet.com/start/1adf68e2-b228-40bc-920b-3c7b9e6f0c93?platform=desktop#appName=Planilhasemt%C3%ADtulo-874362181&vss=H4sIAAAAAAAAA62PTQrCMBSE7zLrnCBbcSGim4ob4yI2rxBMk9Kk1RJyHk_gCXoxU38Qt8Xlm-H7mBfRa7oUQZZn8EP8XmsawBEFdkNDAlxg4WxonRFgAltZv8LCGV3qIMfbeCcvkJCO7GMJ5MHjHAn_xxIGrcgGXWlqJ-PEZ9ObzvXE5uCXRGKouyBPhp4vZDKlnFWu7DypfZ41e45f2eW1kVZtnMriShpP6QFn1n_-gwEAAA==&view=Solicita%C3%A7%C3%B5es' }
     ];
 
     const GROUP2_LINKS = [
